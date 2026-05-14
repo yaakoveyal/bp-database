@@ -653,6 +653,19 @@
         <option>Unknown</option>
       </select>
     </div>
+    <div class="field">
+      <label>Height <span class="hint">cm</span></label>
+      <input type="number" id="height-cm" min="100" max="220" placeholder="e.g. 168" oninput="calcBMI()">
+    </div>
+    <div class="field">
+      <label>Weight <span class="hint">kg</span></label>
+      <input type="number" id="weight-kg" min="30" max="250" placeholder="e.g. 72" oninput="calcBMI()">
+    </div>
+    <div class="field">
+      <label>BMI <span class="hint">calculated</span></label>
+      <input type="text" id="bmi-display" disabled style="background:var(--bg);color:var(--text-muted);">
+      <input type="hidden" id="bmi-value">
+    </div>
   </div>
 
   <!-- COMORBIDITIES -->
@@ -701,6 +714,10 @@
         <button type="button" class="comorb-chip" data-name="ckd"        onclick="toggleComorbChip(this)">CKD</button>
         <button type="button" class="comorb-chip" data-name="smoker"     onclick="toggleComorbChip(this)">Smoker</button>
         <button type="button" class="comorb-chip" data-name="depression" onclick="toggleComorbChip(this)">Depression</button>
+        <button type="button" class="comorb-chip" data-name="chf"        onclick="toggleComorbChip(this)">CHF</button>
+        <button type="button" class="comorb-chip" data-name="copd"       onclick="toggleComorbChip(this)">COPD</button>
+        <button type="button" class="comorb-chip" data-name="pvd"        onclick="toggleComorbChip(this)">PVD</button>
+        <button type="button" class="comorb-chip" data-name="liver"      onclick="toggleComorbChip(this)">Liver Disease</button>
       </div>
       <!-- Hidden inputs storing Yes/No values -->
       <input type="hidden" id="comorbidity-dm"         value="No">
@@ -711,6 +728,10 @@
       <input type="hidden" id="comorbidity-ckd"        value="No">
       <input type="hidden" id="comorbidity-smoker"     value="No">
       <input type="hidden" id="comorbidity-depression" value="No">
+      <input type="hidden" id="comorbidity-chf"        value="No">
+      <input type="hidden" id="comorbidity-copd"       value="No">
+      <input type="hidden" id="comorbidity-pvd"        value="No">
+      <input type="hidden" id="comorbidity-liver"      value="No">
     </div>
   </div>
 
@@ -861,6 +882,15 @@
             <option>Skin + mucosal</option>
           </select>
         </div>
+        <div class="field" style="margin-top:10px;">
+          <label>Blister Count</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="blister-dx" value="1-5"> 1–5</label>
+            <label class="radio-opt"><input type="radio" name="blister-dx" value="5-20"> 5–20</label>
+            <label class="radio-opt"><input type="radio" name="blister-dx" value=">20"> &gt;20</label>
+            <label class="radio-opt"><input type="radio" name="blister-dx" value="Unknown"> Unknown</label>
+          </div>
+        </div>
       </div>
 
       <!-- Worst Recorded -->
@@ -887,6 +917,15 @@
             <option>Mucosal only</option>
             <option>Skin + mucosal</option>
           </select>
+        </div>
+        <div class="field" style="margin-bottom:10px;">
+          <label>Blister Count</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="blister-worst" value="1-5"> 1–5</label>
+            <label class="radio-opt"><input type="radio" name="blister-worst" value="5-20"> 5–20</label>
+            <label class="radio-opt"><input type="radio" name="blister-worst" value=">20"> &gt;20</label>
+            <label class="radio-opt"><input type="radio" name="blister-worst" value="Unknown"> Unknown</label>
+          </div>
         </div>
         <div class="field" style="margin-bottom:6px;">
           <label>Date of Worst Presentation</label>
@@ -1392,11 +1431,22 @@
   <!-- STEROID -->
   <div class="subsection">
     <div class="subsection-title">Steroid Summary</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;">
       <div class="field">
         <label>Max Steroid Dose <span class="hint">mg/day</span></label>
-        <input type="number" id="max-steroid-dose" min="0" placeholder="e.g. 60">
+        <input type="number" id="max-steroid-dose" min="0" placeholder="e.g. 60" oninput="calcMaxSteroidMgKg()">
       </div>
+      <div class="field">
+        <label>Max Dose <span class="hint">mg/kg — calculated</span></label>
+        <input type="text" id="max-steroid-mgkg" disabled style="background:var(--bg);color:var(--text-muted);">
+        <input type="hidden" id="max-steroid-mgkg-val">
+      </div>
+      <div class="field">
+        <label>Dose at First Remission <span class="hint">mg/day</span></label>
+        <input type="number" id="dose-at-remission" min="0" placeholder="e.g. 20">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
       <div class="field">
         <label>Dose at Last Follow-up <span class="hint">mg/day</span></label>
         <input type="number" id="dose-last-fu" min="0" placeholder="e.g. 5">
@@ -1404,6 +1454,13 @@
       <div class="field">
         <label>Times Escalated &gt;20mg</label>
         <input type="number" id="escalations-above-20" min="0" placeholder="e.g. 3">
+      </div>
+      <div class="field">
+        <label>Topical CS as Sole Therapy</label>
+        <div class="radio-group">
+          <label class="radio-opt"><input type="radio" name="topical-sole" value="Yes"> Yes</label>
+          <label class="radio-opt"><input type="radio" name="topical-sole" value="No"> No</label>
+        </div>
       </div>
     </div>
   </div>
@@ -1678,6 +1735,9 @@ function prefillFromLookup(data) {
     }
     setSelect('ethnicity', b.Ethnicity);
     setSelect('frailty',   b.Frailty_Score);
+    if (b.Height_cm)  document.getElementById('height-cm').value = b.Height_cm;
+    if (b.Weight_kg)  document.getElementById('weight-kg').value = b.Weight_kg;
+    if (b.Height_cm && b.Weight_kg) calcBMI();
     if (b.Date_of_First_Symptoms) document.getElementById('symptoms-date').value = b.Date_of_First_Symptoms;
     if (b.Date_of_Death)          document.getElementById('date-of-death').value  = b.Date_of_Death;
     setSelect('cause-death-baseline', b.Cause_of_Death);
@@ -1729,7 +1789,8 @@ function prefillFromLookup(data) {
     const chipMap = {
       dm: c.Diabetes, htn: c.Hypertension, ihd: c.IHD,
       malig: c.Active_Malignancy, autoimm: c.Autoimmune_Disease,
-      ckd: c.CKD, smoker: c.Smoker, depression: c.Depression
+      ckd: c.CKD, smoker: c.Smoker, depression: c.Depression,
+      chf: c.CHF, copd: c.COPD, pvd: c.PVD, liver: c.Liver_Disease
     };
     Object.entries(chipMap).forEach(([name, value]) => {
       if (value === 'Yes' || value === '1') {
@@ -1757,8 +1818,10 @@ function prefillFromLookup(data) {
     }
     setRadio('pruritus-dx',    s.Pruritus_at_Dx);
     setSelect('dist-dx',       s.Lesion_Dist_at_Dx);
+    setRadio('blister-dx',     s.Blister_Count_at_Dx);
     setRadio('pruritus-worst', s.Pruritus_Worst);
     setSelect('dist-worst',    s.Lesion_Dist_Worst);
+    setRadio('blister-worst',  s.Blister_Count_Worst);
     if (s.Date_Worst_Presentation) {
       document.getElementById('date-worst').value = s.Date_Worst_Presentation;
       calcDxToWorst();
@@ -1789,9 +1852,12 @@ function prefillFromLookup(data) {
       document.getElementById('date-relapse').value = o.Date_of_First_Relapse;
       calcRelapseMonths();
     }
-    document.getElementById('max-steroid-dose').value      = o.Max_Steroid_Dose      || '';
-    document.getElementById('dose-last-fu').value          = o.Dose_at_Last_Followup || '';
-    document.getElementById('escalations-above-20').value  = o.Escalations_Above_20  || '';
+    document.getElementById('max-steroid-dose').value      = o.Max_Steroid_Dose        || '';
+    document.getElementById('dose-at-remission').value     = o.Dose_at_First_Remission  || '';
+    document.getElementById('dose-last-fu').value          = o.Dose_at_Last_Followup    || '';
+    document.getElementById('escalations-above-20').value  = o.Escalations_Above_20     || '';
+    setRadio('topical-sole', o.Topical_CS_Sole_Therapy);
+    if (o.Max_Steroid_Dose) calcMaxSteroidMgKg();
     setCheckboxes('tx-received', o.Treatments_Received);
     setRadio('mortality',        o.Mortality);
     onCRChange();
@@ -2012,7 +2078,7 @@ function toggleComorbChip(btn) {
 
 function resetComorbChips() {
   document.querySelectorAll('.comorb-chip').forEach(b => b.classList.remove('active'));
-  ['dm','htn','ihd','malig','autoimm','ckd','smoker','depression'].forEach(name => {
+  ['dm','htn','ihd','malig','autoimm','ckd','smoker','depression','chf','copd','pvd','liver'].forEach(name => {
     const h = document.getElementById('comorbidity-' + name);
     if (h) h.value = 'No';
   });
@@ -2217,6 +2283,40 @@ function enableAutoSave() {
   setAutoDot('');
 }
 
+
+// ══════════════════════════════════════════════════════════════
+//  BMI & STEROID mg/kg CALCULATIONS
+// ══════════════════════════════════════════════════════════════
+function calcBMI() {
+  const h = parseFloat(document.getElementById('height-cm')?.value);
+  const w = parseFloat(document.getElementById('weight-kg')?.value);
+  const display = document.getElementById('bmi-display');
+  const hidden  = document.getElementById('bmi-value');
+  if (h > 0 && w > 0) {
+    const bmi = (w / ((h / 100) ** 2)).toFixed(1);
+    if (display) display.value = bmi;
+    if (hidden)  hidden.value  = bmi;
+    calcMaxSteroidMgKg();
+  } else {
+    if (display) display.value = '';
+    if (hidden)  hidden.value  = '';
+  }
+}
+
+function calcMaxSteroidMgKg() {
+  const w    = parseFloat(document.getElementById('weight-kg')?.value);
+  const dose = parseFloat(document.getElementById('max-steroid-dose')?.value);
+  const display = document.getElementById('max-steroid-mgkg');
+  const hidden  = document.getElementById('max-steroid-mgkg-val');
+  if (w > 0 && dose > 0) {
+    const mgkg = (dose / w).toFixed(2);
+    if (display) display.value = mgkg + ' mg/kg';
+    if (hidden)  hidden.value  = mgkg;
+  } else {
+    if (display) display.value = '';
+    if (hidden)  hidden.value  = '';
+  }
+}
 
 // ══════════════════════════════════════════════════════════════
 //  SEVERITY & COURSE CALCULATIONS
@@ -2713,6 +2813,7 @@ function collectSection(idx) {
           pid, getRadio('sex'), val('age-dx'), dxYear,
           val('dx-date'),
           val('ethnicity'), val('frailty'),
+          val('height-cm'), val('weight-kg'), val('bmi-value'),
           val('symptoms-date'), val('symptoms-to-dx-days'),
           val('date-of-death'), val('cause-death-baseline'),
           collector, ts
@@ -2725,6 +2826,8 @@ function collectSection(idx) {
           val('comorbidity-ihd'), val('comorbidity-malig'),
           val('comorbidity-autoimm'), val('comorbidity-ckd'),
           val('comorbidity-smoker'), val('comorbidity-depression'),
+          val('comorbidity-chf'), val('comorbidity-copd'),
+          val('comorbidity-pvd'), val('comorbidity-liver'),
           collector, ts
         ]}
       ]};
@@ -2736,8 +2839,8 @@ function collectSection(idx) {
     case 2: return { sheet: SHEET_NAMES[2], row: [
       pid,
       val('sev-followup-date'), val('sev-followup-years'),
-      getRadio('pruritus-dx'), val('dist-dx'),
-      getRadio('pruritus-worst'), val('dist-worst'),
+      getRadio('pruritus-dx'), val('dist-dx'), getRadio('blister-dx'),
+      getRadio('pruritus-worst'), val('dist-worst'), getRadio('blister-worst'),
       val('date-worst'), val('dx-to-worst-months'),
       val('enc-y1'), val('enc-y3'), val('enc-total'),
       val('sev-hosp'),
@@ -2807,7 +2910,10 @@ function collectSection(idx) {
       val('date-remission'), val('time-remission'),
       getRadio('relapse'), getRadio('relapse-context'),
       val('date-relapse'), val('time-relapse'),
-      val('max-steroid-dose'), val('dose-last-fu'), val('escalations-above-20'),
+      val('max-steroid-dose'), val('max-steroid-mgkg-val'),
+      val('dose-at-remission'), val('dose-last-fu'),
+      val('escalations-above-20'),
+      getRadio('topical-sole'),
       getCheckboxes('tx-received'),
       getRadio('mortality'),
       collector, ts
