@@ -3,16 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bullous Pemphigoid Registry — v5.0 Integrated</title>
+<title>Bullous Pemphigoid Registry — Data Entry Form</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 
   :root {
-    --bg: #f5f3ef; --surface: #ffffff; --border: #d4cfc7; --border-strong: #a09890;
-    --accent: #1a3a5c; --accent-light: #e8eef5; --accent2: #7a3b1e;
-    --success: #2d6a4f; --success-light: #e8f5ee; --error: #c0392b; --error-light: #fdecea;
-    --text: #1c1a18; --text-muted: #6b6560; --label: #3d3830;
-    --radius: 4px; --mono: 'IBM Plex Mono', monospace; --sans: 'IBM Plex Sans', sans-serif;
+    --bg: #f5f3ef;
+    --surface: #ffffff;
+    --border: #d4cfc7;
+    --border-strong: #a09890;
+    --accent: #1a3a5c;
+    --accent-light: #e8eef5;
+    --accent2: #7a3b1e;
+    --success: #2d6a4f;
+    --success-light: #e8f5ee;
+    --error: #c0392b;
+    --error-light: #fdecea;
+    --text: #1c1a18;
+    --text-muted: #6b6560;
+    --label: #3d3830;
+    --radius: 4px;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,566 +32,2858 @@
 
   /* ── HEADER ── */
   .header {
-    background: var(--accent); color: #fff; padding: 24px 40px 20px;
-    border-bottom: 3px solid #0d2240; position: sticky; top: 0; z-index: 100;
+    background: var(--accent);
+    color: #fff;
+    padding: 24px 40px 20px;
+    border-bottom: 3px solid #0d2240;
+    position: sticky; top: 0; z-index: 100;
   }
   .header-top { display: flex; align-items: baseline; gap: 16px; margin-bottom: 10px; }
   .header h1 { font-family: var(--mono); font-size: 1rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
   .header-subtitle { font-size: 0.72rem; opacity: 0.6; letter-spacing: 0.08em; font-family: var(--mono); }
   .header-bottom { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-  
-  .pid-bar input, .collector-bar input {
-    font-family: var(--mono); font-size: 0.95rem; background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 5px 11px; border-radius: var(--radius);
+  .pid-bar { display: flex; align-items: center; gap: 10px; }
+  .pid-bar label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.75; }
+  .pid-bar input {
+    font-family: var(--mono); font-size: 0.95rem; font-weight: 600;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.3);
+    color: #fff; padding: 5px 11px; border-radius: var(--radius); width: 160px; letter-spacing: 0.08em;
   }
+  .pid-bar input::placeholder { opacity: 0.35; }
+  .pid-bar input:focus { outline: none; border-color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.18); }
+  .collector-bar { display: flex; align-items: center; gap: 10px; }
+  .collector-bar label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.75; }
+  .collector-bar input {
+    font-family: var(--sans); font-size: 0.85rem;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.3);
+    color: #fff; padding: 5px 11px; border-radius: var(--radius); width: 180px;
+  }
+  .collector-bar input::placeholder { opacity: 0.35; }
+  .collector-bar input:focus { outline: none; border-color: rgba(255,255,255,0.7); }
 
-  /* ── NAV TABS ── */
+  /* ── NAV ── */
   .section-nav {
-    background: var(--accent); display: flex; padding: 0 40px; overflow-x: auto;
-    border-bottom: 1px solid #0d2240; scrollbar-width: none;
+    background: var(--accent); display: flex; padding: 0 40px;
+    overflow-x: auto; border-bottom: 1px solid #0d2240; scrollbar-width: none;
   }
+  .section-nav::-webkit-scrollbar { display: none; }
   .nav-tab {
-    font-family: var(--mono); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em;
-    text-transform: uppercase; color: rgba(255,255,255,0.45); padding: 11px 16px 9px;
-    cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap;
+    font-family: var(--mono); font-size: 0.65rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: rgba(255,255,255,0.45); padding: 11px 16px 9px;
+    cursor: pointer; border-bottom: 3px solid transparent;
+    white-space: nowrap; transition: all 0.15s; user-select: none;
     display: flex; align-items: center; gap: 6px;
   }
+  .nav-tab:hover { color: rgba(255,255,255,0.8); }
   .nav-tab.active { color: #fff; border-bottom-color: #7eb8e8; }
-  .nav-tab.saved .tick { display: inline; color: #7eb8e8; }
-  .nav-tab .tab-dot { width: 7px; height: 7px; border-radius: 50%; display: none; }
+  .nav-tab .tick { display: none; color: #7eb8e8; font-size: 0.7rem; }
+  .nav-tab.saved .tick { display: inline; }
+
+  /* ── TAB COMPLETION DOTS ── */
+  .nav-tab .tab-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    display: none; flex-shrink: 0;
+    transition: background 0.2s;
+  }
   .nav-tab.dot-green .tab-dot { display: inline-block; background: #4ade80; }
-  .nav-tab.dot-red .tab-dot { display: inline-block; background: #f87171; }
+  .nav-tab.dot-red   .tab-dot { display: inline-block; background: #f87171; }
 
   /* ── MAIN ── */
-  .main { padding: 16px 40px 40px; max-width: 1100px; margin: 0 auto; }
+  .main { padding: 16px 40px 40px; max-width: 980px; }
   .section { display: none; }
   .section.active { display: block; }
-  .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
-  .section-num { font-family: var(--mono); font-size: 0.68rem; color: #fff; background: var(--accent); padding: 3px 8px; border-radius: 2px; }
+
+  .section-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--border);
+  }
+  .section-num {
+    font-family: var(--mono); font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.12em; color: #fff; background: var(--accent);
+    padding: 3px 8px; border-radius: 2px;
+  }
+  .section-title { font-size: 1.05rem; font-weight: 600; color: var(--text); }
+  .section-note { margin-left: auto; font-family: var(--mono); font-size: 0.62rem; color: var(--text-muted); }
 
   /* ── GRID ── */
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 22px; }
+  .form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .span-2 { grid-column: span 2; }
+  .span-3 { grid-column: span 3; }
+
+  /* ── FIELDS ── */
   .field { display: flex; flex-direction: column; gap: 4px; }
-  .field label { font-family: var(--mono); font-size: 0.66rem; font-weight: 600; text-transform: uppercase; color: var(--label); }
-  
-  input, select, textarea {
-    font-family: var(--sans); font-size: 0.875rem; background: var(--surface);
-    border: 1px solid var(--border); padding: 6px 10px; border-radius: var(--radius); width: 100%;
-  }
+  .field label { font-family: var(--mono); font-size: 0.66rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--label); }
+  .field label .req { color: var(--error); margin-left: 3px; }
+  .field label .hint { font-family: var(--sans); font-size: 0.63rem; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-muted); margin-left: 5px; }
 
-  /* ── TREATMENT TABLE ── */
-  .flat-table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; }
-  .flat-table th { 
-    background: var(--accent-light); color: var(--accent); font-family: var(--mono); 
-    font-size: 0.65rem; text-transform: uppercase; text-align: left; padding: 10px; border: 1px solid var(--border);
+  input[type=text], input[type=date], input[type=number], select, textarea {
+    font-family: var(--sans); font-size: 0.875rem;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); padding: 6px 10px; border-radius: var(--radius);
+    width: 100%; transition: border-color 0.15s, box-shadow 0.15s;
+    appearance: none; -webkit-appearance: none;
   }
-  .flat-table td { padding: 8px; border: 1px solid var(--border); vertical-align: middle; }
-  .flat-table input, .flat-table select { border: 1px solid var(--border); padding: 4px; }
+  input[type=number] { font-family: var(--mono); }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b6560'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 11px center;
+    padding-right: 28px; cursor: pointer;
+  }
+  textarea { resize: vertical; min-height: 72px; }
 
-  /* ── BUTTONS & UI ── */
+  /* ── RADIO / CHECK ── */
+  .radio-group, .check-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .radio-opt, .check-opt {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 5px 10px; border-radius: var(--radius);
+    cursor: pointer; font-size: 0.83rem;
+    transition: all 0.12s; user-select: none;
+  }
+  .radio-opt:hover, .check-opt:hover { border-color: var(--accent); background: var(--accent-light); }
+  .radio-opt input, .check-opt input { accent-color: var(--accent); width: 13px; height: 13px; }
+  .radio-opt.selected, .check-opt.selected { border-color: var(--accent); background: var(--accent-light); font-weight: 500; }
+
+  /* ── SUBSECTION ── */
+  .subsection { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--border); }
+  .subsection-title { font-family: var(--mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+
+  /* ── SCORE BOX ── */
+  .score-visual { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 12px; }
+  .score-label { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+  .score-val { font-family: var(--mono); font-size: 1.5rem; font-weight: 600; color: var(--accent); margin-top: 2px; }
+
+  /* ── TREATMENT ROW ── */
+  .treatment-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+  .treatment-row-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .line-badge { font-family: var(--mono); font-size: 0.63rem; font-weight: 600; letter-spacing: 0.1em; color: #fff; background: var(--accent2); padding: 3px 7px; border-radius: 2px; }
+
   .btn-add {
-    display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono);
-    font-size: 0.68rem; font-weight: 600; color: var(--accent); background: var(--accent-light);
-    border: 1px dashed var(--accent); padding: 8px 14px; border-radius: var(--radius); cursor: pointer; margin-top: 10px;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-light);
+    border: 1px dashed var(--accent); padding: 8px 14px;
+    border-radius: var(--radius); cursor: pointer; margin-top: 10px;
+    transition: all 0.12s;
   }
-  .btn-save-all { background: var(--success); color: #fff; padding: 8px 18px; border: none; border-radius: var(--radius); cursor: pointer; font-family: var(--mono); font-size: 0.7rem; }
-  .btn-save-all:disabled { background: var(--border); cursor: not-allowed; }
-  
-  .autosave-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.3); transition: background 0.4s; }
-  .autosave-dot.saving { background: #7eb8e8; animation: pulse 1s infinite; }
-  .autosave-dot.saved { background: #4ade80; }
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .btn-add:hover { background: #d0dff0; }
+
+  /* ── FORM NAV ── */
+  .form-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border);
+    gap: 12px; flex-wrap: wrap;
+  }
+  .nav-left, .nav-right { display: flex; align-items: center; gap: 10px; }
+  .btn-prev, .btn-next, .btn-submit {
+    font-family: var(--mono); font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 10px 20px; border-radius: var(--radius);
+    cursor: pointer; border: none; transition: all 0.15s;
+  }
+  .btn-prev { background: var(--surface); border: 1px solid var(--border); color: var(--label); }
+  .btn-prev:hover { border-color: var(--border-strong); }
+  .btn-next { background: var(--accent); color: #fff; }
+  .btn-next:hover { background: #0f2a47; }
+  .btn-submit {
+    background: var(--success); color: #fff;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .btn-submit:hover { background: #1e4d38; }
+  .btn-submit:disabled { background: #a0b8a8; cursor: not-allowed; }
+  .page-indicator { font-family: var(--mono); font-size: 0.65rem; color: var(--text-muted); }
 
   /* ── TOAST ── */
-  .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; background: var(--accent); color: white; border-radius: 4px; font-family: var(--mono); font-size: 0.8rem; display: none; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .toast {
+    position: fixed; bottom: 28px; right: 28px;
+    padding: 12px 20px; border-radius: var(--radius);
+    font-family: var(--mono); font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.06em; color: #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s; z-index: 999; max-width: 320px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--error); }
+  .toast.loading { background: var(--accent); }
 
-  /* ── PASSWORD GATE ── */
-  .password-gate { position: fixed; inset: 0; z-index: 9999; background: var(--accent); display: flex; align-items: center; justify-content: center; }
-  .password-gate.hidden { display: none; }
+  /* ── SECTION SAVE STATUS ── */
+  .save-status {
+    font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.06em;
+    padding: 6px 12px; border-radius: var(--radius);
+  }
+  .save-status.ok { background: var(--success-light); color: var(--success); }
+  .save-status.err { background: var(--error-light); color: var(--error); }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar {
+    height: 3px; background: rgba(255,255,255,0.15);
+    position: absolute; bottom: 0; left: 0; right: 0;
+  }
+  .progress-fill {
+    height: 100%; background: #7eb8e8;
+    transition: width 0.4s ease;
+  }
+
+  /* ── PID STATUS INDICATOR ── */
+  .pid-status {
+    font-family: var(--mono); font-size: 0.65rem; font-weight: 600;
+    letter-spacing: 0.08em; padding: 3px 10px; border-radius: 20px;
+    display: none; align-items: center; gap: 5px;
+  }
+  .pid-status.new    { background: rgba(45,106,79,0.25); color: #7ee8b0; display: flex; }
+  .pid-status.exists { background: rgba(192,57,43,0.25); color: #f5b7b1; display: flex; }
+  .pid-status.checking { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); display: flex; }
 
   /* ── VERIFICATION CARD ── */
-  .verify-card { display: none; margin: 10px 40px; border-radius: var(--radius); border: 1px solid var(--border); background: #fff; }
-  .verify-card.show { display: block; border-top: 3px solid var(--accent2); }
-  .verify-card-header { padding: 10px; background: var(--error-light); font-family: var(--mono); font-size: 0.7rem; font-weight: 600; }
-  .verify-card-body { padding: 15px; }
-  .verify-confirm { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; cursor: pointer; padding: 8px; border: 1px solid var(--border); background: var(--bg); border-radius: var(--radius); }
-  .verify-confirm.checked { border-color: var(--success); background: var(--success-light); }
+  .verify-card {
+    display: none; margin-top: 14px;
+    border-radius: var(--radius); overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .verify-card.show { display: block; }
 
+  .verify-card-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; font-family: var(--mono);
+    font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em;
+  }
+  .verify-card.warning .verify-card-header { background: #fff8e6; color: #7a5c00; border-bottom: 1px solid #f0d080; }
+  .verify-card.info    .verify-card-header { background: #e8f0fb; color: #1a3a5c; border-bottom: 1px solid #c0d4f0; }
+  .verify-card.new-pid .verify-card-header { background: var(--success-light); color: var(--success); border-bottom: 1px solid #b0dfc5; }
+
+  .verify-card-icon { font-size: 0.9rem; }
+  .verify-card-body { padding: 12px 14px; background: #fff; }
+
+  .verify-profile {
+    display: flex; gap: 20px; flex-wrap: wrap;
+    font-family: var(--mono); font-size: 0.75rem; margin-bottom: 10px;
+  }
+  .verify-profile-item { display: flex; flex-direction: column; gap: 2px; }
+  .verify-profile-label { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+  .verify-profile-val { font-weight: 600; color: var(--text); }
+
+  .verify-subinfo {
+    font-size: 0.72rem; color: var(--text-muted); margin-bottom: 10px;
+    font-family: var(--mono);
+  }
+
+  .verify-confirm {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.8rem; cursor: pointer; user-select: none;
+    padding: 8px 12px; border-radius: var(--radius);
+    border: 1px solid var(--border); background: var(--bg);
+    transition: all 0.12s;
+  }
+  .verify-confirm:hover { border-color: var(--accent); background: var(--accent-light); }
+  .verify-confirm input { accent-color: var(--accent); width: 14px; height: 14px; }
+  .verify-confirm.checked { border-color: var(--success); background: var(--success-light); font-weight: 500; }
+
+  /* ── UNIVERSAL SAVE BUTTON ── */
+  .btn-save-all {
+    font-family: var(--mono); font-size: 0.7rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    background: #2d6a4f; color: #fff;
+    border: none; padding: 8px 18px; border-radius: var(--radius);
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 7px; white-space: nowrap;
+  }
+  .btn-save-all:hover { background: #1e4d38; }
+  .btn-save-all:disabled { background: #4a7a62; cursor: not-allowed; opacity: 0.6; }
+
+  /* ── SAVE PROGRESS ── */
+  .save-progress {
+    display: none; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 0.65rem; color: rgba(255,255,255,0.75);
+  }
+  .save-progress.show { display: flex; }
+  .save-progress-bar {
+    width: 100px; height: 4px; background: rgba(255,255,255,0.2);
+    border-radius: 2px; overflow: hidden;
+  }
+  .save-progress-fill {
+    height: 100%; background: #7eb8e8; border-radius: 2px;
+    transition: width 0.3s ease; width: 0%;
+  }
+
+  /* ── CONDITIONAL FIELDS ── */
+  .conditional-field {
+    transition: opacity 0.2s, max-height 0.25s;
+    overflow: hidden;
+    max-height: 200px;
+  }
+  .conditional-field.hidden {
+    opacity: 0.25;
+    pointer-events: none;
+  }
+
+  /* ── AUTO-SAVE INDICATOR ── */
+  .autosave-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transition: background 0.4s;
+    flex-shrink: 0;
+  }
+  .autosave-dot.pending  { background: #ffb300; animation: pulse-dot 1s infinite; }
+  .autosave-dot.saving   { background: #7eb8e8; animation: pulse-dot 0.6s infinite; }
+  .autosave-dot.saved    { background: #4ade80; animation: none; }
+  .autosave-dot.error    { background: #f87171; animation: none; }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── NEW PATIENT BUTTON ── */
+  .btn-new-patient {
+    font-family: var(--mono); font-size: 0.65rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    background: transparent; color: rgba(255,255,255,0.55);
+    border: 1px solid rgba(255,255,255,0.25); padding: 6px 12px;
+    border-radius: var(--radius); cursor: pointer; transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-new-patient:hover { color: #fff; border-color: rgba(255,255,255,0.6); }
+
+  /* ── LABS-SPECIFIC DENSITY ── */
+  #sec-3 .form-grid { gap: 8px 14px; }
+  #sec-3 input[type=number] { padding: 4px 8px; height: 30px; }
+  #sec-3 input[type=date]   { padding: 4px 8px; height: 30px; }
+  #sec-3 .radio-opt, #sec-3 .check-opt { padding: 3px 8px; font-size: 0.78rem; }
+
+  /* ── INPUT AFFIX (unit suffix inside input) ── */
+  .input-affix {
+    position: relative; display: inline-flex; align-items: center;
+  }
+  .input-affix input { padding-right: 38px; }
+  .input-affix .affix-unit {
+    position: absolute; right: 8px;
+    font-family: var(--mono); font-size: 0.6rem;
+    color: var(--text-muted); pointer-events: none;
+    white-space: nowrap;
+  }
+
+  /* ── INPUT GROUP (input + ceiling joined) ── */
+  .input-group {
+    display: flex; align-items: stretch;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; height: 30px;
+  }
+  .input-group input[type=number] {
+    border: none; border-radius: 0; flex: 1;
+    height: 100%; padding: 4px 8px; min-width: 0;
+    box-shadow: none;
+  }
+  .input-group input[type=number]:focus {
+    outline: none; box-shadow: none;
+    border-color: transparent;
+  }
+  .input-group:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+  .input-group .group-addon {
+    display: flex; align-items: center;
+    padding: 0 8px; background: var(--bg);
+    border-left: 1px solid var(--border);
+    font-family: var(--mono); font-size: 0.65rem;
+    color: var(--text-muted); white-space: nowrap;
+    cursor: pointer; user-select: none; gap: 4px;
+  }
+  .input-group .group-addon input[type=checkbox] {
+    accent-color: var(--accent); margin: 0;
+  }
+  .input-group .group-addon.checked {
+    background: var(--error-light); color: var(--error);
+    border-color: var(--error);
+  }
+
+  /* ── IIF QUICK BUTTONS ── */
+  .iif-quick {
+    font-family: var(--mono); font-size: 0.68rem; font-weight: 600;
+    padding: 5px 10px; border-radius: var(--radius); cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--label); transition: all 0.12s;
+  }
+  .iif-quick:hover { border-color: var(--accent); background: var(--accent-light); }
+  .iif-quick.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); font-weight: 700; }
+
+  /* ── PASSWORD GATE ── */
+  .password-gate {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 0;
+  }
+  .password-gate.hidden { display: none; }
+  .password-box {
+    background: #fff; border-radius: 6px;
+    padding: 36px 40px; width: 340px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .password-box h2 {
+    font-family: var(--mono); font-size: 0.85rem;
+    font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .password-box p {
+    font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;
+  }
+  .password-box input {
+    font-family: var(--mono); font-size: 1rem;
+    border: 2px solid var(--border); border-radius: var(--radius);
+    padding: 10px 14px; width: 100%; letter-spacing: 0.1em;
+  }
+  .password-box input:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+  .password-box button {
+    font-family: var(--mono); font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    background: var(--accent); color: #fff;
+    border: none; padding: 11px; border-radius: var(--radius);
+    cursor: pointer; transition: background 0.15s;
+  }
+  .password-box button:hover { background: #0f2a47; }
+  .password-error {
+    font-family: var(--mono); font-size: 0.68rem;
+    color: var(--error); display: none; text-align: center;
+  }
+  .password-error.show { display: block; }
+
+  /* ── COMORBIDITY CHIPS ── */
+  .comorb-chip-group { display: flex; gap: 7px; flex-wrap: wrap; }
+  .comorb-chip {
+    font-family: var(--sans); font-size: 0.82rem;
+    padding: 5px 12px; border-radius: 20px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-muted); cursor: pointer;
+    transition: all 0.12s; user-select: none;
+  }
+  .comorb-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .comorb-chip.active {
+    background: var(--accent); border-color: var(--accent);
+    color: #fff; font-weight: 500;
+  }
+
+  @media (max-width: 640px) {
+    .header, .main { padding-left: 16px; padding-right: 16px; }
+    .section-nav { padding: 0 16px; }
+    .form-grid, .form-grid.cols-3 { grid-template-columns: 1fr; }
+    .span-2, .span-3 { grid-column: span 1; }
+    .header-bottom { flex-direction: column; align-items: flex-start; gap: 10px; }
+
+    /* Treatment lines: collapse 3-col to 1-col */
+    .treatment-line-item > div[style*="grid-template-columns"] {
+      grid-template-columns: 1fr !important;
+    }
+
+    /* Severity cards: collapse to 1-col, calculated panel moves below */
+    .severity-card > div[style*="grid-template-columns"] {
+      grid-template-columns: 1fr !important;
+    }
+    .severity-card > div > div[style*="grid-column:span 2"] {
+      grid-column: span 1 !important;
+    }
+
+    /* Comorbidities: 4-col → 2-col on mobile */
+    div[style*="repeat(4,1fr)"] {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* Outcomes & Labs inline rows: wrap naturally */
+    div[style*="align-items:flex-end"] {
+      flex-wrap: wrap !important;
+    }
+  }
 </style>
 </head>
 <body>
 
+<!-- ══ PASSWORD GATE ══ -->
 <div class="password-gate" id="password-gate">
-  <div class="password-box" style="background:#fff; padding:36px; border-radius:6px; width:340px; text-align:center;">
-    <h2 style="margin-bottom:15px; font-family:var(--mono);">BP Registry Access</h2>
-    <input type="password" id="password-input" placeholder="Password" style="margin-bottom:15px;" onkeydown="if(event.key==='Enter') checkPassword()">
-    <button class="btn-save-all" onclick="checkPassword()" style="width:100%">Enter</button>
+  <div class="password-box">
+    <h2>BP Registry</h2>
+    <p>Enter the access password to continue. Contact the registry administrator if you don't have it.</p>
+    <input type="password" id="password-input" placeholder="Password"
+      onkeydown="if(event.key==='Enter') checkPassword()">
+    <button onclick="checkPassword()">→ Enter</button>
+    <div class="password-error" id="password-error">Incorrect password — try again</div>
   </div>
 </div>
 
-<div class="header">
+<!-- ══ HEADER ══ -->
+<div class="header" style="position:relative">
   <div class="header-top">
     <h1>Bullous Pemphigoid Registry</h1>
-    <span class="header-subtitle">De-identified · Course Summary v5.0</span>
+    <span class="header-subtitle">De-identified · EMR Extraction Form · v3.0</span>
   </div>
   <div class="header-bottom">
     <div class="pid-bar">
-      <input type="text" id="global-pid" placeholder="BP-XXXX" oninput="syncPID(this.value)" onblur="onPIDBlur(this.value)">
-      <span id="pid-status" style="font-family:var(--mono); font-size:0.65rem; margin-left:8px;"></span>
+      <label>BP-ID</label>
+      <input type="text" id="global-pid" placeholder="e.g. 1 or BP-0001"
+        oninput="syncPID(this.value)"
+        onkeydown="if(event.key==='Enter'){this.blur();}"
+        onblur="onPIDBlur(this.value)">
+      <span class="pid-status checking" id="pid-status"></span>
     </div>
     <div class="collector-bar">
-      <input type="text" id="collector-name" placeholder="Collector Initials">
+      <label>Collector</label>
+      <input type="text" id="collector-name" placeholder="Your initials / name">
     </div>
     <div style="margin-left:auto; display:flex; align-items:center; gap:12px;">
-      <div class="autosave-dot" id="autosave-dot"></div>
-      <button class="btn-save-all" id="btn-save-all" onclick="saveAllSections()">↑ Save All Sections</button>
+      <div class="save-progress" id="save-progress">
+        <span id="save-progress-text">Saving…</span>
+        <div class="save-progress-bar"><div class="save-progress-fill" id="save-progress-fill"></div></div>
+      </div>
+      <button class="btn-new-patient" onclick="newPatient()">↺ New Patient</button>
+      <div class="autosave-dot" id="autosave-dot" title="Auto-save status"></div>
+      <button class="btn-save-all" id="btn-save-all" onclick="saveAllSections()">↑ Save Patient</button>
     </div>
   </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:12.5%"></div></div>
 </div>
 
-<div id="verify-card" class="verify-card">
-  <div class="verify-card-header">⚠ Existing Patient Found — Verify Profile</div>
+<!-- ══ VERIFICATION CARD ══ -->
+<div id="verify-card" class="verify-card" style="margin:0 40px; border-radius:0 0 4px 4px; border-top:none;">
+  <div class="verify-card-header">
+    <span class="verify-card-icon" id="verify-icon">⚠</span>
+    <span id="verify-title">Existing Patient Found</span>
+  </div>
   <div class="verify-card-body" id="verify-body"></div>
 </div>
 
+<!-- ══ NAV TABS ══ -->
 <div class="section-nav">
-  <div class="nav-tab active" onclick="showSection(0)">1 · Baseline <span class="tab-dot"></span></div>
-  <div class="nav-tab" onclick="showSection(1)">2 · Phenotype <span class="tab-dot"></span></div>
-  <div class="nav-tab" onclick="showSection(2)">3 · Severity & Course <span class="tab-dot"></span></div>
-  <div class="nav-tab" onclick="showSection(3)">4 · Labs <span class="tab-dot"></span></div>
-  <div class="nav-tab" onclick="showSection(4)">5 · Comorbidities <span class="tab-dot"></span></div>
-  <div class="nav-tab" onclick="showSection(5)">6 · Drug Triggers <span class="tab-dot"></span></div>
-  <div class="nav-tab" onclick="showSection(6)">7 · Treatment <span class="tab-dot"></span></div>
-  <div class="nav-tab" onclick="showSection(7)">8 · Outcomes <span class="tab-dot"></span></div>
+  <div class="nav-tab active" onclick="showSection(0)">1 · Baseline <span class="tick">✓</span><span class="tab-dot"></span></div>
+  <div class="nav-tab" onclick="showSection(1)">2 · Phenotype <span class="tick">✓</span><span class="tab-dot"></span></div>
+  <div class="nav-tab" onclick="showSection(2)">3 · Severity <span class="tick">✓</span><span class="tab-dot"></span></div>
+  <div class="nav-tab" onclick="showSection(3)">4 · Labs <span class="tick">✓</span><span class="tab-dot"></span></div>
+  <div class="nav-tab" onclick="showSection(4)">5 · Drug Triggers <span class="tick">✓</span><span class="tab-dot"></span></div>
+  <div class="nav-tab" onclick="showSection(5)">6 · Treatment <span class="tick">✓</span><span class="tab-dot"></span></div>
+  <div class="nav-tab" onclick="showSection(6)">7 · Outcomes <span class="tick">✓</span><span class="tab-dot"></span></div>
 </div>
 
 <div class="main">
 
-  <div class="section active" id="sec-0">
-    <div class="section-header"><span class="section-num">01</span><span class="section-title">Patient Baseline</span></div>
-    <div class="form-grid">
-      <div class="field"><label>BP-ID</label><input type="text" class="pid-field" disabled></div>
-      <div class="field"><label>Sex *</label>
+<!-- ══════════ 1. BASELINE ══════════ -->
+<div class="section active" id="sec-0">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">Patient Baseline</span>
+    <span class="section-note">→ Patient_Baseline + Comorbidities</span>
+  </div>
+  <div class="form-grid">
+    <div class="field">
+      <label>BP-ID <span class="req">*</span></label>
+      <input type="text" id="pid-baseline" class="pid-field" placeholder="BP-0001">
+    </div>
+    <div class="field">
+      <label>Sex <span class="req">*</span></label>
+      <div class="radio-group">
+        <label class="radio-opt"><input type="radio" name="sex" value="M"> Male</label>
+        <label class="radio-opt"><input type="radio" name="sex" value="F"> Female</label>
+        <label class="radio-opt"><input type="radio" name="sex" value="Other"> Other</label>
+      </div>
+    </div>
+    <div class="field">
+      <label>Age at Diagnosis <span class="req">*</span> <span class="hint">years — do not enter DOB</span></label>
+      <input type="number" id="age-dx" placeholder="e.g. 74" min="0" max="120">
+    </div>
+    <div class="field">
+      <label>Date of Diagnosis <span class="req">*</span></label>
+      <input type="date" id="dx-date" onchange="onDxDateChange()">
+    </div>
+    <div class="field">
+      <label>Date of First Symptoms</label>
+      <input type="date" id="symptoms-date" onchange="calcSymptomsToDx()">
+    </div>
+    <div class="score-visual" style="display:flex;flex-direction:column;justify-content:center;">
+      <div class="score-label">Symptom→Diagnosis (days)</div>
+      <div class="score-val" id="symptoms-to-dx-display" style="font-size:1rem;">—</div>
+      <input type="hidden" id="symptoms-to-dx-days">
+    </div>
+    <div class="field">
+      <label>Ethnicity</label>
+      <select id="ethnicity">
+        <option value="">— Select —</option>
+        <option>Jewish Israeli</option>
+        <option>Arab Israeli</option>
+        <option>Ashkenazi Jewish</option>
+        <option>Sephardi Jewish</option>
+        <option>Other</option>
+        <option>Unknown</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Frailty Score <span class="hint">Clinical Frailty Scale 1–9</span></label>
+      <select id="frailty">
+        <option value="">— Select —</option>
+        <option value="1">1 — Very fit</option>
+        <option value="2">2 — Well</option>
+        <option value="3">3 — Managing well</option>
+        <option value="4">4 — Vulnerable</option>
+        <option value="5">5 — Mildly frail</option>
+        <option value="6">6 — Moderately frail</option>
+        <option value="7">7 — Severely frail</option>
+        <option value="8">8 — Very severely frail</option>
+        <option value="9">9 — Terminally ill</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Date of Death <span class="hint">if applicable</span></label>
+      <input type="date" id="date-of-death">
+    </div>
+    <div class="field">
+      <label>Cause of Death</label>
+      <select id="cause-death-baseline">
+        <option value="">—</option>
+        <option>Disease-related (BP)</option>
+        <option>Treatment complication</option>
+        <option>Infection / Sepsis</option>
+        <option>Cardiovascular</option>
+        <option>Malignancy</option>
+        <option>Other</option>
+        <option>Unknown</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- COMORBIDITIES -->
+  <div class="subsection" style="margin-top:18px;">
+    <div class="subsection-title">Comorbidities <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);font-size:0.7rem;">(press = Yes, unpressed = No)</span></div>
+
+    <!-- Antipsychotic — YES/NO radio, not a chip -->
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;flex-wrap:wrap;">
+      <div class="field" style="margin:0;">
+        <label>Antipsychotic Treatment</label>
         <div class="radio-group">
-          <label class="radio-opt"><input type="radio" name="sex" value="M"> Male</label>
-          <label class="radio-opt"><input type="radio" name="sex" value="F"> Female</label>
+          <label class="radio-opt"><input type="radio" name="antipsych" value="Yes"> Yes</label>
+          <label class="radio-opt"><input type="radio" name="antipsych" value="No"> No</label>
         </div>
       </div>
-      <div class="field"><label>Age at Diagnosis</label><input type="number" id="age-dx"></div>
-      <div class="field"><label>Date of Diagnosis *</label><input type="date" id="dx-date" onchange="updateCourseCalculations()"></div>
-      <div class="field"><label>Ethnicity</label>
-        <select id="ethnicity">
-          <option value="">— Select —</option>
-          <option>Jewish Israeli</option><option>Arab Israeli</option><option>Ashkenazi Jewish</option>
-          <option>Sephardi Jewish</option><option>Other</option><option>Unknown</option>
-        </select>
+    </div>
+
+    <!-- Neurological chips -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:12px;">
+      <div style="font-family:var(--mono);font-size:0.62rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Neurological</div>
+      <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+        <div class="comorb-chip-group" style="flex:1;">
+          <button type="button" class="comorb-chip" data-name="neuro" data-value="Dementia"   onclick="toggleComorbChip(this)">Dementia</button>
+          <button type="button" class="comorb-chip" data-name="neuro" data-value="Parkinsons" onclick="toggleComorbChip(this)">Parkinson's</button>
+          <button type="button" class="comorb-chip" data-name="neuro" data-value="Stroke"     onclick="toggleComorbChip(this)">Stroke</button>
+          <button type="button" class="comorb-chip" data-name="neuro" data-value="Epilepsy"   onclick="toggleComorbChip(this)">Epilepsy</button>
+          <button type="button" class="comorb-chip" data-name="neuro" data-value="MS"         onclick="toggleComorbChip(this)">MS</button>
+        </div>
+        <div class="field" id="cond-neuro-year" style="min-width:130px;margin:0;visibility:hidden;">
+          <label>Year of Neurological Dx</label>
+          <input type="number" id="neuro-year" min="1950" max="2030" placeholder="e.g. 2015">
+        </div>
+        <input type="hidden" id="comorbidity-neuro">
       </div>
-      <div class="field"><label>Frailty Score (CFS 1-9)</label><input type="number" id="frailty" min="1" max="9"></div>
-      <div class="field"><label>Date of First Symptoms</label><input type="date" id="symptoms-date"></div>
+    </div>
+
+    <!-- General medical chips -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;">
+      <div style="font-family:var(--mono);font-size:0.62rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">General Medical</div>
+      <div class="comorb-chip-group">
+        <button type="button" class="comorb-chip" data-name="dm"         onclick="toggleComorbChip(this)">Diabetes</button>
+        <button type="button" class="comorb-chip" data-name="htn"        onclick="toggleComorbChip(this)">Hypertension</button>
+        <button type="button" class="comorb-chip" data-name="ihd"        onclick="toggleComorbChip(this)">IHD</button>
+        <button type="button" class="comorb-chip" data-name="malig"      onclick="toggleComorbChip(this)">Active Malignancy</button>
+        <button type="button" class="comorb-chip" data-name="autoimm"    onclick="toggleComorbChip(this)">Autoimmune Disease</button>
+        <button type="button" class="comorb-chip" data-name="ckd"        onclick="toggleComorbChip(this)">CKD</button>
+        <button type="button" class="comorb-chip" data-name="smoker"     onclick="toggleComorbChip(this)">Smoker</button>
+        <button type="button" class="comorb-chip" data-name="depression" onclick="toggleComorbChip(this)">Depression</button>
+      </div>
+      <!-- Hidden inputs storing Yes/No values -->
+      <input type="hidden" id="comorbidity-dm"         value="No">
+      <input type="hidden" id="comorbidity-htn"        value="No">
+      <input type="hidden" id="comorbidity-ihd"        value="No">
+      <input type="hidden" id="comorbidity-malig"      value="No">
+      <input type="hidden" id="comorbidity-autoimm"    value="No">
+      <input type="hidden" id="comorbidity-ckd"        value="No">
+      <input type="hidden" id="comorbidity-smoker"     value="No">
+      <input type="hidden" id="comorbidity-depression" value="No">
     </div>
   </div>
 
-  <div class="section" id="sec-1">
-    <div class="section-header"><span class="section-num">02</span><span class="section-title">Clinical Phenotype</span></div>
-    <div class="form-grid">
-      <div class="field span-2"><label>Clinical Variant</label>
-        <div class="check-group">
-          <label class="check-opt"><input type="checkbox" name="variant" value="Classic BP"> Classic BP</label>
-          <label class="check-opt"><input type="checkbox" name="variant" value="Vegetating BP"> Vegetating BP</label>
-          <label class="check-opt"><input type="checkbox" name="variant" value="Nodular BP"> Nodular BP</label>
-          <label class="check-opt"><input type="checkbox" name="variant" value="Drug-induced BP"> Drug-induced BP</label>
-          <label class="check-opt"><input type="checkbox" name="variant" value="Other"> Other</label>
-        </div>
-      </div>
-      <div class="field"><label>Mucosal Involvement</label>
-        <select id="mucosal"><option>No</option><option>Yes</option><option>Unknown</option></select>
-      </div>
-      <div class="field"><label>Anatomic Distribution</label>
-        <div class="check-group">
-          <label class="check-opt"><input type="checkbox" name="dist" value="Trunk"> Trunk</label>
-          <label class="check-opt"><input type="checkbox" name="dist" value="Upper limbs"> Upper limbs</label>
-          <label class="check-opt"><input type="checkbox" name="dist" value="Lower limbs"> Lower limbs</label>
-          <label class="check-opt"><input type="checkbox" name="dist" value="Hands"> Hands</label>
-          <label class="check-opt"><input type="checkbox" name="dist" value="Feet"> Feet</label>
-        </div>
-      </div>
-      <div class="field"><label>Pruritus Present</label>
-        <div class="radio-group">
-          <label class="radio-opt"><input type="radio" name="pruritus-present" value="Yes"> Yes</label>
-          <label class="radio-opt"><input type="radio" name="pruritus-present" value="No"> No</label>
-        </div>
-      </div>
+  <div class="form-nav">
+    <div class="nav-left"></div>
+    <span class="page-indicator">1 / 7</span>
+    <div class="nav-right">
+      <button class="btn-next" onclick="showSection(1)">Next →</button>
     </div>
   </div>
-
-  <div class="section" id="sec-2">
-    <div class="section-header"><span class="section-num">03</span><span class="section-title">Severity & Course Summary</span></div>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-      <div class="score-box" style="background:var(--accent-light); padding:15px; border-radius:var(--radius);">
-        <div class="subsection-title">At Diagnosis</div>
-        <div class="field"><label>Pruritus</label>
-          <select id="sev-dx-pruritus"><option>None</option><option>Mild</option><option>Moderate</option><option>Severe</option></select>
-        </div>
-        <div class="field" style="margin-top:10px;"><label>Lesion Distribution</label>
-          <select id="sev-dx-dist"><option>Localized</option><option>Widespread</option><option>Mucosal only</option><option>Skin + Mucosal</option></select>
-        </div>
-      </div>
-      <div class="score-box" style="background:var(--error-light); padding:15px; border-radius:var(--radius);">
-        <div class="subsection-title">Worst Presentation</div>
-        <div class="field"><label>Pruritus</label>
-          <select id="sev-worst-pruritus"><option>None</option><option>Mild</option><option>Moderate</option><option>Severe</option></select>
-        </div>
-        <div class="field" style="margin-top:10px;"><label>Lesion Distribution</label>
-          <select id="sev-worst-dist"><option>Localized</option><option>Widespread</option><option>Mucosal only</option><option>Skin + Mucosal</option></select>
-        </div>
-        <div class="field" style="margin-top:10px;"><label>Date of Worst</label><input type="month" id="sev-worst-date" onchange="updateCourseCalculations()"></div>
-      </div>
-    </div>
-    <div class="subsection">
-      <div class="subsection-title">Raw Course Counts</div>
-      <div class="form-grid" style="grid-template-columns: repeat(4, 1fr);">
-        <div class="field"><label>Encounters Y1</label><input type="number" id="enc-y1"></div>
-        <div class="field"><label>Encounters Y3</label><input type="number" id="enc-y3"></div>
-        <div class="field"><label>Encounters Total</label><input type="number" id="enc-total"></div>
-        <div class="field"><label>Hospitalizations</label><input type="number" id="hosp-total"></div>
-        <div class="field"><label>Visits: Relapse</label><input type="number" id="vis-rel"></div>
-        <div class="field"><label>Visits: Remission</label><input type="number" id="vis-rem"></div>
-        <div class="field"><label>Visits: Partial</label><input type="number" id="vis-par"></div>
-        <div class="field"><label>N Relapses</label><input type="number" id="n-relapses"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="section" id="sec-3">
-    <div class="section-header"><span class="section-num">04</span><span class="section-title">Diagnostics & Labs</span></div>
-    <div class="form-grid">
-      <div class="field"><label>Year of Labs</label><input type="number" id="lab-year"></div>
-      <div class="field"><label>DIF IgG</label><select id="dif-igg"><option>ND</option><option>Positive</option><option>Negative</option></select></div>
-      <div class="field"><label>DIF C3</label><select id="dif-c3"><option>ND</option><option>Positive</option><option>Negative</option></select></div>
-      <div class="field"><label>BP180 IgG (U/mL)</label><input type="number" id="bp180"></div>
-      <div class="field"><label>BP230 IgG (U/mL)</label><input type="number" id="bp230"></div>
-      <div class="field"><label>Total IgE at Dx</label><input type="number" id="total-ige"></div>
-      <div class="field"><label>Peak Eosinophils (c/µL)</label><input type="number" id="peak-eos"></div>
-    </div>
-  </div>
-
-  <div class="section" id="sec-4">
-    <div class="section-header"><span class="section-num">05</span><span class="section-title">Comorbidities</span></div>
-    <div class="form-grid">
-      <div class="field"><label>Diabetes</label><select id="dm"><option>No</option><option>Yes</option></select></div>
-      <div class="field"><label>Hypertension</label><select id="htn"><option>No</option><option>Yes</option></select></div>
-      <div class="field"><label>IHD</label><select id="ihd"><option>No</option><option>Yes</option></select></div>
-      <div class="field"><label>Dementia/Stroke</label><select id="neuro"><option>No</option><option>Yes</option></select></div>
-      <div class="field"><label>Depression *</label>
-        <div class="radio-group">
-          <label class="radio-opt"><input type="radio" name="depression" value="Yes"> Yes</label>
-          <label class="radio-opt"><input type="radio" name="depression" value="No"> No</label>
-        </div>
-      </div>
-      <div class="field"><label>Smoker</label><select id="smoker"><option>No</option><option>Yes</option></select></div>
-    </div>
-  </div>
-
-  <div class="section" id="sec-5">
-    <div class="section-header"><span class="section-num">06</span><span class="section-title">Drug Triggers</span></div>
-    <div id="drug-trigger-cards"></div>
-    <button class="btn-add" onclick="addDrugCard()">＋ Add Suspected Drug</button>
-  </div>
-
-  <div class="section" id="sec-6">
-    <div class="section-header"><span class="section-num">07</span><span class="section-title">Treatment Courses</span></div>
-    <table class="flat-table">
-      <thead>
-        <tr>
-          <th>Drug Name</th><th>Start (M/YYYY)</th><th>End (M/YYYY)</th><th>Response</th><th>DC Reason</th><th></th>
-        </tr>
-      </thead>
-      <tbody id="treatment-table-body"></tbody>
-    </table>
-    <button class="btn-add" onclick="addTreatmentRow()">＋ Add Drug</button>
-  </div>
-
-  <div class="section" id="sec-7">
-    <div class="section-header"><span class="section-num">08</span><span class="section-title">Outcomes Track</span></div>
-    <div class="subsection">
-      <div class="subsection-title">Remission Track</div>
-      <div class="form-grid">
-        <div class="field"><label>Complete Remission?</label><select id="out-cr"><option>No</option><option>Yes</option><option>Unknown</option></select></div>
-        <div class="field"><label>Status</label><select id="out-rem-status"><option>—</option><option>Off treatment</option><option>On minimal therapy</option></select></div>
-        <div class="field"><label>Date of Remission</label><input type="month" id="out-rem-date" onchange="updateCourseCalculations()"></div>
-        <div class="field"><label>Months to Remission (Auto)</label><input type="text" id="out-rem-months" readonly></div>
-      </div>
-      <div class="check-group" style="margin-top:10px;">
-        <label class="check-opt"><input type="checkbox" id="out-partial"> Partial Remission</label>
-        <label class="check-opt"><input type="checkbox" id="out-dependent"> Steroid Dependent</label>
-        <label class="check-opt"><input type="checkbox" id="out-nonresponder"> Non-Responder</label>
-      </div>
-    </div>
-    <div class="subsection">
-      <div class="subsection-title">Relapse Track</div>
-      <div class="form-grid">
-        <div class="field"><label>Relapse Occurred?</label><select id="out-rel-occ"><option>No</option><option>Yes</option></select></div>
-        <div class="field"><label>Relapse Context</label><select id="out-rel-ctx"><option>—</option><option>While on therapy</option><option>Off therapy</option><option>Both</option></select></div>
-        <div class="field"><label>Date of Relapse</label><input type="month" id="out-rel-date" onchange="updateCourseCalculations()"></div>
-        <div class="field"><label>Months to Relapse (Auto)</label><input type="text" id="out-rel-months" readonly></div>
-      </div>
-    </div>
-    <div class="subsection">
-      <div class="subsection-title">Systemic Treatments Checklist</div>
-      <div id="treatment-checklist" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;"></div>
-      <div style="display:flex; gap:10px;">
-        <input type="text" id="manual-drug" placeholder="Manual add (e.g. IVIG)" style="max-width:250px;">
-        <button class="btn-add" onclick="addManualDrug()" style="margin-top:0;">Add</button>
-      </div>
-      <input type="hidden" id="final-drug-list">
-    </div>
-  </div>
-
 </div>
 
+<!-- ══════════ 2. CLINICAL PHENOTYPE ══════════ -->
+<div class="section" id="sec-1">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">Clinical Phenotype</span>
+    <span class="section-note">→ Clinical_Phenotype</span>
+  </div>
+  <div class="form-grid">
+    <div class="field">
+      <label>BP-ID <span class="req">*</span></label>
+      <input type="text" class="pid-field" placeholder="BP-0001">
+    </div>
+    <div class="field span-2">
+      <label>Clinical Variant <span class="req">*</span> <span class="hint">check all that apply</span></label>
+      <div class="check-group">
+        <label class="check-opt"><input type="checkbox" name="clinical-variant" value="Classic BP"> Classic BP</label>
+        <label class="check-opt"><input type="checkbox" name="clinical-variant" value="Vegetating BP"> Vegetating BP</label>
+        <label class="check-opt"><input type="checkbox" name="clinical-variant" value="Vesicular BP"> Vesicular BP</label>
+        <label class="check-opt"><input type="checkbox" name="clinical-variant" value="Dyshidrosiform BP"> Dyshidrosiform BP</label>
+        <label class="check-opt"><input type="checkbox" name="clinical-variant" value="Nodular BP"> Nodular BP</label>
+        <label class="check-opt"><input type="checkbox" name="clinical-variant" value="Eczematous BP"> Eczematous BP</label>
+        <label class="check-opt"><input type="checkbox" name="clinical-variant" value="Urticarial BP"> Urticarial BP</label>
+        <label class="check-opt"><input type="checkbox" name="clinical-variant" value="Drug-induced BP"> Drug-induced BP</label>
+        <label class="check-opt" id="variant-other-opt"><input type="checkbox" name="clinical-variant" value="Other" onchange="onVariantOtherChange(this)"> Other</label>
+      </div>
+      <input type="text" id="variant-other-text" placeholder="Specify other variant…"
+        style="margin-top:8px; display:none;"
+        oninput="syncVariantOther()">
+    </div>
+    <div class="field">
+      <label>Mucosal Involvement</label>
+      <div class="radio-group">
+        <label class="radio-opt"><input type="radio" name="mucosal" value="Yes"> Yes</label>
+        <label class="radio-opt"><input type="radio" name="mucosal" value="No"> No</label>
+        <label class="radio-opt"><input type="radio" name="mucosal" value="Unknown"> Unknown</label>
+      </div>
+    </div>
+    <div class="field">
+      <label>Pruritus Present</label>
+      <div class="radio-group">
+        <label class="radio-opt"><input type="radio" name="pruritus-present" value="Yes"> Yes</label>
+        <label class="radio-opt"><input type="radio" name="pruritus-present" value="No"> No</label>
+      </div>
+    </div>
+    <div class="field span-2">
+      <label>Anatomic Distribution <span class="hint">check all that apply</span></label>
+      <div class="check-group">
+        <label class="check-opt"><input type="checkbox" name="dist" value="Trunk"> Trunk</label>
+        <label class="check-opt"><input type="checkbox" name="dist" value="Upper limbs"> Upper limbs</label>
+        <label class="check-opt"><input type="checkbox" name="dist" value="Lower limbs"> Lower limbs</label>
+        <label class="check-opt"><input type="checkbox" name="dist" value="Hands"> Hands</label>
+        <label class="check-opt"><input type="checkbox" name="dist" value="Feet"> Feet</label>
+        <label class="check-opt"><input type="checkbox" name="dist" value="Flexural"> Flexural</label>
+        <label class="check-opt"><input type="checkbox" name="dist" value="Axillae"> Axillae</label>
+        <label class="check-opt"><input type="checkbox" name="dist" value="Groin"> Groin</label>
+        <label class="check-opt"><input type="checkbox" name="dist" value="Face/Neck"> Face/Neck</label>
+        <label class="check-opt"><input type="checkbox" name="dist" value="Oral mucosa"> Oral mucosa</label>
+        <label class="check-opt"><input type="checkbox" name="dist" value="Genital mucosa"> Genital mucosa</label>
+        <label class="check-opt"><input type="checkbox" name="dist" value="Ocular"> Ocular</label>
+        <label class="check-opt"><input type="checkbox" name="dist" value="Generalized"> Generalized</label>
+      </div>
+    </div>
+  </div>
+  <div class="form-nav">
+    <div class="nav-left"><button class="btn-prev" onclick="showSection(0)">← Back</button></div>
+    <span class="page-indicator">2 / 8</span>
+    <div class="nav-right">
+      <button class="btn-next" onclick="showSection(2)">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ 3. SEVERITY & COURSE ══════════ -->
+<div class="section" id="sec-2">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">Severity &amp; Course</span>
+    <span class="section-note">→ Disease_Severity</span>
+  </div>
+
+  <div class="form-grid" style="margin-bottom:14px;">
+    <div class="field">
+      <label>BP-ID <span class="req">*</span></label>
+      <input type="text" class="pid-field" placeholder="BP-0001">
+    </div>
+  </div>
+
+  <!-- OBSERVATION WINDOW -->
+  <div class="subsection" style="background:var(--surface);border:1px solid var(--border);padding:12px;border-radius:var(--radius);margin-bottom:16px;">
+    <div class="subsection-title">Observation Window</div>
+    <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;">
+      <div class="field">
+        <label>Date of Diagnosis <span class="hint">mirrors Baseline</span></label>
+        <input type="date" id="sev-dx-date" disabled style="background:var(--bg);color:var(--text-muted);">
+      </div>
+      <div class="field">
+        <label>Date of Last Follow-up</label>
+        <input type="date" id="sev-followup-date" oninput="calcSevFollowup()">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px;padding-bottom:2px;">
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">Total follow-up</span>
+        <span style="font-family:var(--mono);font-size:1.1rem;font-weight:600;color:var(--accent);" id="sev-followup-display">—</span>
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">years</span>
+        <input type="hidden" id="sev-followup-years">
+      </div>
+    </div>
+  </div>
+
+  <!-- PRESENTATION SNAPSHOTS -->
+  <div class="subsection">
+    <div class="subsection-title">Presentation Snapshots</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+      <!-- At Diagnosis -->
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#378ADD;display:inline-block;flex-shrink:0;"></span>
+          <span style="font-family:var(--mono);font-size:0.63rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">At Diagnosis</span>
+        </div>
+        <div class="field" style="margin-bottom:10px;">
+          <label>Pruritus</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="pruritus-dx" value="None"> None</label>
+            <label class="radio-opt"><input type="radio" name="pruritus-dx" value="Mild"> Mild</label>
+            <label class="radio-opt"><input type="radio" name="pruritus-dx" value="Moderate"> Moderate</label>
+            <label class="radio-opt"><input type="radio" name="pruritus-dx" value="Severe"> Severe</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Lesion Distribution</label>
+          <select id="dist-dx">
+            <option value="">— Select —</option>
+            <option>Localized</option>
+            <option>Widespread (&gt;3 areas)</option>
+            <option>Mucosal only</option>
+            <option>Skin + mucosal</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Worst Recorded -->
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#E24B4A;display:inline-block;flex-shrink:0;"></span>
+          <span style="font-family:var(--mono);font-size:0.63rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">Worst Recorded Presentation</span>
+        </div>
+        <div class="field" style="margin-bottom:10px;">
+          <label>Pruritus</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="pruritus-worst" value="None"> None</label>
+            <label class="radio-opt"><input type="radio" name="pruritus-worst" value="Mild"> Mild</label>
+            <label class="radio-opt"><input type="radio" name="pruritus-worst" value="Moderate"> Moderate</label>
+            <label class="radio-opt"><input type="radio" name="pruritus-worst" value="Severe"> Severe</label>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:10px;">
+          <label>Lesion Distribution</label>
+          <select id="dist-worst">
+            <option value="">— Select —</option>
+            <option>Localized</option>
+            <option>Widespread (&gt;3 areas)</option>
+            <option>Mucosal only</option>
+            <option>Skin + mucosal</option>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:6px;">
+          <label>Date of Worst Presentation</label>
+          <input type="date" id="date-worst" oninput="calcDxToWorst()">
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;">
+          <div style="font-family:var(--mono);font-size:0.6rem;color:var(--text-muted);">Dx → Worst presentation</div>
+          <div style="font-family:var(--mono);font-size:1rem;font-weight:600;color:var(--accent);" id="dx-to-worst-display">—</div>
+          <div style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">months</div>
+          <input type="hidden" id="dx-to-worst-months">
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DISEASE COURSE RAW COUNTS -->
+  <div class="subsection">
+    <div class="subsection-title">Disease Course — Raw Counts</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;">
+      <div class="field">
+        <label>Encounters — Y1</label>
+        <input type="number" id="enc-y1" min="0" placeholder="e.g. 12" oninput="calcBurdens()">
+      </div>
+      <div class="field">
+        <label>Encounters — Y3 <span class="hint">if ≥3yr FU</span></label>
+        <input type="number" id="enc-y3" min="0" placeholder="e.g. 22" oninput="calcBurdens()">
+      </div>
+      <div class="field">
+        <label>Total Encounters</label>
+        <input type="number" id="enc-total" min="0" placeholder="e.g. 38" oninput="calcBurdens()">
+      </div>
+      <div class="field">
+        <label>Hospitalizations</label>
+        <input type="number" id="sev-hosp" min="0" placeholder="e.g. 2">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+      <div class="field">
+        <label>Visits — Relapse</label>
+        <input type="number" id="visits-relapse" min="0" placeholder="e.g. 14" oninput="calcRFURatio()">
+      </div>
+      <div class="field">
+        <label>Visits — Remission</label>
+        <input type="number" id="visits-remission" min="0" placeholder="e.g. 20" oninput="calcRFURatio()">
+      </div>
+      <div class="field">
+        <label>Visits — Partial Response</label>
+        <input type="number" id="visits-partial" min="0" placeholder="e.g. 4" oninput="calcRFURatio()">
+      </div>
+      <div class="field">
+        <label>Number of Relapses</label>
+        <input type="number" id="n-relapses" min="0" placeholder="e.g. 5">
+      </div>
+    </div>
+    <div id="sum-check-warn" style="display:none;margin-top:6px;padding:4px 8px;background:var(--error-light);border-radius:var(--radius);font-family:var(--mono);font-size:0.65rem;color:var(--error);">
+      ⚠ Visit counts don't add up to total encounters — verify
+    </div>
+  </div>
+
+  <!-- CALCULATED METRICS -->
+  <div class="subsection">
+    <div class="subsection-title">Calculated Metrics</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;">
+        <div style="font-family:var(--mono);font-size:0.6rem;color:var(--text-muted);margin-bottom:4px;">Relapse:FU Ratio</div>
+        <div style="font-family:var(--mono);font-size:1.3rem;font-weight:600;color:var(--accent);" id="calc-rfu">—</div>
+        <div style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">of visits were relapses</div>
+        <input type="hidden" id="calc-rfu-val">
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;">
+        <div style="font-family:var(--mono);font-size:0.6rem;color:var(--text-muted);margin-bottom:4px;">Burden — Y1</div>
+        <div style="font-family:var(--mono);font-size:1.3rem;font-weight:600;color:var(--accent);" id="calc-burden-y1">—</div>
+        <div style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">visits / month</div>
+        <input type="hidden" id="calc-burden-y1-val">
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;">
+        <div style="font-family:var(--mono);font-size:0.6rem;color:var(--text-muted);margin-bottom:4px;">Burden — Y3</div>
+        <div style="font-family:var(--mono);font-size:1.3rem;font-weight:600;color:var(--accent);" id="calc-burden-y3">—</div>
+        <div style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">visits / month</div>
+        <input type="hidden" id="calc-burden-y3-val">
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;">
+        <div style="font-family:var(--mono);font-size:0.6rem;color:var(--text-muted);margin-bottom:4px;">Overall Burden</div>
+        <div style="font-family:var(--mono);font-size:1.3rem;font-weight:600;color:var(--accent);" id="calc-burden-overall">—</div>
+        <div style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">visits / month</div>
+        <input type="hidden" id="calc-burden-overall-val">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-nav">
+    <div class="nav-left"><button class="btn-prev" onclick="showSection(1)">← Back</button></div>
+    <span class="page-indicator">3 / 8</span>
+    <div class="nav-right">
+      <button class="btn-next" onclick="showSection(3)">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ 4. DIAGNOSTICS & LABS ══════════ -->
+<div class="section" id="sec-3">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <span class="section-title">Diagnostics & Labs</span>
+    <span class="section-note">→ Diagnostics_Labs</span>
+  </div>
+
+  <!-- Year of Labs -->
+  <div class="form-grid" style="margin-bottom:4px;">
+    <div class="field">
+      <label>BP-ID <span class="req">*</span></label>
+      <input type="text" class="pid-field" placeholder="BP-0001">
+    </div>
+    <div class="field">
+      <label>Year of Labs <span class="hint">at diagnosis</span></label>
+      <input type="number" id="lab-year" placeholder="e.g. 2019" min="1990" max="2030" style="max-width:110px;" tabindex="1">
+    </div>
+  </div>
+
+  <!-- PATHOLOGY -->
+  <div class="subsection" style="margin-top:10px;padding-top:8px;">
+    <div class="subsection-title">Pathology</div>
+    <div class="form-grid">
+      <!-- Histology -->
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-family:var(--mono);font-size:0.58rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);">Histology</span>
+          <button onclick="classicBPHistology()" style="font-family:var(--mono);font-size:0.58rem;font-weight:600;letter-spacing:0.06em;background:var(--accent-light);color:var(--accent);border:1px solid var(--accent);padding:2px 8px;border-radius:2px;cursor:pointer;">⚡ Classic BP</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-family:var(--mono);font-size:0.62rem;color:var(--label);font-weight:600;min-width:100px;">Subepid. Blister</span>
+            <div class="radio-group" style="gap:4px;">
+              <label class="radio-opt"><input type="radio" name="subepidermal" value="Yes"> Yes</label>
+              <label class="radio-opt"><input type="radio" name="subepidermal" value="No"> No</label>
+              <label class="radio-opt"><input type="radio" name="subepidermal" value="ND"> ND</label>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-family:var(--mono);font-size:0.62rem;color:var(--label);font-weight:600;min-width:100px;">Eos in Biopsy</span>
+            <div class="radio-group" style="gap:4px;">
+              <label class="radio-opt"><input type="radio" name="biopsy-eos" value="Yes"> Yes</label>
+              <label class="radio-opt"><input type="radio" name="biopsy-eos" value="No"> No</label>
+              <label class="radio-opt"><input type="radio" name="biopsy-eos" value="ND"> ND</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- DIF -->
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px;">
+        <div style="font-family:var(--mono);font-size:0.58rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Direct IF (DIF)</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-family:var(--mono);font-size:0.62rem;color:var(--label);font-weight:600;min-width:30px;">IgG</span>
+            <div class="radio-group" style="gap:4px;">
+              <label class="radio-opt"><input type="radio" name="dif-igg" value="Positive"> Pos</label>
+              <label class="radio-opt"><input type="radio" name="dif-igg" value="Negative"> Neg</label>
+              <label class="radio-opt"><input type="radio" name="dif-igg" value="ND"> ND</label>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-family:var(--mono);font-size:0.62rem;color:var(--label);font-weight:600;min-width:30px;">C3</span>
+            <div class="radio-group" style="gap:4px;">
+              <label class="radio-opt"><input type="radio" name="dif-c3" value="Positive"> Pos</label>
+              <label class="radio-opt"><input type="radio" name="dif-c3" value="Negative"> Neg</label>
+              <label class="radio-opt"><input type="radio" name="dif-c3" value="ND"> ND</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 1: BP180 | BP230 | IgE | IIF Result + Titer -->
+  <div class="subsection" style="margin-top:10px;padding-top:8px;">
+    <div class="subsection-title">Serology &amp; IIF</div>
+    <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;">
+
+      <!-- BP180 -->
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">BP180 IgG <span style="color:var(--text-muted);font-weight:400;">Pos&gt;20</span></span>
+        <div class="input-group" style="height:30px;">
+          <input type="number" id="bp180" min="0" placeholder="145" tabindex="2">
+          <label class="group-addon" id="bp180-addon" title=">200 U/mL ceiling">
+            <input type="checkbox" id="bp180-ceiling" onchange="onCeilingChange('bp180',this)">&gt;200
+          </label>
+        </div>
+        <span style="font-family:var(--mono);font-size:0.55rem;color:var(--text-muted);">U/mL</span>
+      </div>
+
+      <span style="font-family:var(--mono);color:var(--border);margin-bottom:20px;">|</span>
+
+      <!-- BP230 -->
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">BP230 IgG <span style="font-weight:400;">Pos&gt;20</span></span>
+        <div class="input-group" style="height:30px;">
+          <input type="number" id="bp230" min="0" placeholder="80" tabindex="3">
+          <label class="group-addon" id="bp230-addon" title=">150 U/mL ceiling">
+            <input type="checkbox" id="bp230-ceiling" onchange="onCeilingChange('bp230',this)">&gt;150
+          </label>
+        </div>
+        <span style="font-family:var(--mono);font-size:0.55rem;color:var(--text-muted);">U/mL</span>
+      </div>
+
+      <span style="font-family:var(--mono);color:var(--border);margin-bottom:20px;">|</span>
+
+      <!-- IgE -->
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">Total IgE at Dx</span>
+        <div class="input-affix">
+          <input type="number" id="total-ige" min="0" placeholder="450" style="max-width:90px;" tabindex="4">
+          <span class="affix-unit">IU/mL</span>
+        </div>
+      </div>
+
+      <span style="font-family:var(--mono);color:var(--border);margin-bottom:20px;">|</span>
+
+      <!-- IIF Result -->
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">IIF Result</span>
+        <div class="radio-group" style="gap:4px;">
+          <label class="radio-opt"><input type="radio" name="iif" value="Positive" onchange="onIIFResultChange(this)"> Pos</label>
+          <label class="radio-opt"><input type="radio" name="iif" value="Negative" onchange="onIIFResultChange(this)"> Neg</label>
+          <label class="radio-opt"><input type="radio" name="iif" value="ND"       onchange="onIIFResultChange(this)"> ND</label>
+        </div>
+      </div>
+
+      <!-- IIF Titer — conditional on Positive -->
+      <div id="iif-titer-row" style="display:none;flex-direction:column;gap:3px;">
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">Titer</span>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <button class="iif-quick" onclick="setIIFTiter('1:40')"  data-titer="1:40">1:40</button>
+          <button class="iif-quick" onclick="setIIFTiter('1:80')"  data-titer="1:80">1:80</button>
+          <button class="iif-quick" onclick="setIIFTiter('1:160')" data-titer="1:160">1:160</button>
+          <select id="iif-titer" style="min-width:80px;" onchange="syncIIFTiterButtons(this.value)">
+            <option value="">—</option>
+            <option>1:10</option><option>1:20</option><option>1:40</option>
+            <option>1:80</option><option>1:160</option><option>1:320</option>
+            <option>1:640</option><option>>1:640</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ROW 2: Eos at Dx | Eos Peak | Peak Date | Albumin -->
+  <div class="subsection" style="margin-top:10px;padding-top:8px;">
+    <div class="subsection-title">Hematology &amp; Chemistry</div>
+    <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;">
+
+      <!-- Eos at Dx -->
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">Eos at Dx</span>
+        <div class="input-affix">
+          <input type="number" id="eosinophils" min="0" placeholder="800" style="max-width:85px;" oninput="checkEosDelta()" tabindex="5">
+          <span class="affix-unit">c/µL</span>
+        </div>
+      </div>
+
+      <span style="font-family:var(--mono);font-size:0.85rem;color:var(--text-muted);margin-bottom:6px;">—</span>
+
+      <!-- Eos Peak -->
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">Eos Peak</span>
+        <div class="input-affix">
+          <input type="number" id="peak-eosinophils" min="0" placeholder="1200" style="max-width:85px;" oninput="checkEosDelta()" tabindex="6">
+          <span class="affix-unit">c/µL</span>
+        </div>
+      </div>
+
+      <span style="font-family:var(--mono);font-size:0.72rem;color:var(--text-muted);margin-bottom:7px;">on</span>
+
+      <!-- Peak Date -->
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">Peak Date</span>
+        <input type="date" id="peak-eos-date">
+      </div>
+
+      <span style="font-family:var(--mono);color:var(--border);margin-bottom:20px;">|</span>
+
+      <!-- Albumin -->
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">Albumin</span>
+        <div class="input-affix">
+          <input type="number" id="albumin" min="0" max="6" step="0.1" placeholder="3.5" tabindex="7">
+          <span class="affix-unit">g/dL</span>
+        </div>
+      </div>
+
+      <span style="font-family:var(--mono);color:var(--border);margin-bottom:20px;">|</span>
+
+      <!-- IgE Peak -->
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">IgE Peak</span>
+        <div class="input-affix">
+          <input type="number" id="peak-ige" min="0" placeholder="800" style="max-width:85px;" tabindex="8">
+          <span class="affix-unit">IU/mL</span>
+        </div>
+      </div>
+
+      <span style="font-family:var(--mono);font-size:0.72rem;color:var(--text-muted);margin-bottom:7px;">on</span>
+
+      <!-- IgE Peak Date -->
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">IgE Peak Date</span>
+        <input type="date" id="peak-ige-date">
+      </div>
+
+    </div>
+    <div id="eos-delta-warning" style="display:none;margin-top:5px;padding:4px 8px;background:#fdecea;border-radius:var(--radius);font-family:var(--mono);font-size:0.65rem;color:var(--error);">
+      ⚠ Peak lower than Dx value — verify
+    </div>
+  </div>
+
+  <div class="form-nav">
+    <div class="nav-left"><button class="btn-prev" onclick="showSection(2)">← Back</button></div>
+    <span class="page-indicator">4 / 8</span>
+    <div class="nav-right">
+      <button class="btn-next" onclick="showSection(4)">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ 6. DRUG TRIGGERS ══════════ -->
+<div class="section" id="sec-4">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <span class="section-title">Drug Triggers</span>
+    <span class="section-note">→ Drug_Triggers</span>
+  </div>
+  <div class="form-grid" style="margin-bottom:18px">
+    <div class="field">
+      <label>BP-ID <span class="req">*</span></label>
+      <input type="text" class="pid-field" placeholder="BP-0001">
+    </div>
+  </div>
+  <div id="drug-trigger-cards">
+    <!-- Cards injected by JS -->
+  </div>
+  <button class="btn-add" onclick="addDrugTriggerCard()">＋ Add Suspected Drug</button>
+  <div class="form-nav">
+    <div class="nav-left"><button class="btn-prev" onclick="showSection(4)">← Back</button></div>
+    <span class="page-indicator">6 / 7</span>
+    <div class="nav-right">
+      <button class="btn-next" onclick="showSection(4)">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ 7. TREATMENT ══════════ -->
+<div class="section" id="sec-4">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <span class="section-title">Treatment Courses</span>
+    <span class="section-note">→ Treatment_Courses</span>
+  </div>
+  <div class="form-grid" style="margin-bottom:18px">
+    <div class="field">
+      <label>BP-ID <span class="req">*</span></label>
+      <input type="text" class="pid-field" placeholder="BP-0001">
+    </div>
+  </div>
+
+  <style>
+    .tx-tbl { width:100%; border-collapse:collapse; table-layout:fixed; }
+    .tx-tbl th { font-family:var(--mono); font-size:0.63rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); padding:0 8px 10px 8px; text-align:left; border-bottom:1px solid var(--border); }
+    .tx-tbl td { padding:7px 6px; vertical-align:middle; border-bottom:0.5px solid var(--border); }
+    .tx-tbl tr:last-child td { border-bottom:none; }
+    .tx-tbl select, .tx-tbl input[type=text] { width:100%; box-sizing:border-box; height:32px; font-size:0.83rem; padding:0 8px; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); color:var(--text); font-family:var(--sans); }
+    .tx-tbl select:focus, .tx-tbl input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-light); }
+    .tx-date-input::placeholder { color:var(--text-muted); font-family:var(--mono); font-size:0.8rem; }
+    .tx-date-err { border-color:var(--error) !important; background:var(--error-light) !important; }
+    .tx-remove-btn { width:26px; height:26px; border:1px solid var(--border); border-radius:var(--radius); background:transparent; color:var(--text-muted); cursor:pointer; font-size:11px; display:flex; align-items:center; justify-content:center; }
+    .tx-remove-btn:hover { background:var(--error-light); color:var(--error); border-color:var(--error); }
+  </style>
+
+  <table class="tx-tbl">
+    <thead>
+      <tr>
+        <th style="width:24%">Drug</th>
+        <th style="width:12%">Start</th>
+        <th style="width:12%">End</th>
+        <th style="width:18%">Response</th>
+        <th style="width:30%">Reason for DC</th>
+        <th style="width:32px"></th>
+      </tr>
+    </thead>
+    <tbody id="treatment-lines"></tbody>
+  </table>
+
+  <button class="btn-add" onclick="addTreatmentLine()" style="margin-top:12px;">＋ Add Drug</button>
+  <p style="font-family:var(--mono);font-size:0.62rem;color:var(--text-muted);margin-top:8px;">Format: M/YYYY — e.g. 3/2022. Leave end blank if still ongoing. Same drug in two separate courses → add it twice.</p>
+
+  <div class="form-nav">
+    <div class="nav-left"><button class="btn-prev" onclick="showSection(4)">← Back</button></div>
+    <span class="page-indicator">6 / 7</span>
+    <div class="nav-right">
+      <button class="btn-next" onclick="showSection(4)">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ 8. OUTCOMES ══════════ -->
+<div class="section" id="sec-4">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <span class="section-title">Outcomes</span>
+    <span class="section-note">→ Outcomes</span>
+  </div>
+
+  <div class="form-grid" style="margin-bottom:14px;">
+    <div class="field">
+      <label>BP-ID <span class="req">*</span></label>
+      <input type="text" class="pid-field" placeholder="BP-0001">
+    </div>
+  </div>
+
+  <!-- REMISSION TRACK -->
+  <div class="subsection" style="background:var(--surface);border:1px solid var(--border);padding:12px;border-radius:var(--radius);margin-bottom:14px;">
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">
+      <span style="width:8px;height:8px;border-radius:50%;background:#1D9E75;display:inline-block;flex-shrink:0;"></span>
+      <span style="font-family:var(--mono);font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">Remission</span>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;">
+      <div class="field">
+        <label>Complete Remission Achieved</label>
+        <div class="radio-group">
+          <label class="radio-opt"><input type="radio" name="cr-achieved" value="Yes" onchange="onCRChange()"> Yes</label>
+          <label class="radio-opt"><input type="radio" name="cr-achieved" value="No" onchange="onCRChange()"> No</label>
+          <label class="radio-opt"><input type="radio" name="cr-achieved" value="Unknown" onchange="onCRChange()"> Unknown</label>
+        </div>
+      </div>
+      <div class="field conditional-field hidden" id="cond-cr-type">
+        <label>Remission Type</label>
+        <div class="radio-group">
+          <label class="radio-opt"><input type="radio" name="cr-type" value="Off treatment"> Off treatment</label>
+          <label class="radio-opt"><input type="radio" name="cr-type" value="On minimal therapy"> On minimal therapy</label>
+        </div>
+      </div>
+      <div class="field conditional-field hidden" id="cond-no-cr">
+        <label>Disease Status <span class="hint">if no CR</span></label>
+        <div class="radio-group">
+          <label class="radio-opt"><input type="radio" name="disease-status" value="Partial remission"> Partial remission</label>
+          <label class="radio-opt"><input type="radio" name="disease-status" value="Steroid dependent"> Steroid dependent</label>
+          <label class="radio-opt"><input type="radio" name="disease-status" value="Non-responder"> Non-responder</label>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;">
+      <div class="field">
+        <label>Date of First Remission</label>
+        <input type="date" id="date-remission" oninput="calcRemissionMonths()">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px;padding-bottom:2px;">
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">Dx → First remission</span>
+        <span style="font-family:var(--mono);font-size:1rem;font-weight:600;color:var(--accent);" id="time-remission-display">—</span>
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">months</span>
+        <input type="hidden" id="time-remission">
+      </div>
+    </div>
+  </div>
+
+  <!-- RELAPSE TRACK -->
+  <div class="subsection" style="background:var(--surface);border:1px solid var(--border);padding:12px;border-radius:var(--radius);margin-bottom:14px;">
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">
+      <span style="width:8px;height:8px;border-radius:50%;background:#E24B4A;display:inline-block;flex-shrink:0;"></span>
+      <span style="font-family:var(--mono);font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">Relapse</span>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;">
+      <div class="field">
+        <label>Relapse Occurred</label>
+        <div class="radio-group">
+          <label class="radio-opt"><input type="radio" name="relapse" value="Yes"> Yes</label>
+          <label class="radio-opt"><input type="radio" name="relapse" value="No"> No</label>
+          <label class="radio-opt"><input type="radio" name="relapse" value="Unknown"> Unknown</label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Therapy Status at First Relapse</label>
+        <div class="radio-group">
+          <label class="radio-opt"><input type="radio" name="relapse-context" value="On therapy"> On therapy</label>
+          <label class="radio-opt"><input type="radio" name="relapse-context" value="Off therapy"> Off therapy</label>
+          <label class="radio-opt"><input type="radio" name="relapse-context" value="N/A"> N/A</label>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;">
+      <div class="field">
+        <label>Date of First Relapse</label>
+        <input type="date" id="date-relapse" oninput="calcRelapseMonths()">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px;padding-bottom:2px;">
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">Dx → First relapse</span>
+        <span style="font-family:var(--mono);font-size:1rem;font-weight:600;color:var(--accent);" id="time-relapse-display">—</span>
+        <span style="font-family:var(--mono);font-size:0.58rem;color:var(--text-muted);">months</span>
+        <input type="hidden" id="time-relapse">
+      </div>
+    </div>
+  </div>
+
+  <!-- STEROID -->
+  <div class="subsection">
+    <div class="subsection-title">Steroid Summary</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+      <div class="field">
+        <label>Max Steroid Dose <span class="hint">mg/day</span></label>
+        <input type="number" id="max-steroid-dose" min="0" placeholder="e.g. 60">
+      </div>
+      <div class="field">
+        <label>Dose at Last Follow-up <span class="hint">mg/day</span></label>
+        <input type="number" id="dose-last-fu" min="0" placeholder="e.g. 5">
+      </div>
+      <div class="field">
+        <label>Times Escalated &gt;20mg</label>
+        <input type="number" id="escalations-above-20" min="0" placeholder="e.g. 3">
+      </div>
+    </div>
+  </div>
+
+  <!-- LINES OF TREATMENT RECEIVED -->
+  <div class="subsection">
+    <div class="subsection-title">Lines of Systemic Treatment Received</div>
+    <div style="margin-bottom:10px;">
+      <div style="font-family:var(--mono);font-size:0.62rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Corticosteroids</div>
+      <div class="check-group">
+        <label class="check-opt"><input type="checkbox" name="tx-received" value="Systemic CS"> Systemic CS</label>
+        <label class="check-opt"><input type="checkbox" name="tx-received" value="Topical superpotent CS"> Topical superpotent CS</label>
+      </div>
+    </div>
+    <div style="margin-bottom:10px;">
+      <div style="font-family:var(--mono);font-size:0.62rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Steroid-sparing</div>
+      <div class="check-group">
+        <label class="check-opt"><input type="checkbox" name="tx-received" value="Dapsone"> Dapsone</label>
+        <label class="check-opt"><input type="checkbox" name="tx-received" value="Tetracycline + nicotinamide"> Tetracycline + nicotinamide</label>
+        <label class="check-opt"><input type="checkbox" name="tx-received" value="Methotrexate"> Methotrexate</label>
+        <label class="check-opt"><input type="checkbox" name="tx-received" value="Azathioprine"> Azathioprine</label>
+        <label class="check-opt"><input type="checkbox" name="tx-received" value="MMF"> MMF</label>
+        <label class="check-opt"><input type="checkbox" name="tx-received" value="Cyclosporine"> Cyclosporine</label>
+      </div>
+    </div>
+    <div>
+      <div style="font-family:var(--mono);font-size:0.62rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Biologics / Advanced</div>
+      <div class="check-group">
+        <label class="check-opt"><input type="checkbox" name="tx-received" value="Rituximab"> Rituximab</label>
+        <label class="check-opt"><input type="checkbox" name="tx-received" value="Omalizumab"> Omalizumab</label>
+        <label class="check-opt"><input type="checkbox" name="tx-received" value="Dupilumab"> Dupilumab</label>
+        <label class="check-opt"><input type="checkbox" name="tx-received" value="IVIG"> IVIG</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- MORTALITY -->
+  <div class="subsection">
+    <div class="subsection-title">Mortality</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;">
+      <div class="field">
+        <label>Mortality</label>
+        <div class="radio-group">
+          <label class="radio-opt"><input type="radio" name="mortality" value="No"> No</label>
+          <label class="radio-opt"><input type="radio" name="mortality" value="Yes — BP related"> Yes — BP related</label>
+          <label class="radio-opt"><input type="radio" name="mortality" value="Yes — unrelated"> Yes — unrelated</label>
+          <label class="radio-opt"><input type="radio" name="mortality" value="Unknown"> Unknown</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-nav">
+    <div class="nav-left"><button class="btn-prev" onclick="showSection(4)">← Back</button></div>
+    <span class="page-indicator">7 / 7</span>
+    <div class="nav-right"></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- Toast notification -->
 <div class="toast" id="toast"></div>
 
 <script>
-  // ══════════════════════════════════════════════════════════════
-  //  CONFIGURATION & STATE
-  // ══════════════════════════════════════════════════════════════
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxpLF0pYhalz9htbRQWdkmdeFtObgjPfTV7bJV8y0gBy6M8y5Sa4XyoBK68_gs3-3XK/exec';
-  const SECRET_TOKEN    = 'BPReg2024Hd7xQmVk9';
-  const PASSWORD_HASH = 'c97ad699bda699067767d11e73f099237c2cabf5e5c6227b31089805f9d0a44e'; // DermRegistry2026
+// ══════════════════════════════════════════════════════════════
+//  CONFIGURATION
+// ══════════════════════════════════════════════════════════════
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyrd52PFbVJ6qkRC65ZBvEdcJWHy3Fnjx6x3LOzm6NoyyfrYHEbWJefF3G8CHgyhapuHA/exec';
+const SECRET_TOKEN    = 'BPReg2024Hd7xQmVk9';
 
-  let pidState     = 'unknown';
-  let pidConfirmed = false;
-  let lastLookedUpPID = '';
-  let manualDrugs  = new Set();
+// ══════════════════════════════════════════════════════════════
+//  PASSWORD GATE
+//  The actual password is never stored here — only its SHA-256
+//  hash. To generate a new hash: open browser console and run:
+//    crypto.subtle.digest('SHA-256', new TextEncoder().encode('yourpassword'))
+//      .then(b => console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
+//
+//  Current password hash — replace with your own:
+const PASSWORD_HASH = '8d295894f51dc143bf085fb33fe1c070d47c5b3ea0f2493b07b617f7ac81a13b';
 
-  // ══════════════════════════════════════════════════════════════
-  //  AUTH
-  // ══════════════════════════════════════════════════════════════
-  async function hashPassword(pwd) {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pwd));
-    return [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2,'0')).join('');
+// Session persists for 8 hours — user won't be asked again
+const SESSION_KEY  = 'bp_registry_auth';
+const SESSION_HOURS = 8;
+
+async function hashPassword(pwd) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pwd));
+  return [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2,'0')).join('');
+}
+
+async function checkPassword() {
+  const input = document.getElementById('password-input').value;
+  const hash  = await hashPassword(input);
+  if (hash === PASSWORD_HASH) {
+    // Store session with expiry
+    const expiry = Date.now() + SESSION_HOURS * 60 * 60 * 1000;
+    sessionStorage.setItem(SESSION_KEY, expiry);
+    document.getElementById('password-gate').classList.add('hidden');
+    document.getElementById('password-input').value = '';
+  } else {
+    const err = document.getElementById('password-error');
+    err.classList.add('show');
+    document.getElementById('password-input').value = '';
+    document.getElementById('password-input').focus();
+    setTimeout(() => err.classList.remove('show'), 3000);
+  }
+}
+
+// Check session on load — skip gate if still valid
+(function checkSession() {
+  const expiry = sessionStorage.getItem(SESSION_KEY);
+  if (expiry && Date.now() < parseInt(expiry)) {
+    document.getElementById('password-gate').classList.add('hidden');
+  } else {
+    // Focus the password field
+    setTimeout(() => document.getElementById('password-input')?.focus(), 100);
+  }
+})();
+
+const SHEET_NAMES = [
+  'Patient_Baseline', 'Clinical_Phenotype', 'Disease_Severity',
+  'Diagnostics_Labs', 'Drug_Triggers',
+  'Treatment_Courses', 'Outcomes'
+];
+
+// ── Navigation ──
+let currentSection = 0;
+const sections = document.querySelectorAll('.section');
+const navTabs   = document.querySelectorAll('.nav-tab');
+
+function showSection(idx) {
+  // Save the section we're leaving before switching
+  saveOnTabLeave(currentSection);
+  sections.forEach(s => s.classList.remove('active'));
+  navTabs.forEach(t => t.classList.remove('active'));
+  sections[idx].classList.add('active');
+  navTabs[idx].classList.add('active');
+  currentSection = idx;
+  document.getElementById('progress-fill').style.width = ((idx + 1) / 7 * 100) + '%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PATIENT LOOKUP STATE
+// ══════════════════════════════════════════════════════════════
+let pidState     = 'unknown'; // 'unknown' | 'new' | 'exists' | 'partial'
+let pidConfirmed = false;
+let lastLookedUpPID = '';
+
+// ── PID sync — fires on every keystroke, only mirrors value ──
+function syncPID(val) {
+  document.querySelectorAll('.pid-field').forEach(f => f.value = val);
+}
+
+// ── PID blur — fires on leave, triggers reset + lookup ──
+async function onPIDBlur(rawVal) {
+  let val = rawVal.trim();
+  if (!val) return;
+
+  // Auto-format: if user typed just a number, pad and prepend BP-
+  if (/^\d{1,4}$/.test(val)) {
+    val = 'BP-' + val.padStart(4, '0');
+    document.getElementById('global-pid').value = val;
+    syncPID(val);
   }
 
-  async function checkPassword() {
-    const input = document.getElementById('password-input').value;
-    const hash = await hashPassword(input);
-    if (hash === PASSWORD_HASH) {
-      document.getElementById('password-gate').classList.add('hidden');
-    } else {
-      alert("Incorrect password");
-    }
-  }
+  if (val === lastLookedUpPID) return;
+  if (!/^BP-\d{4}$/.test(val)) return;
 
-  // ══════════════════════════════════════════════════════════════
-  //  PID LOGIC (v4 Core)
-  // ══════════════════════════════════════════════════════════════
-  function syncPID(val) {
-    document.querySelectorAll('.pid-field').forEach(f => f.value = val.toUpperCase());
-  }
+  // Reset UI and fields for new patient
+  hideVerifyCard();
+  setPidBadge('', '');
+  clearTabDots();
+  resetAllFields();
+  // Re-populate the pid fields after reset wiped them
+  document.getElementById('global-pid').value = val;
+  document.querySelectorAll('.pid-field').forEach(f => f.value = val);
 
-  async function onPIDBlur(rawVal) {
-    let val = rawVal.trim().toUpperCase();
-    if (!val || val === lastLookedUpPID) return;
-    if (/^\d{1,4}$/.test(val)) {
-      val = 'BP-' + val.padStart(4, '0');
-      document.getElementById('global-pid').value = val;
-      syncPID(val);
-    }
-    lastLookedUpPID = val;
-    setPidStatus('checking', '⟳ Checking...');
-    
-    try {
-      const resp = await fetch(`${APPS_SCRIPT_URL}?token=${SECRET_TOKEN}&action=lookup&pid=${val}`);
-      const json = await resp.json();
-      applyLookupResult(val, json);
-    } catch(e) { setPidStatus('error', '✕ Lookup Failed'); }
-  }
+  await lookupPID(val);
+}
 
-  function setPidStatus(type, msg) {
-    const el = document.getElementById('pid-status');
-    el.textContent = msg;
-    el.style.color = type === 'checking' ? 'var(--text-muted)' : (type === 'error' ? 'var(--error)' : 'var(--success)');
-  }
-
-  function applyLookupResult(pid, json) {
-    if (json.found) {
-      pidState = 'exists';
-      setPidStatus('exists', '⚠ Existing Patient');
-      showVerifyCard(pid, json);
-      prefillFromLookup(json);
-    } else {
-      pidState = 'new';
-      setPidStatus('new', '✓ New Patient');
-      pidConfirmed = true;
-      hideVerifyCard();
-    }
-  }
-
-  function showVerifyCard(pid, data) {
-    const card = document.getElementById('verify-card');
-    card.classList.add('show');
-    const b = data.patient_baseline || {};
-    document.getElementById('verify-body').innerHTML = `
-      <div style="font-family:var(--mono); font-size:0.8rem; margin-bottom:10px;">
-        Profile: ${b.Sex || '?'}, ${b.Age_at_Diagnosis || '?'} yrs, Dx: ${b.Year_of_Diagnosis || '?'}
-      </div>
-      <label class="verify-confirm" id="confirm-label">
-        <input type="checkbox" onchange="pidConfirmed=this.checked; document.getElementById('confirm-label').classList.toggle('checked', this.checked)">
-        I confirm this is the correct patient record
-      </label>
-    `;
-    pidConfirmed = false;
-  }
-
-  function hideVerifyCard() { document.getElementById('verify-card').classList.remove('show'); }
-
-  // ══════════════════════════════════════════════════════════════
-  //  TREATMENT TABLE & CHECKLIST (v5 Features)
-  // ══════════════════════════════════════════════════════════════
-  function addTreatmentRow(data = null) {
-    const tbody = document.getElementById('treatment-table-body');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><select class="tx-drug" onchange="syncChecklist()">
-        <optgroup label="Steroids"><option>Prednisone (oral)</option><option>Methylprednisolone (IV)</option><option>Clobetasol (topical)</option></optgroup>
-        <optgroup label="Steroid-sparing"><option>Doxycycline</option><option>Azathioprine</option><option>Mycophenolate</option><option>Methotrexate</option><option>Dapsone</option></optgroup>
-        <optgroup label="Biologics"><option>Dupilumab</option><option>Rituximab</option><option>Omalizumab</option></optgroup>
-        <option>Other</option>
-      </select></td>
-      <td><input type="text" class="tx-start" placeholder="MM/YYYY" onblur="validateMY(this)"></td>
-      <td><input type="text" class="tx-end" placeholder="MM/YYYY" onblur="validateMY(this)"></td>
-      <td><select class="tx-resp"><option>Complete</option><option>Partial</option><option>None</option><option>Unknown</option></select></td>
-      <td><select class="tx-dc"><option>Still ongoing</option><option>Remission</option><option>Adverse event</option><option>Failure</option></select></td>
-      <td><button onclick="this.closest('tr').remove(); syncChecklist();" style="border:none; background:none; cursor:pointer;">✕</button></td>
-    `;
-    if (data) {
-      tr.querySelector('.tx-drug').value = data.drug;
-      tr.querySelector('.tx-start').value = data.start;
-      tr.querySelector('.tx-end').value = data.end;
-      tr.querySelector('.tx-resp').value = data.resp;
-      tr.querySelector('.tx-dc').value = data.dc;
-    }
-    tbody.appendChild(tr);
-    syncChecklist();
-  }
-
-  function validateMY(el) {
-    const regex = /^(0[1-9]|1[0-2])\/\d{4}$/;
-    if (el.value && !regex.test(el.value)) { el.style.borderColor = 'var(--error)'; }
-    else { el.style.borderColor = ''; }
-  }
-
-  function syncChecklist() {
-    const autoDrugs = new Set();
-    document.querySelectorAll('.tx-drug').forEach(s => { if(s.value) autoDrugs.add(s.value); });
-    const container = document.getElementById('treatment-checklist');
-    container.innerHTML = '';
-    const all = new Set([...autoDrugs, ...manualDrugs]);
-    all.forEach(d => {
-      const chip = document.createElement('span');
-      chip.style.cssText = `background:${manualDrugs.has(d)?'var(--accent2)':'var(--accent)'}; color:white; padding:4px 10px; border-radius:20px; font-size:0.7rem; font-family:var(--mono);`;
-      chip.innerHTML = `${d} ${manualDrugs.has(d) ? `<span onclick="removeManual('${d}')" style="cursor:pointer;margin-left:5px">×</span>` : ''}`;
-      container.appendChild(chip);
+// ══════════════════════════════════════════════════════════════
+//  RESET ALL FIELDS
+// ══════════════════════════════════════════════════════════════
+function resetAllFields() {
+  // Clear all text/number/date inputs inside .main
+  document.querySelectorAll('.main input[type=text], .main input[type=number], .main input[type=date]')
+    .forEach(el => { el.value = ''; });
+  // Reset selects
+  document.querySelectorAll('.main select')
+    .forEach(el => { el.selectedIndex = 0; });
+  // Uncheck all radios + checkboxes and remove selected style
+  document.querySelectorAll('.main input[type=radio], .main input[type=checkbox]')
+    .forEach(el => {
+      el.checked = false;
+      el.closest('.radio-opt, .check-opt')?.classList.remove('selected');
     });
-    document.getElementById('final-drug-list').value = Array.from(all).join(', ');
+  // Reset BPDAI display
+  const bt = document.getElementById('bpdai-total');
+  if (bt) bt.textContent = '—';
+  // Reset Other variant text field
+  const vot = document.getElementById('variant-other-text');
+  if (vot) { vot.value = ''; vot.style.display = 'none'; }
+  // Reset comorbidity chips
+  resetComorbChips();
+  // Reset treatment lines
+  lineCount = 0;
+  const tl = document.getElementById('treatment-lines');
+  if (tl) { tl.innerHTML = ''; addTreatmentLine(); }
+  // Reset severity calculated displays
+  ['sev-followup-display','dx-to-worst-display','calc-rfu',
+   'calc-burden-y1','calc-burden-y3','calc-burden-overall',
+   'time-remission-display','time-relapse-display'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '—';
+  });
+  // Reset drug trigger cards
+  drugCardCount = 0;
+  const dc = document.getElementById('drug-trigger-cards');
+  if (dc) { dc.innerHTML = ''; addDrugTriggerCard(); }
+  // Reset symptom calc displays
+  const std = document.getElementById('symptoms-to-dx-display');
+  if (std) std.textContent = '—';
+  const stdh = document.getElementById('symptoms-to-dx-days');
+  if (stdh) stdh.value = '';
+  // Clear nav saved ticks
+  navTabs.forEach(t => t.classList.remove('saved', 'dot-green', 'dot-red'));
+  // Reset state
+  pidState       = 'unknown';
+  pidConfirmed   = false;
+  autoSaveEnabled = false;
+  setAutoDot('');
+  updateSaveLocks();
+  initConditionals();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PREFILL HELPERS
+// ══════════════════════════════════════════════════════════════
+function setRadio(name, value) {
+  if (!value) return;
+  if (el) { el.checked = true; el.closest('.radio-opt')?.classList.add('selected'); }
+}
+
+function setCheckboxes(name, csvValue) {
+  if (!csvValue) return;
+  csvValue.split(',').map(v => v.trim()).forEach(v => {
+    const el = document.querySelector(`input[name="${name}"][value="${v}"]`);
+    if (el) { el.checked = true; el.closest('.check-opt')?.classList.add('selected'); }
+  });
+}
+
+function setSelect(id, value) {
+  const el = document.getElementById(id);
+  if (!el || !value) return;
+  for (let i = 0; i < el.options.length; i++) {
+    if (el.options[i].value === value || el.options[i].text === value) {
+      el.selectedIndex = i; return;
+    }
   }
+}
 
-  function addManualDrug() {
-    const v = document.getElementById('manual-drug').value.trim();
-    if(v) { manualDrugs.add(v); document.getElementById('manual-drug').value=''; syncChecklist(); }
-  }
-  function removeManual(d) { manualDrugs.delete(d); syncChecklist(); }
-
-  // ══════════════════════════════════════════════════════════════
-  //  CALCULATIONS & PREFILL
-  // ══════════════════════════════════════════════════════════════
-  function updateCourseCalculations() {
-    const dx = document.getElementById('dx-date').value;
-    if (!dx) return;
-    const dxDate = new Date(dx);
-
-    const calc = (inputId, outputId) => {
-      const val = document.getElementById(inputId).value;
-      if (val) {
-        const d = new Date(val + "-01");
-        const diff = (d.getFullYear() - dxDate.getFullYear()) * 12 + (d.getMonth() - dxDate.getMonth());
-        document.getElementById(outputId).value = diff >= 0 ? diff : "Error";
-      }
-    };
-    calc('out-rem-date', 'out-rem-months');
-    calc('out-rel-date', 'out-rel-months');
-  }
-
-  function prefillFromLookup(data) {
-    // 1. Baseline
-    const b = data.patient_baseline || {};
+function prefillFromLookup(data) {
+  if (data.baseline) {
+    const b = data.baseline;
     setRadio('sex', b.Sex);
-    val('age-dx', b.Age_at_Diagnosis);
-    val('dx-date', b.Last_Modified ? new Date(b.Date_of_Diagnosis).toISOString().split('T')[0] : ''); // Helper needed for formatting
+    document.getElementById('age-dx').value = b.Age_at_Diagnosis || '';
+    if (b.Date_of_Diagnosis) {
+      document.getElementById('dx-date').value = b.Date_of_Diagnosis;
+    } else if (b.Year_of_Diagnosis) {
+      document.getElementById('dx-date').value = b.Year_of_Diagnosis + '-01-01';
+    }
     setSelect('ethnicity', b.Ethnicity);
-    val('frailty', b.Frailty_Score);
-
-    // 5. Comorbidities
-    const c = data.comorbidities || {};
-    setRadio('depression', c.Depression);
-    setSelect('dm', c.Diabetes);
-    // ... Add more as needed
+    setSelect('frailty',   b.Frailty_Score);
+    if (b.Date_of_First_Symptoms) document.getElementById('symptoms-date').value = b.Date_of_First_Symptoms;
+    if (b.Date_of_Death)          document.getElementById('date-of-death').value  = b.Date_of_Death;
+    setSelect('cause-death-baseline', b.Cause_of_Death);
   }
-
-  // ══════════════════════════════════════════════════════════════
-  //  SAVE & UI UTILS
-  // ══════════════════════════════════════════════════════════════
-  function showSection(idx) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(`sec-${idx}`).classList.add('active');
-    document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+  if (data.phenotype) {
+    const p = data.phenotype;
+    prefillClinicalVariant(p.Clinical_Variant);
+    setRadio('mucosal',              p.Mucosal_Involvement);
+    setCheckboxes('dist',            p.Anatomic_Distribution);
+    setRadio('pruritus-present',     p.Pruritus_Present);
   }
-
-  async function saveAllSections() {
-    if (!pidConfirmed) return alert("Please confirm the patient ID record first.");
-    const pid = document.getElementById('global-pid').value;
-    const collector = document.getElementById('collector-name').value;
-    if (!pid || !collector) return alert("ID and Collector initials required.");
-    
-    setAutosave('saving');
-    // In a real scenario, loop through all 8 sections and collect values
-    // Here is the logic for Section 7 (Treatment)
-    const txRows = [];
-    document.querySelectorAll('#treatment-table-body tr').forEach((tr, i) => {
-      txRows.push([
-        pid, i+1, tr.querySelector('.tx-drug').value, tr.querySelector('.tx-start').value,
-        tr.querySelector('.tx-end').value, tr.querySelector('.tx-resp').value, tr.querySelector('.tx-dc').value,
-        collector, new Date().toISOString()
-      ]);
+  if (data.labs) {
+    const l = data.labs;
+    document.getElementById('lab-year').value   = l.Year_of_Labs          || '';
+    setRadio('dif-igg',                           l.DIF_IgG);
+    setRadio('dif-c3',                            l.DIF_C3);
+    setRadio('iif',                               l.IIF_Result);
+    if (l.IIF_Result === 'Positive') {
+      const tr = document.getElementById('iif-titer-row');
+      if (tr) tr.style.display = 'flex';
+    }
+    setSelect('iif-titer',                        l.IIF_Titer);
+    syncIIFTiterButtons(l.IIF_Titer || '');
+    document.getElementById('bp180').value       = l.Anti_BP180_IgG       || '';
+    document.getElementById('bp230').value       = l.Anti_BP230_IgG       || '';
+    document.getElementById('total-ige').value        = l.Total_IgE                  || '';
+    document.getElementById('peak-ige').value          = l.Peak_IgE                   || '';
+    document.getElementById('peak-ige-date').value     = l.Peak_IgE_Date              || '';
+    document.getElementById('eosinophils').value      = l.Absolute_Eosinophils     || '';
+    document.getElementById('peak-eosinophils').value = l.Peak_Absolute_Eosinophils || '';
+    document.getElementById('peak-eos-date').value    = l.Peak_Eos_Date              || '';
+    document.getElementById('albumin').value          = l.Albumin                    || '';
+  }
+  if (data.comorbidities) {
+    const c = data.comorbidities;
+    setRadio('antipsych', c.Antipsychotic_Treatment);
+    document.getElementById('neuro-year').value = c.Year_Neurologic_Diagnosis || '';
+    // Prefill neuro chips
+    if (c.Neurological_Diagnoses) {
+      c.Neurological_Diagnoses.split(',').map(v => v.trim()).forEach(v => {
+        const btn = document.querySelector(`.comorb-chip[data-name="neuro"][data-value="${v}"]`);
+        if (btn) btn.classList.add('active');
+      });
+      const hn = document.getElementById('comorbidity-neuro');
+      if (hn) hn.value = c.Neurological_Diagnoses;
+      onNeuroChange();
+    }
+    // Prefill general medical chips
+    const chipMap = {
+      dm: c.Diabetes, htn: c.Hypertension, ihd: c.IHD,
+      malig: c.Active_Malignancy, autoimm: c.Autoimmune_Disease,
+      ckd: c.CKD, smoker: c.Smoker, depression: c.Depression
+    };
+    Object.entries(chipMap).forEach(([name, value]) => {
+      if (value === 'Yes' || value === '1') {
+        const btn = document.querySelector(`.comorb-chip[data-name="${name}"]`);
+        if (btn) btn.classList.add('active');
+        const h = document.getElementById('comorbidity-' + name);
+        if (h) h.value = 'Yes';
+      }
     });
+  }
+  if (data.drug_triggers) {
+    const d = data.drug_triggers;
+    setRadio('drug-trigger',    d.Suspected_Drug_Trigger);
+    setSelect('trigger-class',  d.Trigger_Drug_Class);
+    document.getElementById('trigger-drug').value = d.Specific_Drug || '';
+    setRadio('drug-dc',         d.Drug_Discontinued);
+    setRadio('drug-improv',     d.Improvement_After_Withdrawal);
+    onDrugTriggerChange();
+  }
+  if (data.severity) {
+    const s = data.severity;
+    if (s.Last_Followup_Date) {
+      document.getElementById('sev-followup-date').value = s.Last_Followup_Date;
+      calcSevFollowup();
+    }
+    setRadio('pruritus-dx',    s.Pruritus_at_Dx);
+    setSelect('dist-dx',       s.Lesion_Dist_at_Dx);
+    setRadio('pruritus-worst', s.Pruritus_Worst);
+    setSelect('dist-worst',    s.Lesion_Dist_Worst);
+    if (s.Date_Worst_Presentation) {
+      document.getElementById('date-worst').value = s.Date_Worst_Presentation;
+      calcDxToWorst();
+    }
+    document.getElementById('enc-y1').value         = s.Encounters_Y1    || '';
+    document.getElementById('enc-y3').value         = s.Encounters_Y3    || '';
+    document.getElementById('enc-total').value      = s.Encounters_Total || '';
+    document.getElementById('sev-hosp').value       = s.Hospitalizations || '';
+    document.getElementById('visits-relapse').value   = s.Visits_Relapse   || '';
+    document.getElementById('visits-remission').value = s.Visits_Remission || '';
+    document.getElementById('visits-partial').value   = s.Visits_Partial   || '';
+    document.getElementById('n-relapses').value     = s.Number_of_Relapses || '';
+    calcRFURatio();
+    calcBurdens();
+  }
+  if (data.outcomes) {
+    const o = data.outcomes;
+    setRadio('cr-achieved',     o.Complete_Remission_Achieved);
+    setRadio('cr-type',         o.Remission_Type);
+    setRadio('disease-status',  o.Disease_Status);
+    if (o.Date_of_First_Remission) {
+      document.getElementById('date-remission').value = o.Date_of_First_Remission;
+      calcRemissionMonths();
+    }
+    setRadio('relapse',         o.Relapse_Occurred);
+    setRadio('relapse-context', o.Relapse_Context);
+    if (o.Date_of_First_Relapse) {
+      document.getElementById('date-relapse').value = o.Date_of_First_Relapse;
+      calcRelapseMonths();
+    }
+    document.getElementById('max-steroid-dose').value      = o.Max_Steroid_Dose      || '';
+    document.getElementById('dose-last-fu').value          = o.Dose_at_Last_Followup || '';
+    document.getElementById('escalations-above-20').value  = o.Escalations_Above_20  || '';
+    setCheckboxes('tx-received', o.Treatments_Received);
+    setRadio('mortality',        o.Mortality);
+    onCRChange();
+  }
+}
 
+// ══════════════════════════════════════════════════════════════
+//  LOOKUP CACHE + WARM-UP PING
+// ══════════════════════════════════════════════════════════════
+const lookupCache = {}; // sessionStorage-backed cache keyed by BP-ID
+
+// ══════════════════════════════════════════════════════════════
+//  WARM-UP + HEARTBEAT
+//  Initial ping on load, then every 4 min while tab is visible
+// ══════════════════════════════════════════════════════════════
+(function startHeartbeat() {
+  const ping = () => {
+    if (document.visibilityState !== 'hidden') {
+      fetch(APPS_SCRIPT_URL + '?token=' + SECRET_TOKEN).catch(() => {});
+    }
+  };
+  ping(); // immediate warm-up on load
+  setInterval(ping, 240000); // then every 4 minutes
+})();
+
+async function lookupPID(pid) {
+  lastLookedUpPID = pid;
+  setPidBadge('checking', '⟳ Checking…');
+
+  // Return cached result instantly if available
+  if (lookupCache[pid]) {
+    const json = lookupCache[pid];
+    applyLookupResult(pid, json);
+    return;
+  }
+
+  try {
+    const params = new URLSearchParams({ token: SECRET_TOKEN, action: 'lookup', pid });
+    const resp = await fetch(APPS_SCRIPT_URL + '?' + params.toString());
+    const json = await resp.json();
+    if (json.status === 'error') { setPidBadge('', ''); return; }
+    lookupCache[pid] = json; // cache for this session
+    applyLookupResult(pid, json);
+  } catch(e) {
+    setPidBadge('', '');
+  }
+  updateSaveLocks();
+}
+
+function applyLookupResult(pid, json) {
+  if (json.found) {
+    pidState = json.baseline ? 'exists' : 'partial';
+    setPidBadge('exists', '⚠ Existing patient');
+    prefillFromLookup(json);
+    showVerifyCardExisting(pid, json);
+  } else {
+    pidState = 'new';
+    setPidBadge('new', '✓ New patient');
+    showVerifyCardNew(pid);
+  }
+  updateSaveLocks();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  VERIFICATION CARD
+// ══════════════════════════════════════════════════════════════
+function setPidBadge(type, text) {
+  const el = document.getElementById('pid-status');
+  el.className = 'pid-status' + (type ? ' ' + type : '');
+  el.textContent = text;
+}
+
+function hideVerifyCard() {
+  const card = document.getElementById('verify-card');
+  card.className = 'verify-card';
+  card.style.display = 'none';
+}
+
+function showVerifyCardNew(pid) {
+  // New patient — no card needed, just show the green badge and enable saving
+  hideVerifyCard();
+  pidConfirmed = true;
+  updateTabDots([]);
+  updateSaveLocks();
+  enableAutoSave();
+}
+
+function showVerifyCardExisting(pid, data) {
+  const card = document.getElementById('verify-card');
+  card.className = 'verify-card warning show';
+  card.style.display = 'block';
+  document.getElementById('verify-icon').textContent  = '⚠';
+  document.getElementById('verify-title').textContent = 'Existing Patient Found — Verify Before Saving';
+
+  let profileHTML = '';
+  if (data.baseline) {
+    const b = data.baseline;
+    profileHTML = `<div class="verify-profile">
+      <div class="verify-profile-item"><span class="verify-profile-label">Sex</span><span class="verify-profile-val">${b.Sex||'—'}</span></div>
+      <div class="verify-profile-item"><span class="verify-profile-label">Age at Dx</span><span class="verify-profile-val">${b.Age_at_Diagnosis||'—'} yrs</span></div>
+      <div class="verify-profile-item"><span class="verify-profile-label">Year of Dx</span><span class="verify-profile-val">${b.Year_of_Diagnosis||'—'}</span></div>
+      <div class="verify-profile-item"><span class="verify-profile-label">Ethnicity</span><span class="verify-profile-val">${b.Ethnicity||'—'}</span></div>
+      <div class="verify-profile-item"><span class="verify-profile-label">Collector</span><span class="verify-profile-val">${b.Collector||'—'}</span></div>
+    </div>`;
+  } else {
+    profileHTML = `<div class="verify-subinfo">⚠ Found in other sheets but <strong>no Baseline entry</strong> yet.</div>`;
+  }
+
+  const sheetsFound = data.sheets_found || [];
+
+  document.getElementById('verify-body').innerHTML = `
+    ${profileHTML}
+    <label class="verify-confirm" id="verify-confirm-label">
+      <input type="checkbox" id="verify-checkbox" onchange="onConfirmChange(this)">
+      I confirm this is the correct patient — proceed with saving
+    </label>`;
+
+  pidConfirmed = false;
+  updateTabDots(sheetsFound);
+  updateSaveLocks();
+}
+
+function onConfirmChange(cb) {
+  pidConfirmed = cb.checked;
+  document.getElementById('verify-confirm-label')?.classList.toggle('checked', cb.checked);
+  updateSaveLocks();
+  if (cb.checked) enableAutoSave();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TAB DOTS
+// ══════════════════════════════════════════════════════════════
+const SHEET_TAB_MAP = {
+  'Patient Baseline': 0, 'Clinical Phenotype': 1, 'Disease Severity': 2,
+  'Diagnostics Labs': 3, 'Drug Triggers': 4,
+  'Treatment Courses': 5, 'Outcomes': 6
+};
+
+function updateTabDots(sheetsFound) {
+  navTabs.forEach(t => t.classList.remove('dot-green', 'dot-red'));
+  const found = new Set(sheetsFound);
+  Object.entries(SHEET_TAB_MAP).forEach(([name, idx]) => {
+    navTabs[idx].classList.add(found.has(name) ? 'dot-green' : 'dot-red');
+  });
+}
+
+function clearTabDots() {
+  navTabs.forEach(t => t.classList.remove('dot-green', 'dot-red'));
+}
+
+// ══════════════════════════════════════════════════════════════
+//  LOCALSTORAGE — remember collector name across sessions
+// ══════════════════════════════════════════════════════════════
+(function initCollector() {
+  const saved = localStorage.getItem('bp_collector');
+  const el    = document.getElementById('collector-name');
+  if (saved && el) el.value = saved;
+  if (el) el.addEventListener('blur', () => {
+    if (el.value.trim()) localStorage.setItem('bp_collector', el.value.trim());
+  });
+})();
+
+// ══════════════════════════════════════════════════════════════
+//  NEW PATIENT — explicit clear with confirmation
+// ══════════════════════════════════════════════════════════════
+function newPatient() {
+  const pid = document.getElementById('global-pid').value.trim();
+  if (pid && !confirm('Clear all fields and start a new patient?')) return;
+  document.getElementById('global-pid').value = '';
+  lastLookedUpPID = '';
+  hideVerifyCard();
+  setPidBadge('', '');
+  clearTabDots();
+  resetAllFields();
+  showSection(0);
+  document.getElementById('global-pid').focus();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  CONDITIONAL LOGIC
+// ══════════════════════════════════════════════════════════════
+function setConditional(id, visible) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('hidden', !visible);
+}
+
+function onDrugTriggerChange() {
+  const val = getRadio('drug-trigger');
+  const show = val === 'Yes' || val === 'Possible';
+  setConditional('cond-trigger-class',  show);
+  setConditional('cond-trigger-drug',   show);
+  setConditional('cond-drug-dc',        show);
+  setConditional('cond-drug-improv',    show);
+}
+
+function onNeuroChange() {
+  const hidden = document.getElementById('comorbidity-neuro');
+  const anyActive = document.querySelectorAll('.comorb-chip[data-name="neuro"].active').length > 0;
+  const el = document.getElementById('cond-neuro-year');
+  if (el) el.style.visibility = anyActive ? 'visible' : 'hidden';
+  if (hidden) {
+    hidden.value = Array.from(document.querySelectorAll('.comorb-chip[data-name="neuro"].active'))
+      .map(b => b.dataset.value).join(', ');
+  }
+}
+
+// ── Chip toggle ──
+function toggleComorbChip(btn) {
+  btn.classList.toggle('active');
+  const name = btn.dataset.name;
+  if (name === 'neuro') {
+    onNeuroChange();
+  } else {
+    const hidden = document.getElementById('comorbidity-' + name);
+    if (hidden) hidden.value = btn.classList.contains('active') ? 'Yes' : 'No';
+  }
+}
+
+function resetComorbChips() {
+  document.querySelectorAll('.comorb-chip').forEach(b => b.classList.remove('active'));
+  ['dm','htn','ihd','malig','autoimm','ckd','smoker','depression'].forEach(name => {
+    const h = document.getElementById('comorbidity-' + name);
+    if (h) h.value = 'No';
+  });
+  const hn = document.getElementById('comorbidity-neuro');
+  if (hn) hn.value = '';
+  const neuroYear = document.getElementById('cond-neuro-year');
+  if (neuroYear) neuroYear.style.visibility = 'hidden';
+}
+
+// Init conditional state on page load
+function initConditionals() {
+  // Neuro year starts hidden (uses visibility to preserve layout space)
+  const neuroYear = document.getElementById('cond-neuro-year');
+  if (neuroYear) neuroYear.style.visibility = 'hidden';
+  // Drug cards handle their own conditional logic internally
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SAVE LOCK
+// ══════════════════════════════════════════════════════════════
+function updateSaveLocks() {
+  const locked = (pidState === 'exists' || pidState === 'partial') && !pidConfirmed;
+  const btn = document.getElementById('btn-save-all');
+  if (btn) {
+    btn.disabled = locked;
+    btn.title = locked ? 'Tick the confirmation checkbox above before saving' : '';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  HAS SECTION DATA — returns true if any non-ID field is filled
+// ══════════════════════════════════════════════════════════════
+function hasSectionData(idx) {
+  switch (idx) {
+    case 0: return !!(getRadio('sex') || val('age-dx') || val('dx-date') || getRadio('antipsych'));
+    case 1: return !!(getClinicalVariant() || getRadio('mucosal') || getCheckboxes('dist'));
+    case 2: return !!(val('sev-followup-date') || getRadio('pruritus-dx') || val('enc-total'));
+    case 3: return !!(val('lab-year') || getRadio('dif-igg') || val('bp180') || getRadio('subepidermal'));
+    case 4: {
+      const first = document.querySelector('.drug-trigger-card');
+      if (!first) return false;
+      return !!first.querySelector('input[type=radio]:checked');
+    }
+    case 5: {
+      const firstRow = document.querySelector('.treatment-line-item');
+      if (!firstRow) return false;
+      return !!(firstRow.querySelector('.tx-drug')?.value);
+    }
+    case 6: return !!(getRadio('cr-achieved') || getRadio('relapse') || val('date-remission'));
+  }
+  return false;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SEND ONE SECTION (shared by manual save + auto-save)
+// ══════════════════════════════════════════════════════════════
+async function sendSection(idx, isRetry = false) {
+  const payload    = collectSection(idx);
+  // Case 0 returns {sheet, rows:[{sheet,row},{sheet,row}]} — multi-sheet
+  const rowsToSend = payload.rows
+    ? (payload.rows[0]?.sheet ? payload.rows : [payload])  // multi-sheet vs normal rows array
+    : [payload];
+
+  // For multi-sheet (baseline), each item has its own sheet + row
+  if (payload.rows && payload.rows[0]?.sheet) {
+    for (const item of payload.rows) {
+      const params = new URLSearchParams({ token: SECRET_TOKEN, sheet: item.sheet, row: JSON.stringify(item.row) });
+      const resp   = await fetch(APPS_SCRIPT_URL + '?' + params.toString());
+      const json   = await resp.json();
+      if (json.status === 'error') {
+        if (!isRetry && json.message?.includes('Server busy')) {
+          await new Promise(r => setTimeout(r, 1000));
+          return await sendSection(idx, true);
+        }
+        throw new Error(json.message);
+      }
+    }
+    return;
+  }
+
+  // Normal: single sheet, possibly multiple rows
+  const normalRows = payload.rows || [payload.row];
+  for (const row of normalRows) {
+    const params = new URLSearchParams({ token: SECRET_TOKEN, sheet: payload.sheet, row: JSON.stringify(row) });
+    const resp   = await fetch(APPS_SCRIPT_URL + '?' + params.toString());
+    const json   = await resp.json();
+    if (json.status === 'error') {
+      if (!isRetry && json.message?.includes('Server busy')) {
+        await new Promise(r => setTimeout(r, 1000));
+        return await sendSection(idx, true);
+      }
+      throw new Error(json.message);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SAVE ALL — fires all sections in PARALLEL
+// ══════════════════════════════════════════════════════════════
+async function saveAllSections() {
+  let pid = document.getElementById('global-pid').value.trim();
+  if (!pid) { showToast('Enter a BP-ID first', 'error'); return; }
+  if (/^\d{1,4}$/.test(pid)) {
+    pid = 'BP-' + pid.padStart(4, '0');
+    document.getElementById('global-pid').value = pid;
+    syncPID(pid);
+  }
+  if (!/^BP-\d{4}$/.test(pid)) { showToast('BP-ID must be BP-XXXX', 'error'); return; }
+
+  if (pid !== lastLookedUpPID) {
+    showToast('Verifying patient ID…', 'loading');
+    await onPIDBlur(pid);
+  }
+  if ((pidState === 'exists' || pidState === 'partial') && !pidConfirmed) {
+    showToast('Tick the confirmation checkbox first', 'error');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+
+  const toSave = [0,1,2,3,4,5,6].filter(i => hasSectionData(i));
+  if (toSave.length === 0) { showToast('No data filled in yet', 'error'); return; }
+
+  // Optimistic UI — mark all as saving immediately
+  const btn = document.getElementById('btn-save-all');
+  btn.disabled = true;
+  setAutoDot('saving');
+  const progressEl   = document.getElementById('save-progress');
+  const progressFill = document.getElementById('save-progress-fill');
+  const progressText = document.getElementById('save-progress-text');
+  progressEl.classList.add('show');
+  progressText.textContent = `Saving ${toSave.length} sections…`;
+  progressFill.style.width = '10%';
+
+  // Fire ALL in parallel
+  let saved = 0; let errors = 0;
+  await Promise.all(toSave.map(async idx => {
     try {
-      // Example call for Treatment section
-      const resp = await fetch(`${APPS_SCRIPT_URL}?token=${SECRET_TOKEN}&sheet=Treatment_Courses&row=${JSON.stringify(txRows[0])}`);
-      setAutosave('saved');
-      showToast("Data Saved Successfully");
-    } catch(e) { setAutosave('error'); }
+      await sendSection(idx);
+      navTabs[idx].classList.add('saved');
+      navTabs[idx].classList.remove('dot-red');
+      navTabs[idx].classList.add('dot-green');
+      saved++;
+    } catch(e) {
+      errors++;
+      navTabs[idx].classList.remove('dot-green');
+      navTabs[idx].classList.add('dot-red');
+    }
+    // Update progress as each completes
+    progressFill.style.width = ((saved + errors) / toSave.length * 100) + '%';
+  }));
+
+  progressFill.style.width = '100%';
+  setTimeout(() => { progressEl.classList.remove('show'); progressFill.style.width = '0%'; }, 1500);
+  btn.disabled = false;
+
+  if (errors === 0) {
+    setAutoDot('saved');
+    showToast(`✓ Saved ${saved} section${saved !== 1 ? 's' : ''} for ${pid}`, 'success');
+    // Invalidate cache so next lookup reflects new data
+    delete lookupCache[pid];
+  } else {
+    setAutoDot('error');
+    showToast(`Saved ${saved}, failed ${errors} — check connection`, 'error');
   }
+}
 
-  function setAutosave(state) {
-    const dot = document.getElementById('autosave-dot');
-    dot.className = 'autosave-dot ' + state;
+// ══════════════════════════════════════════════════════════════
+//  AUTO-SAVE ON TAB CHANGE
+//  When user navigates away from a section, save it silently
+// ══════════════════════════════════════════════════════════════
+let autoSaveEnabled = false;
+
+async function saveOnTabLeave(leavingIdx) {
+  if (!autoSaveEnabled) return;
+  if (!hasSectionData(leavingIdx)) return;
+
+  const pid = document.getElementById('global-pid').value.trim();
+  if (!pid || !/^BP-\d{4}$/.test(pid)) return;
+  if ((pidState === 'exists' || pidState === 'partial') && !pidConfirmed) return;
+
+  setAutoDot('saving');
+  try {
+    await sendSection(leavingIdx);
+    navTabs[leavingIdx].classList.add('saved');
+    navTabs[leavingIdx].classList.remove('dot-red');
+    navTabs[leavingIdx].classList.add('dot-green');
+    setAutoDot('saved');
+    delete lookupCache[pid];
+  } catch(e) {
+    navTabs[leavingIdx].classList.add('dot-red');
+    setAutoDot('error');
   }
+}
 
-  function showToast(m) {
-    const t = document.getElementById('toast');
-    t.textContent = m; t.style.display = 'block';
-    setTimeout(() => t.style.display = 'none', 3000);
+function setAutoDot(state) {
+  const dot = document.getElementById('autosave-dot');
+  if (dot) dot.className = 'autosave-dot' + (state ? ' ' + state : '');
+}
+
+function enableAutoSave() {
+  autoSaveEnabled = true;
+  setAutoDot('');
+}
+
+
+// ══════════════════════════════════════════════════════════════
+//  SEVERITY & COURSE CALCULATIONS
+// ══════════════════════════════════════════════════════════════
+let severityCount = 0; // kept to avoid errors in resetAllFields
+
+function calcSevFollowup() {
+  const dxDate = getDxDate();
+  const fuVal  = document.getElementById('sev-followup-date')?.value;
+  const fuDate = fuVal ? parseLocalDate(fuVal) : null;
+  const display = document.getElementById('sev-followup-display');
+  const hidden  = document.getElementById('sev-followup-years');
+  if (dxDate && fuDate && fuDate >= dxDate) {
+    const years = (daysBetween(dxDate, fuDate) / 365.25).toFixed(1);
+    if (display) display.textContent = years;
+    if (hidden)  hidden.value = years;
+    calcBurdens();
+  } else {
+    if (display) display.textContent = '—';
+    if (hidden)  hidden.value = '';
   }
+}
 
-  // Helpers
-  function val(id, v) { if(v !== undefined) document.getElementById(id).value = v; return document.getElementById(id).value; }
-  function setRadio(name, val) { const el = document.querySelector(`input[name="${name}"][value="${val}"]`); if(el) el.checked = true; }
-  function setSelect(id, val) { document.getElementById(id).value = val || ''; }
+function calcDxToWorst() {
+  const dxDate    = getDxDate();
+  const worstVal  = document.getElementById('date-worst')?.value;
+  const worstDate = worstVal ? parseLocalDate(worstVal) : null;
+  const display   = document.getElementById('dx-to-worst-display');
+  const hidden    = document.getElementById('dx-to-worst-months');
+  if (dxDate && worstDate && worstDate >= dxDate) {
+    const months = Math.round(daysBetween(dxDate, worstDate) / 30.44);
+    if (display) display.textContent = months;
+    if (hidden)  hidden.value = months;
+  } else {
+    if (display) display.textContent = '—';
+    if (hidden)  hidden.value = '';
+  }
+}
 
-  // Init
-  addTreatmentRow();
+function calcRFURatio() {
+  const relapse   = parseFloat(document.getElementById('visits-relapse')?.value)   || 0;
+  const remission = parseFloat(document.getElementById('visits-remission')?.value) || 0;
+  const partial   = parseFloat(document.getElementById('visits-partial')?.value)   || 0;
+  const total     = parseFloat(document.getElementById('enc-total')?.value)        || 0;
+  const display   = document.getElementById('calc-rfu');
+  const hidden    = document.getElementById('calc-rfu-val');
+  const warn      = document.getElementById('sum-check-warn');
+  if (warn && total > 0 && (relapse + remission + partial) !== total) {
+    warn.style.display = 'block';
+  } else if (warn) {
+    warn.style.display = 'none';
+  }
+  if (total > 0) {
+    const ratio = (relapse / total * 100).toFixed(1) + '%';
+    if (display) display.textContent = ratio;
+    if (hidden)  hidden.value = (relapse / total).toFixed(3);
+  } else {
+    if (display) display.textContent = '—';
+    if (hidden)  hidden.value = '';
+  }
+}
+
+function calcBurdens() {
+  const fuYears  = parseFloat(document.getElementById('sev-followup-years')?.value) || 0;
+  const encY1    = parseFloat(document.getElementById('enc-y1')?.value)    || 0;
+  const encY3    = parseFloat(document.getElementById('enc-y3')?.value)    || 0;
+  const encTotal = parseFloat(document.getElementById('enc-total')?.value) || 0;
+  const setCalc = (dId, hId, val) => {
+    const d = document.getElementById(dId);
+    const h = document.getElementById(hId);
+    if (d) d.textContent = val !== null ? val : '—';
+    if (h) h.value = val !== null ? val : '';
+  };
+  setCalc('calc-burden-y1',      'calc-burden-y1-val',      encY1 > 0 ? (encY1 / 12).toFixed(2) : null);
+  setCalc('calc-burden-y3',      'calc-burden-y3-val',      encY3 > 0 ? (encY3 / 36).toFixed(2) : null);
+  setCalc('calc-burden-overall', 'calc-burden-overall-val', fuYears > 0 && encTotal > 0 ? (encTotal / (fuYears * 12)).toFixed(2) : null);
+}
+
+function calcRemissionMonths() {
+  const dxDate  = getDxDate();
+  const remVal  = document.getElementById('date-remission')?.value;
+  const remDate = remVal ? parseLocalDate(remVal) : null;
+  const display = document.getElementById('time-remission-display');
+  const hidden  = document.getElementById('time-remission');
+  if (dxDate && remDate && remDate >= dxDate) {
+    const months = Math.round(daysBetween(dxDate, remDate) / 30.44);
+    if (display) display.textContent = months;
+    if (hidden)  hidden.value = months;
+  } else {
+    if (display) display.textContent = '—';
+    if (hidden)  hidden.value = '';
+  }
+}
+
+function calcRelapseMonths() {
+  const dxDate  = getDxDate();
+  const relVal  = document.getElementById('date-relapse')?.value;
+  const relDate = relVal ? parseLocalDate(relVal) : null;
+  const display = document.getElementById('time-relapse-display');
+  const hidden  = document.getElementById('time-relapse');
+  if (dxDate && relDate && relDate >= dxDate) {
+    const months = Math.round(daysBetween(dxDate, relDate) / 30.44);
+    if (display) display.textContent = months;
+    if (hidden)  hidden.value = months;
+  } else {
+    if (display) display.textContent = '—';
+    if (hidden)  hidden.value = '';
+  }
+}
+
+function onCRChange() {
+  const val = getRadio('cr-achieved');
+  setConditional('cond-cr-type', val === 'Yes');
+  setConditional('cond-no-cr',   val === 'No');
+}
+
+function mirrorDxDateToSeverity() {
+  const dxVal = document.getElementById('dx-date')?.value;
+  const sevDx = document.getElementById('sev-dx-date');
+  if (sevDx && dxVal) sevDx.value = dxVal;
+}
+
+// Backward-compat stubs
+function calcRemissionWeeks()    { calcRemissionMonths(); }
+function calcRelapseWeeks()      { calcRelapseMonths(); }
+function calcFollowupMonths()    { calcSevFollowup(); }
+function addSeverityAssessment() {}
+function removeSeverityCard()    {}
+function calcSeverityTotal()     {}
+function calcBPDAI()             {}
+function calcSeverityMonths()    {}
+
+
+
+// ══════════════════════════════════════════════════════════════
+//  DRUG TRIGGER CARDS
+// ══════════════════════════════════════════════════════════════
+let drugCardCount = 0;
+
+function buildDrugTriggerCard(n) {
+  return `
+  <div class="treatment-row drug-trigger-card">
+    <div class="treatment-row-header">
+      <span class="line-badge">DRUG ${n}</span>
+      ${n > 1 ? '<button onclick="removeDrugCard(this)" style="margin-left:auto;font-family:var(--mono);font-size:0.62rem;background:none;border:1px solid var(--border);color:var(--text-muted);padding:2px 8px;border-radius:2px;cursor:pointer;">✕ Remove</button>' : ''}
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Suspected Drug Trigger</label>
+        <div class="radio-group">
+          <label class="radio-opt"><input type="radio" name="drug-trigger-${n}" value="Yes" onchange="onDrugCardTriggerChange(this)"> Yes</label>
+          <label class="radio-opt"><input type="radio" name="drug-trigger-${n}" value="No" onchange="onDrugCardTriggerChange(this)"> No</label>
+          <label class="radio-opt"><input type="radio" name="drug-trigger-${n}" value="Possible" onchange="onDrugCardTriggerChange(this)"> Possible</label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Date Drug Started</label>
+        <input type="date" class="drug-start-date" onchange="calcDrugToSymptoms(this)">
+      </div>
+      <div class="score-visual" style="display:flex;flex-direction:column;justify-content:center;">
+        <div class="score-label">Drug→Symptoms (days)</div>
+        <div class="score-val drug-to-symptoms-display" style="font-size:1rem;">—</div>
+      </div>
+      <div class="field drug-detail-field conditional-field hidden">
+        <label>Trigger Drug Class</label>
+        <select class="drug-trigger-class">
+          <option value="">— N/A or select —</option>
+          <option>DPP-4 inhibitor (gliptin)</option>
+          <option>PD-1 / PD-L1 inhibitor</option>
+          <option>Furosemide</option>
+          <option>Antipsychotic</option>
+          <option>ACE inhibitor</option>
+          <option>Beta-blocker</option>
+          <option>Penicillin / Antibiotic</option>
+          <option>NSAID</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field drug-detail-field conditional-field hidden">
+        <label>Specific Drug</label>
+        <input type="text" class="drug-specific" placeholder="e.g. Sitagliptin">
+      </div>
+      <div class="field drug-detail-field conditional-field hidden">
+        <label>Drug Discontinued</label>
+        <div class="radio-group">
+          <label class="radio-opt"><input type="radio" name="drug-dc-${n}" value="Yes"> Yes</label>
+          <label class="radio-opt"><input type="radio" name="drug-dc-${n}" value="No"> No</label>
+          <label class="radio-opt"><input type="radio" name="drug-dc-${n}" value="NA"> N/A</label>
+        </div>
+      </div>
+      <div class="field drug-detail-field conditional-field hidden">
+        <label>Improvement After Withdrawal</label>
+        <div class="radio-group">
+          <label class="radio-opt"><input type="radio" name="drug-improv-${n}" value="Yes"> Yes</label>
+          <label class="radio-opt"><input type="radio" name="drug-improv-${n}" value="No"> No</label>
+          <label class="radio-opt"><input type="radio" name="drug-improv-${n}" value="Partial"> Partial</label>
+          <label class="radio-opt"><input type="radio" name="drug-improv-${n}" value="NA"> N/A</label>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function addDrugTriggerCard() {
+  drugCardCount++;
+  document.getElementById('drug-trigger-cards')
+    .insertAdjacentHTML('beforeend', buildDrugTriggerCard(drugCardCount));
+}
+
+function removeDrugCard(btn) {
+  btn.closest('.drug-trigger-card').remove();
+}
+
+function onDrugCardTriggerChange(radio) {
+  const card = radio.closest('.drug-trigger-card');
+  const show = radio.value === 'Yes' || radio.value === 'Possible';
+  card.querySelectorAll('.drug-detail-field').forEach(f => {
+    f.classList.toggle('hidden', !show);
+  });
+}
+
+function calcDrugToSymptoms(el) {
+  const card    = el.closest('.drug-trigger-card');
+  const display = card.querySelector('.drug-to-symptoms-display');
+  const drugDate = el.value ? parseLocalDate(el.value) : null;
+  const sympInput = document.getElementById('symptoms-date');
+  const sympDate  = sympInput?.value ? parseLocalDate(sympInput.value) : null;
+  if (drugDate && sympDate && sympDate >= drugDate) {
+    if (display) display.textContent = daysBetween(drugDate, sympDate);
+  } else {
+    if (display) display.textContent = '—';
+  }
+}
+
+// ── Show/hide symptom row when assessment type changes ──
+function onSevTypeChange(select) {
+  const card = select.closest('.severity-card');
+  const isBaseline = select.value === 'Baseline (Diagnosis)';
+  card.querySelectorAll('.sev-symptoms-row').forEach(el => {
+    // field divs use flex, score-visual divs use flex too
+    el.style.display = isBaseline ? 'flex' : 'none';
+  });
+}
+
+// ── IIF result change — show/hide titer row ──
+function onIIFResultChange(radio) {
+  const titerRow = document.getElementById('iif-titer-row');
+  if (titerRow) titerRow.style.display = (radio.value === 'Positive') ? 'flex' : 'none';
+  if (radio.value !== 'Positive') {
+    const sel = document.getElementById('iif-titer');
+    if (sel) sel.selectedIndex = 0;
+    syncIIFTiterButtons('');
+  }
+}
+function setIIFTiter(value) {
+  const sel = document.getElementById('iif-titer');
+  if (sel) {
+    for (let i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === value || sel.options[i].text === value) {
+        sel.selectedIndex = i; break;
+      }
+    }
+  }
+  syncIIFTiterButtons(value);
+}
+
+function syncIIFTiterButtons(value) {
+  document.querySelectorAll('.iif-quick').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.titer === value);
+  });
+}
+
+// ── Classic BP histology + DIF quick-fill ──
+function classicBPHistology() {
+  // Set Histology: Subepidermal Blister = Yes, Eos in Biopsy = Yes
+  // Set DIF: IgG = Positive, C3 = Positive
+  const fields = [
+    { name: 'subepidermal', value: 'Yes' },
+    { name: 'biopsy-eos',   value: 'Yes' },
+    { name: 'dif-igg',      value: 'Positive' },
+    { name: 'dif-c3',       value: 'Positive' },
+  ];
+  fields.forEach(({ name, value }) => {
+    document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+      r.closest('.radio-opt')?.classList.remove('selected');
+    });
+    const el = document.querySelector(`input[name="${name}"][value="${value}"]`);
+    if (el) { el.checked = true; el.closest('.radio-opt')?.classList.add('selected'); }
+  });
+}
+
+// ── Eosinophil delta warning ──
+function checkEosDelta() {
+  const atDx  = parseFloat(document.getElementById('eosinophils')?.value);
+  const peak  = parseFloat(document.getElementById('peak-eosinophils')?.value);
+  const warn  = document.getElementById('eos-delta-warning');
+  if (!warn) return;
+  if (!isNaN(atDx) && !isNaN(peak) && peak < atDx) {
+    warn.style.display = 'block';
+    document.getElementById('peak-eosinophils').style.background = '#fdecea';
+  } else {
+    warn.style.display = 'none';
+    if (document.getElementById('peak-eosinophils'))
+      document.getElementById('peak-eosinophils').style.background = '';
+  }
+}
+function onCeilingChange(fieldId, cb) {
+  const input = document.getElementById(fieldId);
+  const addon = document.getElementById(fieldId + '-addon');
+  if (!input) return;
+  if (cb.checked) {
+    input.disabled = true;
+    input.dataset.prevVal = input.value;
+    input.value = fieldId === 'bp180' ? 201 : 151;
+    if (addon) addon.classList.add('checked');
+  } else {
+    input.disabled = false;
+    input.value = input.dataset.prevVal || '';
+    if (addon) addon.classList.remove('checked');
+  }
+}
+function calcSymptomsToDx() {
+  const sympDate = document.getElementById('symptoms-date')?.value;
+  const dxDate   = document.getElementById('dx-date')?.value;
+  const display  = document.getElementById('symptoms-to-dx-display');
+  const hidden   = document.getElementById('symptoms-to-dx-days');
+  if (sympDate && dxDate) {
+    const days = daysBetween(parseLocalDate(sympDate), parseLocalDate(dxDate));
+    if (days >= 0) {
+      if (display) display.textContent = days;
+      if (hidden)  hidden.value = days;
+      // Recalc drug→symptoms for all drug cards
+      document.querySelectorAll('.drug-start-date').forEach(el => calcDrugToSymptoms(el));
+      return;
+    }
+  }
+  if (display) display.textContent = '—';
+  if (hidden)  hidden.value = '';
+}
+
+// ── Symptoms date in severity card (mirrors to Baseline) ──
+function calcSymptomsToDxFromSeverity(el) {
+  const card     = el.closest('.severity-card');
+  const sympDate = el.value ? parseLocalDate(el.value) : null;
+  const dxDate   = getDxDate();
+  const display  = card.querySelector('.sev-symptoms-to-dx');
+  if (dxDate && sympDate && dxDate >= sympDate) {
+    const days = daysBetween(sympDate, dxDate);
+    if (display) display.textContent = days;
+    // Mirror back to baseline field
+    const baseInput = document.getElementById('symptoms-date');
+    if (baseInput && !baseInput.value) {
+      baseInput.value = el.value;
+      document.getElementById('symptoms-to-dx-days').value = days;
+      document.getElementById('symptoms-to-dx-display').textContent = days;
+    }
+  } else {
+    if (display) display.textContent = '—';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DATE CALCULATIONS
+// ══════════════════════════════════════════════════════════════
+
+// Returns diagnosis date as a Date object (from dx-date field)
+function getDxDate() {
+  const v = document.getElementById('dx-date')?.value;
+  return v ? parseLocalDate(v) : null;
+}
+
+// Baseline: when dx-date changes, nothing to display but store it
+function onDxDateChange() {
+  mirrorDxDateToSeverity();
+  calcSevFollowup();
+  calcDxToWorst();
+  calcRemissionMonths();
+  calcRelapseMonths();
+  calcSymptomsToDx();
+}
+
+// Days between two dates
+function daysBetween(d1, d2) {
+  return Math.round((d2 - d1) / 86400000);
+}
+
+// Parse YYYY-MM-DD as LOCAL date (avoids UTC off-by-one in Israel UTC+2/3)
+function parseLocalDate(dateStr) {
+  if (!dateStr) return null;
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function calcCumulativeCS() {} // no longer used — kept as stub
+
+// ── Radio/checkbox visual handler ──
+document.addEventListener('change', e => {
+  const opt = e.target.closest('.radio-opt, .check-opt');
+  if (!opt) return;
+  const input = e.target;
+  if (input.type === 'radio') {
+    document.querySelectorAll(`input[name="${input.name}"]`).forEach(r => {
+      r.closest('.radio-opt')?.classList.remove('selected');
+    });
+  }
+  if (input.checked) opt.classList.add('selected');
+  else opt.classList.remove('selected');
+});
+
+// ══════════════════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════════════════
+function showToast(msg, type = 'loading') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  if (type !== 'loading') setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DATA COLLECTION HELPERS
+// ══════════════════════════════════════════════════════════════
+function getRadio(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : '';
+}
+function getCheckboxes(name) {
+  return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
+    .map(el => el.value).join(', ');
+}
+
+// ── Clinical variant — multi-select with Other free text ──
+function getClinicalVariant() {
+  const checked = Array.from(document.querySelectorAll('input[name="clinical-variant"]:checked'))
+    .map(el => el.value);
+  if (checked.includes('Other')) {
+    const otherText = document.getElementById('variant-other-text')?.value.trim();
+    if (otherText) {
+      return checked.filter(v => v !== 'Other').concat(otherText).join(', ');
+    }
+  }
+  return checked.join(', ');
+}
+
+function onVariantOtherChange(cb) {
+  const textEl = document.getElementById('variant-other-text');
+  if (textEl) {
+    textEl.style.display = cb.checked ? 'block' : 'none';
+    if (!cb.checked) textEl.value = '';
+  }
+}
+
+function prefillClinicalVariant(storedValue) {
+  if (!storedValue) return;
+  const known = ['Classic BP','Vegetating BP','Vesicular BP','Dyshidrosiform BP',
+                 'Nodular BP','Eczematous BP','Urticarial BP','Drug-induced BP'];
+  const parts = storedValue.split(',').map(v => v.trim());
+  parts.forEach(v => {
+    if (known.includes(v)) {
+      const el = document.querySelector(`input[name="clinical-variant"][value="${v}"]`);
+      if (el) { el.checked = true; el.closest('.check-opt')?.classList.add('selected'); }
+    } else if (v) {
+      const otherEl = document.querySelector('input[name="clinical-variant"][value="Other"]');
+      if (otherEl) {
+        otherEl.checked = true;
+        otherEl.closest('.check-opt')?.classList.add('selected');
+        onVariantOtherChange(otherEl);
+        const textEl = document.getElementById('variant-other-text');
+        if (textEl) textEl.value = v;
+      }
+    }
+  });
+}
+function val(id) {
+  const el = document.getElementById(id);
+  return el ? el.value : '';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  COLLECT SECTION DATA
+// ══════════════════════════════════════════════════════════════
+function collectSection(idx) {
+  const pid       = document.getElementById('global-pid').value.trim();
+  const collector = document.getElementById('collector-name').value.trim();
+  const ts        = new Date().toISOString();
+
+  switch (idx) {
+    case 0: {
+      const dxDate  = val('dx-date');
+      const dxYear  = dxDate ? new Date(dxDate).getFullYear() : '';
+      return { sheet: SHEET_NAMES[0], rows: [
+        // Row 1: Patient_Baseline
+        { sheet: 'Patient_Baseline', row: [
+          pid, getRadio('sex'), val('age-dx'), dxYear,
+          val('dx-date'),
+          val('ethnicity'), val('frailty'),
+          val('symptoms-date'), val('symptoms-to-dx-days'),
+          val('date-of-death'), val('cause-death-baseline'),
+          collector, ts
+        ]},
+        // Row 2: Comorbidities (saved simultaneously)
+        { sheet: 'Comorbidities', row: [
+          pid, getRadio('antipsych'), val('neuro-year'),
+          val('comorbidity-neuro'),
+          val('comorbidity-dm'), val('comorbidity-htn'),
+          val('comorbidity-ihd'), val('comorbidity-malig'),
+          val('comorbidity-autoimm'), val('comorbidity-ckd'),
+          val('comorbidity-smoker'), val('comorbidity-depression'),
+          collector, ts
+        ]}
+      ]};
+    }
+    case 1: return { sheet: SHEET_NAMES[1], row: [
+      pid, getClinicalVariant(), getRadio('mucosal'),
+      getCheckboxes('dist'), getRadio('pruritus-present'), collector, ts
+    ]};
+    case 2: return { sheet: SHEET_NAMES[2], row: [
+      pid,
+      val('sev-followup-date'), val('sev-followup-years'),
+      getRadio('pruritus-dx'), val('dist-dx'),
+      getRadio('pruritus-worst'), val('dist-worst'),
+      val('date-worst'), val('dx-to-worst-months'),
+      val('enc-y1'), val('enc-y3'), val('enc-total'),
+      val('sev-hosp'),
+      val('visits-relapse'), val('visits-remission'), val('visits-partial'),
+      val('n-relapses'),
+      val('calc-rfu-val'),
+      val('calc-burden-y1-val'), val('calc-burden-y3-val'), val('calc-burden-overall-val'),
+      collector, ts
+    ]};
+    case 3: return { sheet: SHEET_NAMES[3], row: [
+      pid, val('lab-year'), getRadio('dif-igg'), getRadio('dif-c3'),
+      getRadio('iif'), val('iif-titer'), val('bp180'), val('bp230'),
+      val('total-ige'), val('peak-ige'), val('peak-ige-date'),
+      val('eosinophils'), val('peak-eosinophils'), val('peak-eos-date'),
+      val('albumin'),
+      getRadio('subepidermal'), getRadio('biopsy-eos'),
+      collector, ts
+    ]};
+    case 4: {
+      const rows = [];
+      document.querySelectorAll('.drug-trigger-card').forEach((card, i) => {
+        const n = i + 1;
+        const trigVal  = card.querySelector(`input[name="drug-trigger-${n}"]:checked`)?.value || '';
+        const drugDate = card.querySelector('.drug-start-date')?.value || '';
+        const sympDate = document.getElementById('symptoms-date')?.value || '';
+        let drugToSymp = '';
+        if (drugDate && sympDate) {
+          const d = daysBetween(new Date(drugDate), new Date(sympDate));
+          if (d >= 0) drugToSymp = d;
+        }
+        rows.push([
+          pid, n,
+          trigVal,
+          card.querySelector('.drug-trigger-class')?.value || '',
+          card.querySelector('.drug-specific')?.value      || '',
+          card.querySelector(`input[name="drug-dc-${n}"]:checked`)?.value     || '',
+          card.querySelector(`input[name="drug-improv-${n}"]:checked`)?.value || '',
+          drugDate,
+          drugDate && sympDate ? (() => {
+            const d = daysBetween(parseLocalDate(drugDate), parseLocalDate(sympDate));
+            return d >= 0 ? d : '';
+          })() : '',
+          collector, ts
+        ]);
+      });
+      return { sheet: SHEET_NAMES[4], rows };
+    }
+    case 5: {
+      const lines = [];
+      document.querySelectorAll('.treatment-line-item').forEach((row, i) => {
+        lines.push([
+          pid, i + 1,
+          row.querySelector('.tx-drug')?.value      || '',
+          row.querySelector('.tx-start')?.value     || '',
+          row.querySelector('.tx-end')?.value       || '',
+          row.querySelector('.tx-response')?.value  || '',
+          row.querySelector('.tx-dc-reason')?.value || '',
+          collector, ts
+        ]);
+      });
+      return { sheet: SHEET_NAMES[5], rows: lines };
+    }
+    case 6: return { sheet: SHEET_NAMES[6], row: [
+      pid,
+      getRadio('cr-achieved'), getRadio('cr-type'),
+      getRadio('disease-status'),
+      val('date-remission'), val('time-remission'),
+      getRadio('relapse'), getRadio('relapse-context'),
+      val('date-relapse'), val('time-relapse'),
+      val('max-steroid-dose'), val('dose-last-fu'), val('escalations-above-20'),
+      getCheckboxes('tx-received'),
+      getRadio('mortality'),
+      collector, ts
+    ]};
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TREATMENT LINE BUILDER — simplified drug log table
+// ══════════════════════════════════════════════════════════════
+let lineCount = 0;
+
+const TX_DRUG_OPTIONS = `
+  <optgroup label="Corticosteroids">
+    <option>Systemic CS (prednisone/prednisolone)</option>
+    <option>Topical superpotent CS</option>
+  </optgroup>
+  <optgroup label="Steroid-sparing">
+    <option>Dapsone</option>
+    <option>Tetracycline + nicotinamide</option>
+    <option>Methotrexate</option>
+    <option>Azathioprine</option>
+    <option>MMF (mycophenolate mofetil)</option>
+    <option>Cyclosporine</option>
+  </optgroup>
+  <optgroup label="Biologics / advanced">
+    <option>Rituximab</option>
+    <option>Omalizumab</option>
+    <option>Dupilumab</option>
+    <option>IVIG</option>
+  </optgroup>`;
+
+function validateTxDate(input) {
+  const v = input.value.trim();
+  if (!v) { input.classList.remove('tx-date-err'); return; }
+  const ok = /^(1[0-2]|[1-9])\/\d{4}$/.test(v);
+  input.classList.toggle('tx-date-err', !ok);
+}
+
+function addTreatmentLine() {
+  lineCount++;
+  const tbody = document.getElementById('treatment-lines');
+  if (!tbody) return;
+  const tr = document.createElement('tr');
+  tr.className = 'treatment-line-item';
+  tr.innerHTML = `
+    <td><select class="tx-drug"><option value="">— Select —</option>${TX_DRUG_OPTIONS}</select></td>
+    <td><input type="text" class="tx-start tx-date-input" placeholder="M/YYYY" /></td>
+    <td><input type="text" class="tx-end tx-date-input" placeholder="ongoing" /></td>
+    <td><select class="tx-response">
+      <option value="">— Select —</option>
+      <option>Complete</option>
+      <option>Partial</option>
+      <option>None</option>
+      <option>Unknown</option>
+    </select></td>
+    <td><select class="tx-dc-reason">
+      <option value="">— Select —</option>
+      <option>Still ongoing</option>
+      <option>Remission</option>
+      <option>Adverse event</option>
+      <option>Failure</option>
+      <option>Unknown</option>
+    </select></td>
+    <td><button class="tx-remove-btn" title="Remove">✕</button></td>`;
+  tr.querySelectorAll('.tx-date-input').forEach(inp =>
+    inp.addEventListener('blur', () => validateTxDate(inp)));
+  tr.querySelector('.tx-remove-btn').addEventListener('click', () => tr.remove());
+  tbody.appendChild(tr);
+}
+
+// Init
+addTreatmentLine();
+addDrugTriggerCard();
+initConditionals();
+mirrorDxDateToSeverity();
 </script>
 </body>
 </html>
