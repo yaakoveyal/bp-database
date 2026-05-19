@@ -1,4 +1,1 @@
-{
-  "prompt": "A crisp, high-resolution favicon icon design for a medical data registry named 'BP Registry'. The icon is a sharp square with a dark aesthetic theme. The background color is flat dark charcoal navy blue (#161b22). Centered in the middle is a minimalist, thick white medical cross icon. Subtle modern monospace text letters 'BP' are cleanly integrated next to the cross in a light blue accent color (#58a6ff). The design is completely flat, vector style, centered, pixel-perfect, with no realistic shadows, gradients, or 3D effects, optimized to look sharp at a very small size.",
-  "aspect_ratio": "1:1"
-}
+
