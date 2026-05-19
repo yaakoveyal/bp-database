@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="light dark" />
 <title>BP Registry</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <style>
@@ -10,6 +11,7 @@
    DESIGN TOKENS
 ═══════════════════════════════════════════════ */
 :root {
+  color-scheme: only dark;
   --bg:         #0d1117;
   --surface:    #161b22;
   --surface2:   #1c2330;
@@ -33,6 +35,121 @@
   --header-h:   64px;
   --tab-h:      44px;
 }
+
+body.light-mode {
+  color-scheme: only light;
+  --bg:         #eceae4;
+  --surface:    #1e2d40;
+  --surface2:   #f5f3ee;
+  --border:     #c9c4b8;
+  --border2:    #dedad2;
+  --text:       #1a1f26;
+  --text-muted: #4a5568;
+  --text-dim:   #9aa5b4;
+  --accent:     #2563a8;
+  --accent-dim: #dbeafe;
+  --green:      #1a7f37;
+  --green-dim:  #d1f5dc;
+  --red:        #cf222e;
+  --red-dim:    #ffdcd7;
+  --yellow:     #9a6700;
+  --yellow-dim: #fff8c5;
+}
+
+/* Light mode — explicit overrides for inputs and cards */
+body.light-mode .field-input,
+body.light-mode .field-select,
+body.light-mode .field-textarea {
+  background: #f5f3ee !important;
+  color: #1a1f26 !important;
+  -webkit-text-fill-color: #1a1f26 !important;
+  border-color: #c9c4b8 !important;
+}
+body.light-mode .field-input::placeholder,
+body.light-mode .field-textarea::placeholder {
+  color: #9aa5b4 !important;
+  -webkit-text-fill-color: #9aa5b4 !important;
+}
+
+body.light-mode .computed-val {
+  background: #e8e4dc;
+  color: #4a5568;
+  border-color: #c9c4b8;
+}
+
+body.light-mode .dyn-card,
+body.light-mode .visit-card {
+  background: #f5f3ee;
+  border-color: #c9c4b8;
+}
+
+body.light-mode .radio-btn {
+  background: #ffffff;
+  border-color: #c8d0d8;
+  color: #4a5568;
+}
+body.light-mode .radio-btn:hover { border-color: #0969da; color: #1a1f26; }
+body.light-mode .radio-btn.selected { background: #dbeafe; border-color: #0969da; color: #0969da; }
+
+body.light-mode .check-chip {
+  background: #ffffff;
+  border-color: #c8d0d8;
+  color: #4a5568;
+}
+body.light-mode .check-chip.checked { background: #dbeafe; border-color: #0969da; color: #0969da; }
+
+body.light-mode .btn-add-card {
+  border-color: #c8d0d8;
+  color: #4a5568;
+}
+body.light-mode .btn-add-card:hover { border-color: #0969da; color: #0969da; }
+
+body.light-mode .section-title { color: #1a1f26; font-weight: 700; }
+body.light-mode .form-section-label { color: #9aa5b4; }
+
+body.light-mode #header { background: #1e2d40; border-color: #162230; }
+body.light-mode #header .logo { color: #7eb8e8; }
+body.light-mode #header .header-label { color: #a0b8cc; }
+body.light-mode #header .pid-wrap { background: #162230; border-color: #2a4060; }
+body.light-mode #header #pid-input { color: #e6edf3 !important; -webkit-text-fill-color: #e6edf3 !important; }
+body.light-mode #header .header-input { background: #162230 !important; color: #e6edf3 !important; -webkit-text-fill-color: #e6edf3 !important; border-color: #2a4060 !important; }
+body.light-mode #header .pid-prefix { color: #7eb8e8; }
+body.light-mode #header .header-sep { background: #2a4060; }
+body.light-mode #header .btn-ghost { border-color: #2a4060; color: #a0b8cc; }
+body.light-mode #header #theme-toggle { border-color: #2a4060; color: #a0b8cc; }
+body.light-mode #tab-bar { background: #f5f3ee; border-color: #c9c4b8; }
+body.light-mode .tab-btn { color: #4a5568; }
+body.light-mode .tab-btn.active { color: #2563a8; border-bottom-color: #2563a8; }
+
+body.light-mode .visit-card-header:hover { background: rgba(9,105,218,.04); }
+body.light-mode .visit-card.expanded { border-color: #0969da; }
+
+body.light-mode #verify-card { border-color: #9a6700; background: #fff8c5; }
+body.light-mode .verify-key { color: #4a5568; }
+body.light-mode .verify-val { color: #1a1f26; }
+
+body.light-mode .password-box { background: #ffffff; border-color: #c8d0d8; }
+body.light-mode .password-box input { background: #f6f8fa; color: #1a1f26; border-color: #c8d0d8; }
+
+body.light-mode .toast { background: #ffffff; border-color: #c8d0d8; color: #1a1f26; }
+
+body.light-mode .status-option { background: #ffffff; border-color: #c8d0d8; color: #4a5568; }
+
+/* theme toggle button */
+#theme-toggle {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 14px;
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+#theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -238,7 +355,7 @@ body {
 ═══════════════════════════════════════════════ */
 #tab-bar {
   position: sticky;
-  top: var(--header-h);
+  top: 0;
   z-index: 90;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
@@ -358,6 +475,13 @@ body {
   outline: none;
   transition: border-color .15s;
   width: 100%;
+  -webkit-text-fill-color: var(--text);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.field-select {
+  -webkit-appearance: auto;
+  appearance: auto;
 }
 .field-input:focus,
 .field-select:focus,
@@ -516,9 +640,11 @@ body {
   user-select: none;
 }
 .status-option:hover { border-color: var(--text-muted); color: var(--text); }
-.status-option.sel-flare    { background: var(--red-dim);    border-color: var(--red);    color: var(--red); }
-.status-option.sel-partial  { background: var(--yellow-dim); border-color: var(--yellow); color: var(--yellow); }
-.status-option.sel-complete { background: var(--green-dim);  border-color: var(--green);  color: var(--green); }
+.status-option.sel-flare       { background: var(--red-dim);    border-color: var(--red);    color: var(--red); }
+.status-option.sel-partial     { background: var(--yellow-dim); border-color: var(--yellow); color: var(--yellow); }
+.status-option.sel-complete    { background: var(--green-dim);  border-color: var(--green);  color: var(--green); }
+.status-option.sel-no-response { background: var(--surface2);   border-color: var(--text-muted); color: var(--text-muted); }
+.badge-no-response { background: var(--surface); color: var(--text-muted); border: 1px solid var(--border); }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 
 /* ═══════════════════════════════════════════════
@@ -723,13 +849,168 @@ body {
 }
 .password-error.show { display: block; }
 
+
+/* ═══════════════════════════════════════════════
+   MOBILE — ≤600px
+═══════════════════════════════════════════════ */
+@media (max-width: 600px) {
+
+  :root {
+    --header-h: 100px;
+    --tab-h:    38px;
+  }
+
+  /* Header: two rows via flex-wrap */
+  #header {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 8px 12px;
+    gap: 6px 8px;
+  }
+  #header .logo { font-size: 12px; order: 1; }
+  #header .header-sep { display: none; }
+  #header .pid-wrap { order: 2; }
+  #header #pid-badge { order: 3; }
+  #header #autosave-dot { order: 4; }
+  #header .spacer { order: 5; flex: 1; }
+  #header #theme-toggle { order: 6; }
+  /* Force collector + buttons to second row */
+  #header .header-field { order: 10; flex: 1; min-width: 120px; width: auto; }
+  #header #btn-new { order: 11; }
+  #header #btn-save { order: 12; }
+
+  .pid-wrap { height: 32px; }
+  #pid-input { width: 55px; font-size: 12px; }
+
+  .header-input { width: 100%; font-size: 12px; height: 32px; flex: 1; }
+  .header-field { flex: 1; }
+  .header-label { display: none; }
+
+  .btn { height: 30px; padding: 0 10px; font-size: 11px; }
+  #theme-toggle { width: 30px; height: 30px; font-size: 13px; }
+  #autosave-dot { display: none; }
+  .spacer { display: none; }
+
+  /* Tab bar — smaller, all tabs fit */
+  #tab-bar { padding: 0 8px; gap: 0; }
+  .tab-btn {
+    padding: 0 9px;
+    font-size: 9px;
+    letter-spacing: .02em;
+    flex: 1;
+    justify-content: center;
+  }
+  .tab-dot { display: none; }
+
+  /* Main */
+  #main { padding: 14px 12px 80px; }
+
+  .section-header { margin-bottom: 14px; padding-bottom: 8px; }
+  .section-title  { font-size: 13px; }
+  .section-subtitle { display: none; }
+
+  /* Form grid — 2 columns on mobile */
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px 10px;
+  }
+  .form-grid.cols-3 { grid-template-columns: repeat(2, 1fr); }
+
+  /* Fields */
+  .field-label { font-size: 10px; }
+  .field-input,
+  .field-select { font-size: 13px; padding: 7px 8px; }
+  .computed-val { font-size: 11px; padding: 7px 8px; }
+
+  /* Radio buttons — larger tap targets */
+  .radio-btn { padding: 7px 10px; font-size: 12px; }
+
+  /* Chips */
+  .check-chip { padding: 5px 8px; font-size: 11px; }
+
+  /* Cards */
+  .dyn-card { padding: 10px 12px; }
+  .form-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+
+  /* Visit cards */
+  .visit-form-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 10px;
+  }
+  .visit-card-header { padding: 8px 10px; }
+  .visit-card-date   { font-size: 11px; }
+  .visit-status-badge { font-size: 9px; padding: 2px 6px; }
+
+  /* Status selector — vertical stack on mobile */
+  .status-selector { flex-direction: column; gap: 6px; }
+  .status-option   { min-width: unset; padding: 10px 12px; font-size: 12px; }
+
+  /* Verify card */
+  #verify-card { flex-direction: column; gap: 10px; padding: 10px 12px; }
+  .verify-fields { gap: 10px; }
+  .verify-pair { flex-direction: row; gap: 6px; align-items: center; }
+  .verify-key  { min-width: 60px; }
+
+  /* Password gate */
+  .password-box { width: calc(100vw - 40px); padding: 24px 20px; }
+
+  /* Add card button */
+  .btn-add-card { font-size: 12px; padding: 10px; }
+
+  /* Span-full always full on mobile */
+  .field.span-2 { grid-column: 1 / -1; }
+}
+
+
+/* Dark mode — force colors so iOS Safari doesn't override */
+body:not(.light-mode) .field-input,
+body:not(.light-mode) .field-select,
+body:not(.light-mode) .field-textarea {
+  background: #1c2330 !important;
+  color: #e6edf3 !important;
+  -webkit-text-fill-color: #e6edf3 !important;
+  border-color: #30363d !important;
+}
+body:not(.light-mode) .field-input::placeholder,
+body:not(.light-mode) .field-textarea::placeholder {
+  color: #484f58 !important;
+  -webkit-text-fill-color: #484f58 !important;
+}
+body:not(.light-mode) .computed-val {
+  background: #0d1117 !important;
+  color: #8b949e !important;
+}
+
+
+/* Force input appearance via data-theme — bypasses iOS system color-scheme */
+[data-theme="light"] input:not([type=hidden]):not([type=radio]):not([type=checkbox]),
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  background-color: #f5f3ee !important;
+  color: #1a1f26 !important;
+  -webkit-text-fill-color: #1a1f26 !important;
+  border-color: #c9c4b8 !important;
+  -webkit-box-shadow: 0 0 0 100px #f5f3ee inset !important;
+  box-shadow: 0 0 0 100px #f5f3ee inset !important;
+}
+[data-theme="dark"] input:not([type=hidden]):not([type=radio]):not([type=checkbox]),
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background-color: #1c2330 !important;
+  color: #e6edf3 !important;
+  -webkit-text-fill-color: #e6edf3 !important;
+  border-color: #30363d !important;
+  -webkit-box-shadow: 0 0 0 100px #1c2330 inset !important;
+  box-shadow: 0 0 0 100px #1c2330 inset !important;
+}
+
 /* scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 </style>
-   </head>
+</head>
 <body>
 
 <!-- ═══════════════════════════════════════════
@@ -750,25 +1031,20 @@ body {
 <header id="header">
   <span class="logo">BP·REG</span>
   <div class="header-sep"></div>
-
   <div class="pid-wrap" title="Enter patient BP-ID">
     <span class="pid-prefix">BP-</span>
     <input id="pid-input" type="text" maxlength="4" placeholder="0001"
            autocomplete="off" spellcheck="false" />
   </div>
   <span id="pid-badge"></span>
-
   <div class="header-sep"></div>
-
   <div class="header-field">
     <span class="header-label">Collector</span>
     <input id="collector-name" class="header-input" type="text" placeholder="Your name" autocomplete="off" />
   </div>
-
   <div id="autosave-dot" title="Autosave status"></div>
-
   <div class="spacer"></div>
-
+  <button id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">☀</button>
   <button class="btn btn-ghost" id="btn-new" onclick="resetAll()">↺ New</button>
   <button class="btn btn-primary" id="btn-save" onclick="saveAllSections()" disabled>↑ Save All</button>
 </header>
@@ -1225,7 +1501,68 @@ const TRIGGER_CLASSES = ['DPP-4 inhibitor (gliptin)','PD-1 / PD-L1 inhibitor','F
 // ══════════════════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════════════════
+// ── Theme: inject a <style> tag to hard-override input colors ────
+function applyThemeStyle(isLight) {
+  // Tell iOS/Safari which color scheme we're using — prevents OS override
+  document.documentElement.style.colorScheme = isLight ? 'only light' : 'only dark';
+  document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
+
+  // Inject stylesheet
+  let el = document.getElementById('theme-override-style');
+  if (!el) {
+    el = document.createElement('style');
+    el.id = 'theme-override-style';
+    document.head.appendChild(el);
+  }
+  const bg   = isLight ? '#f5f3ee' : '#1c2330';
+  const text = isLight ? '#1a1f26' : '#e6edf3';
+  const ph   = isLight ? '#9aa5b4' : '#484f58';
+  const bdr  = isLight ? '#c9c4b8' : '#30363d';
+
+  el.textContent = `
+    input:not([type=hidden]):not([type=radio]):not([type=checkbox]),
+    select, textarea {
+      background-color: ${bg} !important;
+      color: ${text} !important;
+      -webkit-text-fill-color: ${text} !important;
+      border-color: ${bdr} !important;
+      -webkit-box-shadow: 0 0 0 100px ${bg} inset !important;
+      box-shadow: 0 0 0 100px ${bg} inset !important;
+    }
+  `;
+
+  // Also set inline styles on every visible input (iOS Safari last resort)
+  document.querySelectorAll(
+    'input:not([type=hidden]):not([type=radio]):not([type=checkbox]), select, textarea'
+  ).forEach(el => {
+    el.style.setProperty('background-color', bg, 'important');
+    el.style.setProperty('color', text, 'important');
+    el.style.setProperty('-webkit-text-fill-color', text, 'important');
+    el.style.setProperty('border-color', bdr, 'important');
+    el.style.setProperty('-webkit-box-shadow', '0 0 0 100px ' + bg + ' inset', 'important');
+  });
+}
+
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light-mode');
+  localStorage.setItem('bp_theme', isLight ? 'light' : 'dark');
+  document.getElementById('theme-toggle').textContent = isLight ? '☾' : '☀';
+  applyThemeStyle(isLight);
+}
+
 (function init() {
+  // Restore theme preference
+  const savedTheme = localStorage.getItem('bp_theme');
+  const isLight = savedTheme === 'light';
+  if (isLight) {
+    document.body.classList.add('light-mode');
+    document.getElementById('theme-toggle').textContent = '☾';
+  }
+  // Apply immediately and again after a short delay to catch all rendered inputs
+  applyThemeStyle(isLight);
+  setTimeout(() => applyThemeStyle(isLight), 300);
+  setTimeout(() => applyThemeStyle(isLight), 1000);
+
   // Collector name persistence
   const saved = localStorage.getItem('bp_collector');
   const el = document.getElementById('collector-name');
@@ -1404,6 +1741,7 @@ function switchTab(idx) {
   document.querySelectorAll('.section').forEach((s,i) => s.classList.toggle('active', i === idx));
   document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i === idx));
   activeTab = idx;
+  setTimeout(() => applyThemeStyle(document.body.classList.contains('light-mode')), 50);
 }
 
 function saveTabSilent(idx) {
@@ -1742,6 +2080,20 @@ function addVisitCard() {
       </div>
 
       <div class="field">
+        <label class="field-label">Topical Steroids</label>
+        <div class="radio-group" id="vc-topical-group-${vid}">
+          <div class="radio-btn" data-val="Y" onclick="pickRadioV('vc-topical-group-${vid}','vc-topical-${vid}',this);toggleTopicalDetail(${vid})">Yes</div>
+          <div class="radio-btn" data-val="N" onclick="pickRadioV('vc-topical-group-${vid}','vc-topical-${vid}',this);toggleTopicalDetail(${vid})">No</div>
+        </div>
+        <input type="hidden" id="vc-topical-${vid}" />
+        <div id="vc-topical-detail-${vid}" style="display:none;margin-top:6px;">
+          <input class="field-input" type="text" id="vc-topical-name-${vid}"
+                 placeholder="e.g. Clobetasol 0.05%, Betamethasone cream…"
+                 style="font-size:12px;padding:6px 8px;" />
+        </div>
+      </div>
+
+      <div class="field">
         <label class="field-label">Abs. Eosinophils (×10⁹/L)</label>
         <input class="field-input" type="number" id="vc-eos-${vid}" placeholder="e.g. 0.3" step="0.01" />
       </div>
@@ -1765,6 +2117,10 @@ function addVisitCard() {
           <div class="status-option" data-val="Complete_Remission"
                onclick="pickVisitStatus(${vid},this,'Complete_Remission')">
             <span class="status-dot"></span> Complete Remission
+          </div>
+          <div class="status-option" data-val="No_Response"
+               onclick="pickVisitStatus(${vid},this,'No_Response')">
+            <span class="status-dot"></span> No Response
           </div>
         </div>
         <input type="hidden" id="vc-status-${vid}" />
@@ -1797,11 +2153,12 @@ function addVisitCard() {
   document.querySelectorAll('#visit-card-list .visit-card').forEach(c => c.classList.remove('expanded'));
 
   document.getElementById('visit-card-list').insertAdjacentHTML('beforeend', html);
+  applyThemeStyle(document.body.classList.contains('light-mode'));
   // Scroll new card + button into view
   setTimeout(() => {
     const card = document.getElementById(`vc-${vid}`);
-    const headerOffset = document.getElementById('header').offsetHeight +
-                         document.getElementById('tab-bar').offsetHeight + 8;
+    const headerOffset = document.getElementById('header').getBoundingClientRect().bottom -
+                         document.body.getBoundingClientRect().top + 8;
     const top = card.getBoundingClientRect().top + window.scrollY - headerOffset;
     window.scrollTo({ top, behavior: 'smooth' });
   }, 50);
@@ -1830,15 +2187,27 @@ function pickVisitStatus(vid, el, val) {
   if (val === 'Flare')             el.classList.add('sel-flare');
   if (val === 'Partial_Remission') el.classList.add('sel-partial');
   if (val === 'Complete_Remission')el.classList.add('sel-complete');
+  if (val === 'No_Response')       el.classList.add('sel-no-response');
   document.getElementById(`vc-status-${vid}`).value = val;
 
   // Update badge in header
   const badge = document.getElementById(`vc-status-badge-${vid}`);
   badge.className = 'visit-status-badge';
-  const labels = { Flare: 'FLARE', Partial_Remission: 'PARTIAL', Complete_Remission: 'COMPLETE' };
-  const classes = { Flare: 'badge-flare', Partial_Remission: 'badge-partial', Complete_Remission: 'badge-complete' };
+  const labels = { Flare: 'FLARE', Partial_Remission: 'PARTIAL', Complete_Remission: 'COMPLETE', No_Response: 'NO RESP' };
+  const classes = { Flare: 'badge-flare', Partial_Remission: 'badge-partial', Complete_Remission: 'badge-complete', No_Response: 'badge-no-response' };
   badge.classList.add(classes[val]);
   badge.textContent = labels[val];
+}
+
+function toggleTopicalDetail(vid) {
+  const val = document.getElementById(`vc-topical-${vid}`).value;
+  const detail = document.getElementById(`vc-topical-detail-${vid}`);
+  if (!detail) return;
+  detail.style.display = val === 'Y' ? 'block' : 'none';
+  if (val !== 'Y') {
+    const input = document.getElementById(`vc-topical-name-${vid}`);
+    if (input) input.value = '';
+  }
 }
 
 function pickRadioV(groupId, hiddenId, el) {
@@ -1930,11 +2299,14 @@ function collectAllVisitRows(collector, ts) {
       g(`vc-pruritus-${vid}`),
       g(`vc-eos-${vid}`), g(`vc-ige-${vid}`),
       g(`vc-pred-${vid}`),
+      g(`vc-topical-${vid}`),
+      g(`vc-topical-name-${vid}`),
       agents[0], doses[0], agents[1], doses[1], agents[2], doses[2],
       g(`vc-hosp-${vid}`),
       status === 'Flare'             ? 'Y' : 'N',
       status === 'Partial_Remission' ? 'Y' : 'N',
       status === 'Complete_Remission'? 'Y' : 'N',
+      status === 'No_Response'       ? 'Y' : 'N',
       collector, ts
     ]);
   });
