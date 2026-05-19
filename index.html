@@ -1191,6 +1191,7 @@ async function checkPassword() {
 // ── Config ──────────────────────────────────────────────────────
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyrd52PFbVJ6qkRC65ZBvEdcJWHy3Fnjx6x3LOzm6NoyyfrYHEbWJefF3G8CHgyhapuHA/exec';
 const TOKEN           = 'BPReg2024Hd7xQmVk9';
+
 const PID_RE          = /^BP-\d{4}$/;
 
 // Sheet names for new tabs
@@ -1238,7 +1239,7 @@ const TRIGGER_CLASSES = ['DPP-4 inhibitor (gliptin)','PD-1 / PD-L1 inhibitor','F
   addSafetyDrugCard();
 
   // Warm-up ping
-  fetch(`${APPS_SCRIPT_URL}?token=${TOKEN}`, {redirect: 'follow'}).catch(()=>{});
+  fetch(`${APPS_SCRIPT_URL}?token=${TOKEN}`).catch(()=>{});
 
   // PID input listeners
   const pidInput = document.getElementById('pid-input');
@@ -1295,11 +1296,9 @@ async function onPIDBlur() {
   }
 
   try {
-    const r = await fetch(`${APPS_SCRIPT_URL}?token=${TOKEN}&action=lookup&pid=${pid}`, {redirect: 'follow'});
-    const text = await r.text();
-    let data;
-    try { data = JSON.parse(text); }
-    catch(e) { throw new Error('Bad response: ' + text.slice(0,100)); }
+    const params = new URLSearchParams({ token: TOKEN, action: 'lookup', pid });
+    const r = await fetch(`${APPS_SCRIPT_URL}?${params}`);
+    const data = await r.json();
     lookupCache[pid] = data;
     applyLookup(pid, data);
   } catch(err) {
@@ -1445,9 +1444,9 @@ async function sendSection(idx, silent) {
   if (!row) return null;
   if (!row.some(v => v !== '' && v !== currentPID)) return null; // skip empty
 
-  const url = `${APPS_SCRIPT_URL}?token=${TOKEN}&sheet=${sheet}&row=${encodeURIComponent(JSON.stringify(row))}`;
+  const params = new URLSearchParams({ token: TOKEN, sheet, row: JSON.stringify(row) });
   try {
-    const r = await fetch(url, {redirect: 'follow'});
+    const r = await fetch(`${APPS_SCRIPT_URL}?${params}`);
     const data = await r.json();
     if (!silent) {
       if (data.status === 'inserted' || data.status === 'updated') {
@@ -1565,13 +1564,13 @@ async function saveAllSections() {
   // Visit_Log — one save per visit card
   const visitRows = collectAllVisitRows(collector2, ts);
   visitRows.forEach(row => {
-    const url = `${APPS_SCRIPT_URL}?token=${TOKEN}&sheet=Visit_Log&row=${encodeURIComponent(JSON.stringify(row))}`;
+    const url = fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: "Visit_Log", row: JSON.stringify(row) })}`).then(r=>r.json());
     tasks.push(fetch(url).then(r=>{if(!r.ok&&r.status!==200)throw new Error(r.status);return r.json();}).catch(e=>({status:'error',message:e.toString()})));
   });
 
   // Comorbidities — separate sheet, saved alongside Baseline
   const comorbRow = collectComorbidities(currentPID, collector2, ts);
-  const comorbUrl = `${APPS_SCRIPT_URL}?token=${TOKEN}&sheet=Comorbidities&row=${encodeURIComponent(JSON.stringify(comorbRow))}`;
+  const comorbUrl = fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: "Comorbidities", row: JSON.stringify(comorbRow) })}`).then(r=>r.json());
   tasks.push(fetch(comorbUrl).then(r=>{if(!r.ok&&r.status!==200)throw new Error(r.status);return r.json();}).catch(e=>({status:'error',message:e.toString()})));
 
   // Section 2 — Drug Triggers: one row per card
@@ -1589,7 +1588,7 @@ async function saveAllSections() {
       fmtDate(cg('drug-start')),
       collector2, ts
     ];
-    const url = `${APPS_SCRIPT_URL}?token=${TOKEN}&sheet=Drug_Triggers&row=${encodeURIComponent(JSON.stringify(row))}`;
+    const url = fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: "Drug_Triggers", row: JSON.stringify(row) })}`).then(r=>r.json());
     tasks.push(fetch(url).then(r=>{if(!r.ok&&r.status!==200)throw new Error(r.status);return r.json();}).catch(e=>({status:'error',message:e.toString()})));
   });
 
