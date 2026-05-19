@@ -1414,29 +1414,7 @@ function saveTabSilent(idx) {
 // ══════════════════════════════════════════════════════════════════
 //  SAVE
 // ══════════════════════════════════════════════════════════════════
-async function saveAllSections() {
-  if (!currentPID || !confirmed) { toast('No confirmed patient selected', 'warn'); return; }
-  const collector = document.getElementById('collector-name').value.trim();
-  if (!collector) { toast('Please enter your collector name', 'warn'); return; }
-
-  setAutosave('saving');
-  invalidateCache();
-
-  const tasks = [0,1,2,3,4].map(i => sendSection(i, false));
-  const results = await Promise.all(tasks);
-  const errors = results.filter(r => r && r.status === 'error');
-
-  if (errors.length === 0) {
-    setAutosave('saved');
-    toast('All sections saved ✓', 'success');
-    // flip dots green
-    [0,1,2,3,4].forEach(i => setDot(i, 'green'));
-    lookupCache = {}; // invalidate
-  } else {
-    setAutosave('error');
-    toast(`${errors.length} section(s) failed`, 'error');
-  }
-}
+// saveAllSections defined below
 
 async function sendSection(idx, silent) {
   const sheet = SHEET_MAP[idx];
@@ -1557,27 +1535,32 @@ async function saveAllSections() {
   invalidateCache();
 
   const tasks = [];
+  const ts = new Date().toISOString();
 
   // Sections 0, 1, 4 — single row
   [0, 1, 4].forEach(i => tasks.push(sendSection(i, false)));
 
-  // Visit_Log — one save per visit card
-  const visitRows = collectAllVisitRows(collector2, ts);
+  // Comorbidities — saved alongside Baseline
+  const comorbRow = collectComorbidities(currentPID, collector, ts);
+  tasks.push(
+    fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: 'Comorbidities', row: JSON.stringify(comorbRow) })}`)
+      .then(r => r.json())
+      .catch(e => ({ status: 'error', message: e.toString() }))
+  );
+
+  // Visit_Log — one row per card
+  const visitRows = collectAllVisitRows(collector, ts);
   visitRows.forEach(row => {
-    const url = fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: "Visit_Log", row: JSON.stringify(row) })}`).then(r=>r.json());
-    tasks.push(fetch(url).then(r=>{if(!r.ok&&r.status!==200)throw new Error(r.status);return r.json();}).catch(e=>({status:'error',message:e.toString()})));
+    tasks.push(
+      fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: 'Visit_Log', row: JSON.stringify(row) })}`)
+        .then(r => r.json())
+        .catch(e => ({ status: 'error', message: e.toString() }))
+    );
   });
 
-  // Comorbidities — separate sheet, saved alongside Baseline
-  const comorbRow = collectComorbidities(currentPID, collector2, ts);
-  const comorbUrl = fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: "Comorbidities", row: JSON.stringify(comorbRow) })}`).then(r=>r.json());
-  tasks.push(fetch(comorbUrl).then(r=>{if(!r.ok&&r.status!==200)throw new Error(r.status);return r.json();}).catch(e=>({status:'error',message:e.toString()})));
-
-  // Section 2 — Drug Triggers: one row per card
-  const cards = document.querySelectorAll('#drug-trigger-list .dyn-card');
-  const collector2 = collector;
-  const ts = new Date().toISOString();
-  cards.forEach((card, i) => {
+  // Drug Triggers — one row per card
+  const dtCards = document.querySelectorAll('#drug-trigger-list .dyn-card');
+  dtCards.forEach((card, i) => {
     const hidden = field => (card.querySelector(`input[data-field="${field}"]`) || {}).value || '';
     const cg     = field => (card.querySelector(`[data-field="${field}"]`) || {}).value || '';
     const row = [
@@ -1586,10 +1569,13 @@ async function saveAllSections() {
       cg('specific-drug'),
       hidden('dc'), hidden('improv'),
       fmtDate(cg('drug-start')),
-      collector2, ts
+      collector, ts
     ];
-    const url = fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: "Drug_Triggers", row: JSON.stringify(row) })}`).then(r=>r.json());
-    tasks.push(fetch(url).then(r=>{if(!r.ok&&r.status!==200)throw new Error(r.status);return r.json();}).catch(e=>({status:'error',message:e.toString()})));
+    tasks.push(
+      fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: 'Drug_Triggers', row: JSON.stringify(row) })}`)
+        .then(r => r.json())
+        .catch(e => ({ status: 'error', message: e.toString() }))
+    );
   });
 
   const results = await Promise.all(tasks);
