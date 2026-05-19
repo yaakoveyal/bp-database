@@ -674,6 +674,55 @@ body {
 }
 .visit-card-remove:hover { color: var(--red); background: var(--red-dim); }
 
+
+/* ═══════════════════════════════════════════════
+   PASSWORD GATE
+═══════════════════════════════════════════════ */
+.password-gate {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+}
+.password-gate.hidden { display: none; }
+.password-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 40px; width: 340px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  display: flex; flex-direction: column; gap: 18px;
+}
+.password-box h2 {
+  font-family: var(--mono); font-size: 13px;
+  font-weight: 600; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent);
+}
+.password-box p {
+  font-size: 12px; color: var(--text-muted); line-height: 1.5;
+}
+.password-box input {
+  font-family: var(--mono); font-size: 14px;
+  background: var(--bg);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  color: var(--text);
+  padding: 10px 14px; width: 100%; letter-spacing: .1em;
+  outline: none;
+}
+.password-box input:focus { border-color: var(--accent); }
+.password-box button {
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase;
+  background: var(--accent); color: #0d1117;
+  border: none; padding: 11px; border-radius: var(--radius);
+  cursor: pointer; transition: background .15s;
+}
+.password-box button:hover { background: #79b8ff; }
+.password-error {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--red); display: none; text-align: center;
+}
+.password-error.show { display: block; }
+
 /* scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -686,6 +735,18 @@ body {
 <!-- ═══════════════════════════════════════════
      HEADER
 ════════════════════════════════════════════ -->
+
+<div class="password-gate" id="password-gate">
+  <div class="password-box">
+    <h2>BP Registry</h2>
+    <p>Enter the access password to continue. Contact the registry administrator if you don't have it.</p>
+    <input type="password" id="password-input" placeholder="Password"
+           onkeydown="if(event.key==='Enter') checkPassword()" />
+    <button onclick="checkPassword()">→ Enter</button>
+    <div class="password-error" id="password-error">Incorrect password — try again</div>
+  </div>
+</div>
+
 <header id="header">
   <span class="logo">BP·REG</span>
   <div class="header-sep"></div>
@@ -1082,6 +1143,50 @@ body {
 ════════════════════════════════════════════ -->
 <script>
 'use strict';
+
+// ══════════════════════════════════════════════════════════════════
+//  PASSWORD GATE
+//  Hash stored, never the plain password.
+//  To generate a new hash, run in browser console:
+//    crypto.subtle.digest('SHA-256', new TextEncoder().encode('yourpassword'))
+//      .then(b => console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
+// ══════════════════════════════════════════════════════════════════
+const PASSWORD_HASH = '8d295894f51dc143bf085fb33fe1c070d47c5b3ea0f2493b07b617f7ac81a13b';
+const SESSION_KEY   = 'bp_registry_auth';
+const SESSION_HOURS = 8;
+
+async function hashPassword(pwd) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pwd));
+  return [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2,'0')).join('');
+}
+
+async function checkPassword() {
+  const input = document.getElementById('password-input').value;
+  const hash  = await hashPassword(input);
+  if (hash === PASSWORD_HASH) {
+    const expiry = Date.now() + SESSION_HOURS * 60 * 60 * 1000;
+    sessionStorage.setItem(SESSION_KEY, expiry.toString());
+    document.getElementById('password-gate').classList.add('hidden');
+    document.getElementById('password-input').value = '';
+  } else {
+    const err = document.getElementById('password-error');
+    err.classList.add('show');
+    document.getElementById('password-input').value = '';
+    document.getElementById('password-input').focus();
+    setTimeout(() => err.classList.remove('show'), 3000);
+  }
+}
+
+// Check session on load — skip gate if still valid
+(function checkSession() {
+  const expiry = sessionStorage.getItem(SESSION_KEY);
+  if (expiry && Date.now() < parseInt(expiry)) {
+    document.getElementById('password-gate').classList.add('hidden');
+  } else {
+    setTimeout(() => document.getElementById('password-input')?.focus(), 100);
+  }
+})();
+
 
 // ── Config ──────────────────────────────────────────────────────
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyrd52PFbVJ6qkRC65ZBvEdcJWHy3Fnjx6x3LOzm6NoyyfrYHEbWJefF3G8CHgyhapuHA/exec';
