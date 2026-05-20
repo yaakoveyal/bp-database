@@ -1664,9 +1664,11 @@ async function onPIDBlur() {
   mirrorPID(pid);
   setBadge('loading');
   setAutosave('');
+  setLockLoading(true, pid);
 
   // Cache check
   if (lookupCache[pid]) {
+    setLockLoading(false);
     applyLookup(pid, lookupCache[pid]);
     return;
   }
@@ -1676,8 +1678,10 @@ async function onPIDBlur() {
     const r = await fetch(`${APPS_SCRIPT_URL}?${params}`);
     const data = await r.json();
     lookupCache[pid] = data;
+    setLockLoading(false);
     applyLookup(pid, data);
   } catch(err) {
+    setLockLoading(false);
     setBadge('invalid');
     toast('Lookup failed: ' + err.message, 'error');
     console.error('Lookup error:', err);
@@ -1707,6 +1711,7 @@ function applyLookup(pid, data) {
     hideVerifyCard();
     updateSaveLocks();
     unlockForm(true);
+    switchTab(0);
   }
 }
 
@@ -1757,6 +1762,20 @@ function lockForm() {
   document.getElementById('pid-lock-msg').textContent = 'Enter a BP-ID above to begin';
 }
 
+function setLockLoading(isLoading, pid) {
+  const icon = document.getElementById('pid-lock-icon');
+  const msg  = document.getElementById('pid-lock-msg');
+  if (isLoading) {
+    icon.textContent = '⏳';
+    msg.textContent  = `Looking up ${pid}…`;
+    msg.style.color  = 'var(--accent)';
+  } else {
+    icon.textContent = '🔒';
+    msg.textContent  = 'Enter a BP-ID above to begin';
+    msg.style.color  = '';
+  }
+}
+
 // ══════════════════════════════════════════════════════════════════
 //  VERIFY CARD
 // ══════════════════════════════════════════════════════════════════
@@ -1786,7 +1805,10 @@ function hideVerifyCard() {
 function onVerifyChange() {
   confirmed = document.getElementById('verify-chk').checked;
   updateSaveLocks();
-  if (confirmed) unlockForm(true);
+  if (confirmed) {
+    unlockForm(true);
+    switchTab(0);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -2561,6 +2583,7 @@ function resetAll() {
   resetAllFields();
   updateSaveLocks();
   lockForm();
+  switchTab(0);
   setAutosave('');
   [0,1,2,3,4].forEach(i => setDot(i, ''));
 }
