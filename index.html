@@ -1766,7 +1766,7 @@ function showVerifyCard(data) {
     { k: 'BP-ID',     v: currentPID },
     { k: 'Sex',       v: b.Sex || '—' },
     { k: 'Age Dx',    v: b.Age_at_Diagnosis || '—' },
-    { k: 'Dx Date',   v: b.Date_of_Diagnosis || '—' },
+    { k: 'Dx Date',   v: cleanVerifyDate(b.Date_of_Diagnosis) },
     { k: 'Ethnicity', v: b.Ethnicity || '—' },
   ];
   document.getElementById('verify-fields').innerHTML = fields.map(f => `
@@ -1931,11 +1931,20 @@ async function saveAllSections() {
   setAutosave('saving');
   invalidateCache();
 
-  const tasks = [];
   const ts = new Date().toISOString();
 
-  // Sections 0, 1, 4 — single row
-  [0, 1, 4].forEach(i => tasks.push(sendSection(i, false)));
+  // Save Baseline first — all other sheets may depend on BP_ID existing
+  const baselineResult = await sendSection(0, false);
+  if (baselineResult && baselineResult.status === 'error') {
+    setAutosave('error');
+    toast('Baseline save failed — aborting', 'error');
+    return;
+  }
+
+  const tasks = [];
+
+  // Sections 1, 4 — single row (Baseline already saved above)
+  [1, 4].forEach(i => tasks.push(sendSection(i, false)));
 
   // Comorbidities — saved alongside Baseline
   const comorbRow = collectComorbidities(currentPID, collector, ts);
@@ -2146,9 +2155,16 @@ function addVisitCard() {
         </div>
         <input type="hidden" id="vc-topical-${vid}" />
         <div id="vc-topical-detail-${vid}" style="display:none;margin-top:6px;">
-          <input class="field-input" type="text" id="vc-topical-name-${vid}"
-                 placeholder="e.g. Clobetasol 0.05%, Betamethasone cream…"
-                 style="font-size:12px;padding:6px 8px;" />
+          <select class="field-select" id="vc-topical-name-${vid}" style="font-size:12px;padding:6px 8px;">
+            <option value="">— select cream/ointment —</option>
+          <option>Clobetasol propionate 0.05%</option>
+          <option>Betamethasone dipropionate 0.05%</option>
+          <option>Mometasone furoate 0.1%</option>
+          <option>Triamcinolone acetonide 0.1%</option>
+          <option>Methylprednisolone aceponate 0.1%</option>
+          <option>Betamethasone valerate 0.1%</option>
+          <option>Other</option>
+          </select>
         </div>
       </div>
 
@@ -2590,10 +2606,21 @@ function setDot(idx, color) {
 }
 
 function updateDots(data) {
-  if (data.baseline)      setDot(0, 'green');
-  if (data.labs)          setDot(1, 'green');
-  if (data.drug_triggers) setDot(2, 'green');
-  // Visit_Log and Safety: check returned counts or flags when backend supports it
+  if (data.baseline)               setDot(0, 'green');
+  if (data.labs)                   setDot(1, 'green');
+  if (data.drug_trigger_count > 0) setDot(2, 'green');
+  if (data.visit_log_count > 0)    setDot(3, 'green');
+  if (data.safety)                 setDot(4, 'green');
+
+  // Show record counts in section subtitles
+  if (data.visit_log_count > 0) {
+    const el = document.querySelector('#sec-3 .section-subtitle');
+    if (el) el.textContent = `${data.visit_log_count} visit(s) on record — add new below`;
+  }
+  if (data.drug_trigger_count > 0) {
+    const el = document.querySelector('#sec-2 .section-subtitle');
+    if (el) el.textContent = `${data.drug_trigger_count} drug trigger entry(s) on record`;
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -2614,6 +2641,21 @@ function toast(msg, type='success') {
 // ══════════════════════════════════════════════════════════════════
 //  UTILS
 // ══════════════════════════════════════════════════════════════════
+function cleanVerifyDate(v) {
+  if (!v) return '—';
+  // Already DD-MM-YYYY
+  if (/^\d{2}-\d{2}-\d{4}$/.test(v)) return v;
+  // Try parsing as a date string
+  const d = new Date(v);
+  if (!isNaN(d)) {
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    return `${dd}-${mm}-${yyyy}`;
+  }
+  return v;
+}
+
 function fmtDate(v) {
   if (!v) return '';
   // Convert from YYYY-MM-DD (date input) to DD-MM-YYYY (registry format)
