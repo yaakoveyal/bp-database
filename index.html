@@ -1825,9 +1825,73 @@ function switchTab(idx) {
   setTimeout(() => applyThemeStyle(document.body.classList.contains('light-mode')), 50);
 }
 
-function saveTabSilent(idx) {
+async function saveTabSilent(idx) {
   if (!currentPID || !confirmed) return;
-  sendSection(idx, true);
+  setAutosave('saving');
+  const ts = new Date().toISOString();
+  const collector = document.getElementById('collector-name').value.trim();
+  if (!collector) return;
+
+  try {
+    const tasks = [];
+
+    // Always save baseline + comorbidities together on tab 0 leave
+    if (idx === 0) {
+      tasks.push(sendSection(0, true));
+      const comorbRow = collectComorbidities(currentPID, collector, ts);
+      tasks.push(
+        fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: 'Comorbidities', row: JSON.stringify(comorbRow) })}`)
+          .then(r => r.json()).catch(e => ({ status: 'error' }))
+      );
+    }
+    // Diagnosis
+    else if (idx === 1) {
+      tasks.push(sendSection(1, true));
+    }
+    // Drug Triggers
+    else if (idx === 2) {
+      const dtCards = document.querySelectorAll('#drug-trigger-list .dyn-card');
+      dtCards.forEach((card, i) => {
+        const hidden = f => (card.querySelector(`input[data-field="${f}"]`) || {}).value || '';
+        const cg     = f => (card.querySelector(`[data-field="${f}"]`) || {}).value || '';
+        const row = [
+          currentPID, String(i+1),
+          hidden('trig'), hidden('trig-class'), cg('specific-drug'),
+          hidden('dc'), hidden('improv'), fmtDate(cg('drug-start')),
+          collector, ts
+        ];
+        tasks.push(
+          fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: 'Drug_Triggers', row: JSON.stringify(row) })}`)
+            .then(r => r.json()).catch(e => ({ status: 'error' }))
+        );
+      });
+    }
+    // Visit Log
+    else if (idx === 3) {
+      const visitRows = collectAllVisitRows(collector, ts);
+      visitRows.forEach(row => {
+        tasks.push(
+          fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: 'Visit_Log', row: JSON.stringify(row) })}`)
+            .then(r => r.json()).catch(e => ({ status: 'error' }))
+        );
+      });
+    }
+    // Safety
+    else if (idx === 4) {
+      tasks.push(sendSection(4, true));
+    }
+
+    if (tasks.length > 0) {
+      const results = await Promise.all(tasks);
+      const hasError = results.some(r => r && r.status === 'error');
+      setAutosave(hasError ? 'error' : 'saved');
+      if (!hasError) setDot(idx, 'green');
+    } else {
+      setAutosave('');
+    }
+  } catch(e) {
+    setAutosave('error');
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════
