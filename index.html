@@ -1004,6 +1004,37 @@ body:not(.light-mode) .computed-val {
   box-shadow: 0 0 0 100px #1c2330 inset !important;
 }
 
+/* ═══════════════════════════════════════════════
+   BP-ID LOCK OVERLAY
+═══════════════════════════════════════════════ */
+#pid-lock-overlay {
+  position: fixed;
+  inset: var(--header-h) 0 0 0;
+  z-index: 80;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  transition: opacity .2s;
+}
+#pid-lock-overlay.unlocked {
+  opacity: 0;
+  pointer-events: none;
+}
+#pid-lock-msg {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 0 20px;
+}
+#pid-lock-icon {
+  font-size: 28px;
+  color: var(--text-dim);
+}
+
 /* scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -1082,6 +1113,14 @@ body:not(.light-mode) .computed-val {
     <span class="tab-dot" id="dot-4"></span> Safety
   </button>
 </nav>
+
+<!-- ═══════════════════════════════════════════
+     BP-ID LOCK OVERLAY
+════════════════════════════════════════════ -->
+<div id="pid-lock-overlay">
+  <div id="pid-lock-icon">🔒</div>
+  <div id="pid-lock-msg">Enter a BP-ID above to begin</div>
+</div>
 
 <!-- ═══════════════════════════════════════════
      MAIN SECTIONS
@@ -1654,6 +1693,7 @@ function applyLookup(pid, data) {
     setBadge('exists');
     showVerifyCard(data);
     updateSaveLocks();
+    unlockForm(false); // show form but save still locked until checkbox
     prefillBaseline(data.baseline);
     prefillComorbidities(data.comorbidities);
     prefillDiagnosis(data.labs);
@@ -1666,6 +1706,7 @@ function applyLookup(pid, data) {
     setBadge('new');
     hideVerifyCard();
     updateSaveLocks();
+    unlockForm(true);
   }
 }
 
@@ -1699,6 +1740,23 @@ function updateSaveLocks() {
   document.getElementById('btn-save').disabled = !canSave;
 }
 
+function unlockForm(instant) {
+  const overlay = document.getElementById('pid-lock-overlay');
+  if (instant) {
+    overlay.classList.add('unlocked');
+  } else {
+    // Show form but keep overlay visible until verify checkbox ticked
+    overlay.classList.add('unlocked');
+  }
+}
+
+function lockForm() {
+  const overlay = document.getElementById('pid-lock-overlay');
+  overlay.classList.remove('unlocked');
+  document.getElementById('pid-lock-icon').textContent = '🔒';
+  document.getElementById('pid-lock-msg').textContent = 'Enter a BP-ID above to begin';
+}
+
 // ══════════════════════════════════════════════════════════════════
 //  VERIFY CARD
 // ══════════════════════════════════════════════════════════════════
@@ -1728,6 +1786,7 @@ function hideVerifyCard() {
 function onVerifyChange() {
   confirmed = document.getElementById('verify-chk').checked;
   updateSaveLocks();
+  if (confirmed) unlockForm(true);
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -2485,6 +2544,7 @@ function resetAll() {
   hideVerifyCard();
   resetAllFields();
   updateSaveLocks();
+  lockForm();
   setAutosave('');
   [0,1,2,3,4].forEach(i => setDot(i, ''));
 }
