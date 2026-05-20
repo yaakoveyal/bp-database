@@ -1832,6 +1832,8 @@ async function saveTabSilent(idx) {
     setAutosave('error');
     return;
   }
+  // Skip if the tab has no meaningful data to save
+  if (!hasSectionData(idx)) return;
   setAutosave('saving');
   const ts = new Date().toISOString();
 
@@ -2751,6 +2753,32 @@ function resetAllFields() {
 }
 
 function invalidateCache() { lookupCache = {}; }
+
+// Returns true if the tab has at least one meaningful field filled in
+function hasSectionData(idx) {
+  const g = id => (document.getElementById(id) || {}).value || '';
+  switch(idx) {
+    case 0: // Baseline — require at least one core field
+      return !!(g('b-sex') || g('b-age') || g('b-dx-date') || g('b-ethnicity') ||
+                g('b-height') || g('b-weight') || g('b-death-date') || g('b-anti'));
+    case 1: // Diagnosis — require at least one lab value
+      return !!(g('d-dif-igg') || g('d-dif-c3') || g('d-iif') || g('d-bp180') ||
+                g('d-bp230') || g('d-ige') || g('d-eos') || g('d-albumin') ||
+                g('d-sub-blister') || g('d-bx-eos') || g('d-sug-biopsy'));
+    case 2: // Drug Triggers — require at least one card with a trigger value
+      return Array.from(document.querySelectorAll('#drug-trigger-list .dyn-card'))
+        .some(card => (card.querySelector('input[data-field="trig"]') || {}).value);
+    case 3: // Visit Log — require at least one card with a date
+      return Array.from(document.querySelectorAll('#visit-card-list .visit-card'))
+        .some(card => {
+          const vid = card.id.replace('vc-','');
+          return !!(document.getElementById(`vc-date-${vid}`) || {}).value;
+        });
+    case 4: // Safety — require AE to be set
+      return !!g('s-ae');
+    default: return false;
+  }
+}
 
 // ══════════════════════════════════════════════════════════════════
 //  DOT INDICATORS
