@@ -1983,7 +1983,7 @@ function collectSection(idx) {
           collector, ts
         ]);
       });
-      return rows[0] || null; // sendSection handles only first row; override below
+      return null; // Drug triggers are multi-row — use saveAllSections / saveTabSilent directly
     }
 
     case 3: { return null; } // handled by collectAllVisitRows
@@ -2625,7 +2625,10 @@ function prefillDiagnosis(labs) {
   setVal('d-sug-biopsy', labs.Suggestive_Biopsy);    setRadio('d-sug-biopsy-group',  labs.Suggestive_Biopsy);
 }
 
-function prefillDrugTriggers(dt) { /* existing data not prefilled for longitudinal */ }
+function prefillDrugTriggers(dt) {
+  // Longitudinal data not prefilled into cards to avoid overwrite risk.
+  // Count is shown via updateDots / section subtitle instead.
+}
 
 // ── Collect comorbidities row separately ──────────────────────────
 function collectComorbidities(pid, collector, ts) {
@@ -2651,7 +2654,44 @@ function collectComorbidities(pid, collector, ts) {
     collector, ts
   ];
 }
-function prefillSafety(s)        { /* prefill safety if data returned */ }
+function prefillSafety(s) {
+  if (!s) return;
+  // Set adverse event Y/N
+  const ae = s.Adverse_Event;
+  if (ae) {
+    setVal('s-ae', ae);
+    setRadio('s-ae-group', ae === 'Y' ? 'Yes' : 'No');
+    // Map radio value — s-ae-group uses 'Y'/'N' not 'Yes'/'No'
+    document.querySelectorAll('#s-ae-group .radio-btn').forEach(b => {
+      b.classList.toggle('selected', b.dataset.val === ae);
+    });
+    if (ae === 'Y') {
+      document.getElementById('s-ae-section').classList.remove('hidden');
+      // Clear existing cards
+      document.getElementById('s-drug-event-list').innerHTML = '';
+      safetyDrugCount = 0;
+      // Prefill up to 5 drug event cards
+      for (let i = 1; i <= 5; i++) {
+        const drug = s[`Drug${i}`];
+        const desc = s[`Event${i}_Description`];
+        const date = s[`Event${i}_Date`];
+        if (!drug && !desc && !date) continue;
+        addSafetyDrugCard();
+        const card = document.getElementById(`s-drug-card-${safetyDrugCount}`);
+        if (!card) continue;
+        const drugSel = card.querySelector('select[data-field="s-drug"]');
+        const descTa  = card.querySelector('textarea[data-field="s-desc"]');
+        const dateIn  = card.querySelector('input[data-field="s-date"]');
+        if (drugSel) drugSel.value = drug || '';
+        if (descTa)  descTa.value  = desc || '';
+        if (dateIn && date) {
+          const m = date.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+          if (m) dateIn.value = `${m[3]}-${m[2]}-${m[1]}`;
+        }
+      }
+    }
+  }
+}
 
 // ══════════════════════════════════════════════════════════════════
 //  RESET
@@ -2665,7 +2705,10 @@ function resetAll() {
   resetAllFields();
   updateSaveLocks();
   lockForm();
-  switchTab(0);
+  // Reset to tab 0 directly — avoids triggering saveTabSilent on the old tab
+  document.querySelectorAll('.section').forEach((s,i) => s.classList.toggle('active', i === 0));
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i === 0));
+  activeTab = 0;
   setAutosave('');
   [0,1,2,3,4].forEach(i => setDot(i, ''));
 }
@@ -2693,7 +2736,15 @@ function resetAllFields() {
   document.getElementById('visit-card-list').innerHTML = '';
   visitCount = 0;
 
-  // Safety
+  // Drug triggers — clear all cards and add one fresh empty card
+  document.getElementById('drug-trigger-list').innerHTML = '';
+  dtCardCount = 0;
+  addDrugTriggerCard();
+
+  // Safety — clear cards and reset AE field
+  document.getElementById('s-drug-event-list').innerHTML = '';
+  safetyDrugCount = 0;
+  addSafetyDrugCard();
   setVal('s-ae','');
   document.querySelectorAll('#s-ae-group .radio-btn').forEach(b=>b.classList.remove('selected'));
   document.getElementById('s-ae-section').classList.add('hidden');
