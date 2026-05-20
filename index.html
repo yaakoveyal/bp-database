@@ -1827,10 +1827,13 @@ function switchTab(idx) {
 
 async function saveTabSilent(idx) {
   if (!currentPID || !confirmed) return;
+  const collector = document.getElementById('collector-name').value.trim();
+  if (!collector) {
+    setAutosave('error');
+    return;
+  }
   setAutosave('saving');
   const ts = new Date().toISOString();
-  const collector = document.getElementById('collector-name').value.trim();
-  if (!collector) return;
 
   try {
     const tasks = [];
@@ -1848,9 +1851,10 @@ async function saveTabSilent(idx) {
     else if (idx === 1) {
       tasks.push(sendSection(1, true));
     }
-    // Drug Triggers
+    // Drug Triggers — save all cards (not just first)
     else if (idx === 2) {
       const dtCards = document.querySelectorAll('#drug-trigger-list .dyn-card');
+      if (dtCards.length === 0) return;
       dtCards.forEach((card, i) => {
         const hidden = f => (card.querySelector(`input[data-field="${f}"]`) || {}).value || '';
         const cg     = f => (card.querySelector(`[data-field="${f}"]`) || {}).value || '';
@@ -2013,6 +2017,20 @@ async function saveAllSections() {
   if (!currentPID || !confirmed) { toast('No confirmed patient selected', 'warn'); return; }
   const collector = document.getElementById('collector-name').value.trim();
   if (!collector) { toast('Please enter your collector name', 'warn'); return; }
+
+  // Validate required baseline fields
+  const sex    = document.getElementById('b-sex').value;
+  const age    = document.getElementById('b-age').value;
+  const dxDate = document.getElementById('b-dx-date').value;
+  const missing = [];
+  if (!sex)    missing.push('Sex');
+  if (!age)    missing.push('Age at Diagnosis');
+  if (!dxDate) missing.push('Date of Diagnosis');
+  if (missing.length > 0) {
+    toast(`Required: ${missing.join(', ')}`, 'warn');
+    switchTab(0);
+    return;
+  }
 
   setAutosave('saving');
   invalidateCache();
@@ -2642,7 +2660,7 @@ function resetAll() {
   currentPID = ''; pidState = 'empty'; confirmed = false;
   document.getElementById('pid-input').value = '';
   setBadge('');
-  document.getElementById('pid-badge').style.display = 'none';
+  // Clear badge via class only — don't set inline style (would override CSS classes)
   hideVerifyCard();
   resetAllFields();
   updateSaveLocks();
