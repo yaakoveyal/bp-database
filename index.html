@@ -1249,6 +1249,7 @@ body:not(.light-mode) .computed-val {
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Stroke" />Stroke</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Epilepsy" />Epilepsy</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="MS" />MS</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Depression" />Depression</label>
       </div>
     </div>
 
@@ -1262,12 +1263,12 @@ body:not(.light-mode) .computed-val {
       <div class="check-grid" id="b-comorbid-chips">
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Diabetes" />Diabetes</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Hypertension" />Hypertension</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Dyslipidemia" />Dyslipidemia</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="IHD" />IHD</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Active Malignancy" />Active Malignancy</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Autoimmune Disease" />Autoimmune Disease</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="CKD" />CKD</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Smoker" />Smoker</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Depression" />Depression</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="CHF" />CHF</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="COPD" />COPD</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="PVD" />PVD</label>
@@ -2620,8 +2621,8 @@ function prefillComorbidities(c) {
   setVal('b-anti', c.Antipsychotic_Treatment); setRadio('b-anti-group', c.Antipsychotic_Treatment);
   setVal('b-neuro-year', c.Year_Neurologic_Diagnosis);
   setCheckedChips('b-neuro-chips', c.Neurological_Diagnoses);
-  const comorbList = ['Diabetes','Hypertension','IHD','Active_Malignancy','Autoimmune_Disease',
-                      'CKD','Smoker','Depression','CHF','COPD','PVD','Liver_Disease'];
+  const comorbList = ['Diabetes','Hypertension','Dyslipidemia','IHD','Active_Malignancy',
+                      'Autoimmune_Disease','CKD','Smoker','CHF','COPD','PVD','Liver_Disease'];
   const active = comorbList.filter(k => c[k] === 'Yes' || c[k] === '1')
                            .map(k => k.replace(/_/g,' '));
   setCheckedChips('b-comorbid-chips', active.join(', '));
@@ -2657,7 +2658,7 @@ function collectComorbidities(pid, collector, ts) {
   const comorbMap = {
     'Diabetes':'Diabetes','Hypertension':'Hypertension','IHD':'IHD',
     'Active Malignancy':'Active_Malignancy','Autoimmune Disease':'Autoimmune_Disease',
-    'CKD':'CKD','Smoker':'Smoker','Depression':'Depression',
+    'CKD':'CKD','Smoker':'Smoker',
     'CHF':'CHF','COPD':'COPD','PVD':'PVD','Liver Disease':'Liver_Disease'
   };
   const checked = getChecked('b-comorbid-chips');
@@ -2665,9 +2666,9 @@ function collectComorbidities(pid, collector, ts) {
   return [
     pid,
     anti, neuroYr, neuroDx,
-    yesNo('Diabetes'), yesNo('Hypertension'), yesNo('IHD'),
+    yesNo('Diabetes'), yesNo('Hypertension'), yesNo('Dyslipidemia'), yesNo('IHD'),
     yesNo('Active Malignancy'), yesNo('Autoimmune Disease'),
-    yesNo('CKD'), yesNo('Smoker'), yesNo('Depression'),
+    yesNo('CKD'), yesNo('Smoker'),
     yesNo('CHF'), yesNo('COPD'), yesNo('PVD'), yesNo('Liver Disease'),
     collector, ts
   ];
