@@ -1874,21 +1874,10 @@ async function saveTabSilent(idx) {
 
     if (items.length === 0) { setAutosave(''); return; }
 
-    const params = new URLSearchParams({
-      token: TOKEN,
-      action: 'batch',
-      items: JSON.stringify(items)
-    });
-    const r = await fetch(`${APPS_SCRIPT_URL}?${params}`);
-    const data = await r.json();
-
-    if (data.status === 'ok') {
-      const hasError = data.results.some(r => r.status === 'error');
-      setAutosave(hasError ? 'error' : 'saved');
-      if (!hasError) setDot(idx, 'green');
-    } else {
-      setAutosave('error');
-    }
+    const allResults = await sendBatchChunked(items);
+    const hasError = allResults.some(r => r.status === 'error');
+    setAutosave(hasError ? 'error' : 'saved');
+    if (!hasError) setDot(idx, 'green');
   } catch(e) {
     setAutosave('error');
   }
@@ -1918,6 +1907,34 @@ async function sendSection(idx, silent) {
   } catch(e) {
     return { status: 'error', message: e.toString() };
   }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  BATCH SAVE — sends items in sequential chunks to stay under URL limits
+//  Chunk size of 5 keeps each URL well under the ~8KB GET limit.
+//  Chunks are sent sequentially (not parallel) to avoid lock contention.
+// ══════════════════════════════════════════════════════════════════
+const BATCH_CHUNK_SIZE = 5;
+
+async function sendBatchChunked(items) {
+  const allResults = [];
+  for (let i = 0; i < items.length; i += BATCH_CHUNK_SIZE) {
+    const chunk = items.slice(i, i + BATCH_CHUNK_SIZE);
+    const params = new URLSearchParams({
+      token: TOKEN,
+      action: 'batch',
+      items: JSON.stringify(chunk)
+    });
+    const r = await fetch(`${APPS_SCRIPT_URL}?${params}`);
+    const data = await r.json();
+    if (data.status === 'ok') {
+      allResults.push(...data.results);
+    } else {
+      // Entire chunk failed — mark all items as errored
+      allResults.push(...chunk.map(() => ({ status: 'error', message: data.message || 'Batch failed' })));
+    }
+  }
+  return allResults;
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -2084,30 +2101,18 @@ async function saveAllSections() {
   }
 
   try {
-    const params = new URLSearchParams({
-      token: TOKEN,
-      action: 'batch',
-      items: JSON.stringify(items)
-    });
-    const r = await fetch(`${APPS_SCRIPT_URL}?${params}`);
-    const data = await r.json();
+    const allResults = await sendBatchChunked(items);
+    const errors = allResults.filter(r => r.status === 'error');
 
-    if (data.status === 'ok') {
-      const errors = data.results.filter(r => r.status === 'error');
-      if (errors.length === 0) {
-        setAutosave('saved');
-        toast('All sections saved ✓', 'success');
-        [0,1,2,3,4].forEach(i => setDot(i, 'green'));
-        lookupCache = {};
-      } else {
-        setAutosave('error');
-        toast(`${errors.length} section(s) failed`, 'error');
-        console.error('Save errors:', errors);
-      }
+    if (errors.length === 0) {
+      setAutosave('saved');
+      toast('All sections saved ✓', 'success');
+      [0,1,2,3,4].forEach(i => setDot(i, 'green'));
+      lookupCache = {};
     } else {
       setAutosave('error');
-      toast('Save failed: ' + (data.message || 'Unknown error'), 'error');
-      console.error('Batch save error:', data.message);
+      toast(`${errors.length} section(s) failed`, 'error');
+      console.error('Save errors:', errors);
     }
   } catch(e) {
     setAutosave('error');
