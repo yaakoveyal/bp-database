@@ -1249,7 +1249,6 @@ body:not(.light-mode) .computed-val {
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Stroke" />Stroke</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Epilepsy" />Epilepsy</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="MS" />MS</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Depression" />Depression</label>
       </div>
     </div>
 
@@ -1263,12 +1262,12 @@ body:not(.light-mode) .computed-val {
       <div class="check-grid" id="b-comorbid-chips">
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Diabetes" />Diabetes</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Hypertension" />Hypertension</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Dyslipidemia" />Dyslipidemia</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="IHD" />IHD</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Active Malignancy" />Active Malignancy</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Autoimmune Disease" />Autoimmune Disease</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="CKD" />CKD</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Smoker" />Smoker</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Depression" />Depression</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="CHF" />CHF</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="COPD" />COPD</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="PVD" />PVD</label>
@@ -1829,44 +1828,27 @@ function switchTab(idx) {
 async function saveTabSilent(idx) {
   if (!currentPID || !confirmed) return;
   const collector = document.getElementById('collector-name').value.trim();
-  if (!collector) {
-    setAutosave('error');
-    return;
-  }
-  // Skip if the tab has no meaningful data to save
+  if (!collector) { setAutosave('error'); return; }
   if (!hasSectionData(idx)) return;
   setAutosave('saving');
   const ts = new Date().toISOString();
 
   try {
-    const tasks = [];
+    const items = [];
 
-    // Always save baseline + comorbidities together on tab 0 leave
     if (idx === 0) {
-      tasks.push(sendSection(0, true));
-      // Only save comorbidities if at least one field is set
-      const hasComorbData = !!(
-        document.getElementById('b-anti').value ||
-        document.querySelectorAll('#b-neuro-chips input:checked').length > 0 ||
-        document.querySelectorAll('#b-comorbid-chips input:checked').length > 0 ||
-        document.getElementById('b-neuro-year').value
-      );
-      if (hasComorbData) {
-        const comorbRow = collectComorbidities(currentPID, collector, ts);
-        tasks.push(
-          fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: 'Comorbidities', row: JSON.stringify(comorbRow) })}`)
-            .then(r => r.json()).catch(e => ({ status: 'error' }))
-        );
-      }
+      const baseRow = collectSection(0);
+      if (baseRow) items.push({ sheet: SHEET_MAP[0], row: baseRow });
+      const comorbRow = collectComorbidities(currentPID, collector, ts);
+      if (comorbRow) items.push({ sheet: 'Comorbidities', row: comorbRow });
     }
-    // Diagnosis
     else if (idx === 1) {
-      tasks.push(sendSection(1, true));
+      const row = collectSection(1);
+      if (row) items.push({ sheet: SHEET_MAP[1], row: row });
     }
-    // Drug Triggers — save all cards (not just first)
     else if (idx === 2) {
       const dtCards = document.querySelectorAll('#drug-trigger-list .dyn-card');
-      if (dtCards.length === 0) return;
+      if (dtCards.length === 0) { setAutosave(''); return; }
       dtCards.forEach((card, i) => {
         const hidden = f => (card.querySelector(`input[data-field="${f}"]`) || {}).value || '';
         const cg     = f => (card.querySelector(`[data-field="${f}"]`) || {}).value || '';
@@ -1876,34 +1858,36 @@ async function saveTabSilent(idx) {
           hidden('dc'), hidden('improv'), fmtDate(cg('drug-start')),
           collector, ts
         ];
-        tasks.push(
-          fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: 'Drug_Triggers', row: JSON.stringify(row) })}`)
-            .then(r => r.json()).catch(e => ({ status: 'error' }))
-        );
+        items.push({ sheet: 'Drug_Triggers', row: row });
       });
     }
-    // Visit Log
     else if (idx === 3) {
       const visitRows = collectAllVisitRows(collector, ts);
       visitRows.forEach(row => {
-        tasks.push(
-          fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: 'Visit_Log', row: JSON.stringify(row) })}`)
-            .then(r => r.json()).catch(e => ({ status: 'error' }))
-        );
+        items.push({ sheet: 'Visit_Log', row: row });
       });
     }
-    // Safety
     else if (idx === 4) {
-      tasks.push(sendSection(4, true));
+      const row = collectSection(4);
+      if (row) items.push({ sheet: SHEET_MAP[4], row: row });
     }
 
-    if (tasks.length > 0) {
-      const results = await Promise.all(tasks);
-      const hasError = results.some(r => r && r.status === 'error');
+    if (items.length === 0) { setAutosave(''); return; }
+
+    const params = new URLSearchParams({
+      token: TOKEN,
+      action: 'batch',
+      items: JSON.stringify(items)
+    });
+    const r = await fetch(`${APPS_SCRIPT_URL}?${params}`);
+    const data = await r.json();
+
+    if (data.status === 'ok') {
+      const hasError = data.results.some(r => r.status === 'error');
       setAutosave(hasError ? 'error' : 'saved');
       if (!hasError) setDot(idx, 'green');
     } else {
-      setAutosave('');
+      setAutosave('error');
     }
   } catch(e) {
     setAutosave('error');
@@ -2024,7 +2008,7 @@ function collectSection(idx) {
   }
 }
 
-// Override saveAllSections to handle multi-row Drug_Triggers
+// Override saveAllSections to use batch endpoint
 async function saveAllSections() {
   if (!currentPID || !confirmed) { toast('No confirmed patient selected', 'warn'); return; }
   const collector = document.getElementById('collector-name').value.trim();
@@ -2048,49 +2032,25 @@ async function saveAllSections() {
   invalidateCache();
 
   const ts = new Date().toISOString();
+  const items = [];
 
-  // Save Baseline first — all other sheets may depend on BP_ID existing
-  const baselineResult = await sendSection(0, false);
-  if (baselineResult && baselineResult.status === 'error') {
-    setAutosave('error');
-    toast('Baseline save failed — aborting', 'error');
-    return;
+  // Tab 0: Baseline
+  const baseRow = collectSection(0);
+  if (baseRow && baseRow.some(v => v !== '' && v !== currentPID)) {
+    items.push({ sheet: SHEET_MAP[0], row: baseRow });
   }
 
-  const tasks = [];
+  // Comorbidities
+  const comorbRow = collectComorbidities(currentPID, collector, ts);
+  if (comorbRow) items.push({ sheet: 'Comorbidities', row: comorbRow });
 
-  // Sections 1, 4 — single row, only if data present
-  [1, 4].forEach(i => {
-    if (hasSectionData(i)) tasks.push(sendSection(i, false));
-  });
-
-  // Comorbidities — only save if at least one comorbidity is checked or antipsychotic is set
-  const hasComorbData = !!(
-    document.getElementById('b-anti').value ||
-    document.querySelectorAll('#b-neuro-chips input:checked').length > 0 ||
-    document.querySelectorAll('#b-comorbid-chips input:checked').length > 0 ||
-    document.getElementById('b-neuro-year').value
-  );
-  if (hasComorbData) {
-    const comorbRow = collectComorbidities(currentPID, collector, ts);
-    tasks.push(
-      fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: 'Comorbidities', row: JSON.stringify(comorbRow) })}`)
-        .then(r => r.json())
-        .catch(e => ({ status: 'error', message: e.toString() }))
-    );
+  // Tab 1: Diagnosis
+  const dxRow = collectSection(1);
+  if (dxRow && dxRow.some(v => v !== '' && v !== currentPID)) {
+    items.push({ sheet: SHEET_MAP[1], row: dxRow });
   }
 
-  // Visit_Log — one row per card
-  const visitRows = collectAllVisitRows(collector, ts);
-  visitRows.forEach(row => {
-    tasks.push(
-      fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: 'Visit_Log', row: JSON.stringify(row) })}`)
-        .then(r => r.json())
-        .catch(e => ({ status: 'error', message: e.toString() }))
-    );
-  });
-
-  // Drug Triggers — one row per card
+  // Tab 2: Drug Triggers — all cards
   const dtCards = document.querySelectorAll('#drug-trigger-list .dyn-card');
   dtCards.forEach((card, i) => {
     const hidden = field => (card.querySelector(`input[data-field="${field}"]`) || {}).value || '';
@@ -2103,25 +2063,56 @@ async function saveAllSections() {
       fmtDate(cg('drug-start')),
       collector, ts
     ];
-    tasks.push(
-      fetch(`${APPS_SCRIPT_URL}?${new URLSearchParams({ token: TOKEN, sheet: 'Drug_Triggers', row: JSON.stringify(row) })}`)
-        .then(r => r.json())
-        .catch(e => ({ status: 'error', message: e.toString() }))
-    );
+    items.push({ sheet: 'Drug_Triggers', row: row });
   });
 
-  const results = await Promise.all(tasks);
-  const errors  = results.filter(r => r && r.status === 'error');
+  // Tab 3: Visit Log — all cards
+  const visitRows = collectAllVisitRows(collector, ts);
+  visitRows.forEach(row => {
+    items.push({ sheet: 'Visit_Log', row: row });
+  });
 
-  if (errors.length === 0) {
-    setAutosave('saved');
-    toast('All sections saved ✓', 'success');
-    [0,1,2,3,4].forEach(i => setDot(i, 'green'));
-    lookupCache = {};
-  } else {
+  // Tab 4: Safety
+  const safetyRow = collectSection(4);
+  if (safetyRow && safetyRow.some(v => v !== '' && v !== currentPID)) {
+    items.push({ sheet: SHEET_MAP[4], row: safetyRow });
+  }
+
+  if (items.length === 0) {
+    setAutosave('');
+    return;
+  }
+
+  try {
+    const params = new URLSearchParams({
+      token: TOKEN,
+      action: 'batch',
+      items: JSON.stringify(items)
+    });
+    const r = await fetch(`${APPS_SCRIPT_URL}?${params}`);
+    const data = await r.json();
+
+    if (data.status === 'ok') {
+      const errors = data.results.filter(r => r.status === 'error');
+      if (errors.length === 0) {
+        setAutosave('saved');
+        toast('All sections saved ✓', 'success');
+        [0,1,2,3,4].forEach(i => setDot(i, 'green'));
+        lookupCache = {};
+      } else {
+        setAutosave('error');
+        toast(`${errors.length} section(s) failed`, 'error');
+        console.error('Save errors:', errors);
+      }
+    } else {
+      setAutosave('error');
+      toast('Save failed: ' + (data.message || 'Unknown error'), 'error');
+      console.error('Batch save error:', data.message);
+    }
+  } catch(e) {
     setAutosave('error');
-    toast(`${errors.length} section(s) failed`, 'error');
-    console.error('Save errors:', errors);
+    toast('Save failed: ' + e.message, 'error');
+    console.error('Batch save failed:', e);
   }
 }
 
@@ -2624,8 +2615,8 @@ function prefillComorbidities(c) {
   setVal('b-anti', c.Antipsychotic_Treatment); setRadio('b-anti-group', c.Antipsychotic_Treatment);
   setVal('b-neuro-year', c.Year_Neurologic_Diagnosis);
   setCheckedChips('b-neuro-chips', c.Neurological_Diagnoses);
-  const comorbList = ['Diabetes','Hypertension','Dyslipidemia','IHD','Active_Malignancy',
-                      'Autoimmune_Disease','CKD','Smoker','CHF','COPD','PVD','Liver_Disease'];
+  const comorbList = ['Diabetes','Hypertension','IHD','Active_Malignancy','Autoimmune_Disease',
+                      'CKD','Smoker','Depression','CHF','COPD','PVD','Liver_Disease'];
   const active = comorbList.filter(k => c[k] === 'Yes' || c[k] === '1')
                            .map(k => k.replace(/_/g,' '));
   setCheckedChips('b-comorbid-chips', active.join(', '));
@@ -2665,14 +2656,13 @@ function collectComorbidities(pid, collector, ts) {
     'CHF':'CHF','COPD':'COPD','PVD':'PVD','Liver Disease':'Liver_Disease'
   };
   const checked = getChecked('b-comorbid-chips');
-  const neuroChecked = getChecked('b-neuro-chips');
   const yesNo = key => checked.includes(key) ? 'Yes' : 'No';
   return [
     pid,
     anti, neuroYr, neuroDx,
-    yesNo('Diabetes'), yesNo('Hypertension'), yesNo('Dyslipidemia'), yesNo('IHD'),
+    yesNo('Diabetes'), yesNo('Hypertension'), yesNo('IHD'),
     yesNo('Active Malignancy'), yesNo('Autoimmune Disease'),
-    yesNo('CKD'), yesNo('Smoker'),
+    yesNo('CKD'), yesNo('Smoker'), yesNo('Depression'),
     yesNo('CHF'), yesNo('COPD'), yesNo('PVD'), yesNo('Liver Disease'),
     collector, ts
   ];
