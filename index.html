@@ -2399,7 +2399,9 @@ function toggleVisitCard(vid) {
 function removeVisitCard(e, vid) {
   e.stopPropagation();
   document.getElementById(`vc-${vid}`)?.remove();
-  visitCount = Math.max(0, visitCount - 1);
+  // Clear agent counters for this card
+  delete visitAgentCounts[`c-${vid}`];
+  delete visitAgentCounts[`r-${vid}`];
 }
 
 function updateVisitHeader(vid) {
@@ -2804,6 +2806,7 @@ function resetAllFields() {
   // Visit log — clear all cards
   document.getElementById('visit-card-list').innerHTML = '';
   visitCount = 0;
+  Object.keys(visitAgentCounts).forEach(k => delete visitAgentCounts[k]);
 
   // Drug triggers — clear all cards and add one fresh empty card
   document.getElementById('drug-trigger-list').innerHTML = '';
