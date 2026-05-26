@@ -2228,6 +2228,12 @@ function addVisitCard() {
     `<label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="${s}" />${s}</label>`
   ).join('');
 
+  const topicalOptions = [
+    'Clobetasol propionate 0.05%','Betamethasone dipropionate 0.05%',
+    'Mometasone furoate 0.1%','Triamcinolone acetonide 0.1%',
+    'Methylprednisolone aceponate 0.1%','Betamethasone valerate 0.1%','Other'
+  ].map(o => `<option>${o}</option>`).join('');
+
   const html = `
 <div class="visit-card expanded" id="vc-${vid}">
   <div class="visit-card-header" onclick="toggleVisitCard(${vid})">
@@ -2247,15 +2253,6 @@ function addVisitCard() {
       </div>
 
       <div class="field">
-        <label class="field-label">Hospitalization</label>
-        <div class="radio-group" id="vc-hosp-group-${vid}">
-          <div class="radio-btn" data-val="Y" onclick="pickRadioV('vc-hosp-group-${vid}','vc-hosp-${vid}',this)">Yes</div>
-          <div class="radio-btn" data-val="N" onclick="pickRadioV('vc-hosp-group-${vid}','vc-hosp-${vid}',this)">No</div>
-        </div>
-        <input type="hidden" id="vc-hosp-${vid}" />
-      </div>
-
-      <div class="field">
         <label class="field-label">Pruritus</label>
         <div class="radio-group" id="vc-pruritus-group-${vid}">
           <div class="radio-btn" data-val="Y"  onclick="pickRadioV('vc-pruritus-group-${vid}','vc-pruritus-${vid}',this)">Y</div>
@@ -2266,32 +2263,6 @@ function addVisitCard() {
       </div>
 
       <div class="field">
-        <label class="field-label">Prednisone (mg/day)</label>
-        <input class="field-input" type="number" id="vc-pred-${vid}" placeholder="e.g. 20" min="0" />
-      </div>
-
-      <div class="field">
-        <label class="field-label">Topical Steroids</label>
-        <div class="radio-group" id="vc-topical-group-${vid}">
-          <div class="radio-btn" data-val="Y" onclick="pickRadioV('vc-topical-group-${vid}','vc-topical-${vid}',this);toggleTopicalDetail(${vid})">Yes</div>
-          <div class="radio-btn" data-val="N" onclick="pickRadioV('vc-topical-group-${vid}','vc-topical-${vid}',this);toggleTopicalDetail(${vid})">No</div>
-        </div>
-        <input type="hidden" id="vc-topical-${vid}" />
-        <div id="vc-topical-detail-${vid}" style="display:none;margin-top:6px;">
-          <select class="field-select" id="vc-topical-name-${vid}" style="font-size:12px;padding:6px 8px;">
-            <option value="">— select cream/ointment —</option>
-          <option>Clobetasol propionate 0.05%</option>
-          <option>Betamethasone dipropionate 0.05%</option>
-          <option>Mometasone furoate 0.1%</option>
-          <option>Triamcinolone acetonide 0.1%</option>
-          <option>Methylprednisolone aceponate 0.1%</option>
-          <option>Betamethasone valerate 0.1%</option>
-          <option>Other</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="field">
         <label class="field-label">Abs. Eosinophils (×10⁹/L)</label>
         <input class="field-input" type="number" id="vc-eos-${vid}" placeholder="e.g. 0.3" step="0.01" />
       </div>
@@ -2299,6 +2270,15 @@ function addVisitCard() {
       <div class="field">
         <label class="field-label">IgE (IU/mL)</label>
         <input class="field-input" type="number" id="vc-ige-${vid}" placeholder="e.g. 380" />
+      </div>
+
+      <div class="field">
+        <label class="field-label">Hospitalization</label>
+        <div class="radio-group" id="vc-hosp-group-${vid}">
+          <div class="radio-btn" data-val="Y" onclick="pickRadioV('vc-hosp-group-${vid}','vc-hosp-${vid}',this)">Yes</div>
+          <div class="radio-btn" data-val="N" onclick="pickRadioV('vc-hosp-group-${vid}','vc-hosp-${vid}',this)">No</div>
+        </div>
+        <input type="hidden" id="vc-hosp-${vid}" />
       </div>
 
       <div class="field span-full form-section-label" style="grid-column:1/-1">Disease Status <span class="req">*</span></div>
@@ -2336,11 +2316,61 @@ function addVisitCard() {
       <div style="grid-column:1/-1"><div class="check-grid" id="vc-lesion-${vid}">${lesionChips}</div></div>
 
       <hr class="form-divider" style="grid-column:1/-1" />
-      <div class="form-section-label" style="grid-column:1/-1">Second-Line Agents</div>
+      <div class="form-section-label" style="grid-column:1/-1">Current Treatment (at presentation)</div>
+
+      <div class="field">
+        <label class="field-label">Prednisone (mg/day)</label>
+        <input class="field-input" type="number" id="vc-cpred-${vid}" placeholder="e.g. 20" min="0" />
+      </div>
+
+      <div class="field">
+        <label class="field-label">Topical Steroids</label>
+        <div class="radio-group" id="vc-ctopical-group-${vid}">
+          <div class="radio-btn" data-val="Y" onclick="pickRadioV('vc-ctopical-group-${vid}','vc-ctopical-${vid}',this);toggleTopicalDetail('c',${vid})">Yes</div>
+          <div class="radio-btn" data-val="N" onclick="pickRadioV('vc-ctopical-group-${vid}','vc-ctopical-${vid}',this);toggleTopicalDetail('c',${vid})">No</div>
+        </div>
+        <input type="hidden" id="vc-ctopical-${vid}" />
+        <div id="vc-ctopical-detail-${vid}" style="display:none;margin-top:6px;">
+          <select class="field-select" id="vc-ctopical-name-${vid}" style="font-size:12px;padding:6px 8px;">
+            <option value="">— select cream/ointment —</option>
+            ${topicalOptions}
+          </select>
+        </div>
+      </div>
+
       <div style="grid-column:1/-1">
-        <div id="vc-agents-${vid}" class="card-list" style="margin-bottom:8px;"></div>
-        <button class="btn-add-card" id="vc-add-agent-btn-${vid}"
-                onclick="addVisitAgent(${vid})">+ Add Agent</button>
+        <div id="vc-cagents-${vid}" class="card-list" style="margin-bottom:8px;"></div>
+        <button class="btn-add-card" id="vc-add-cagent-btn-${vid}"
+                onclick="addVisitAgent(${vid},'c')">+ Add Current Agent</button>
+      </div>
+
+      <hr class="form-divider" style="grid-column:1/-1" />
+      <div class="form-section-label" style="grid-column:1/-1">Recommended Treatment (prescribed this visit)</div>
+
+      <div class="field">
+        <label class="field-label">Prednisone (mg/day)</label>
+        <input class="field-input" type="number" id="vc-rpred-${vid}" placeholder="e.g. 15" min="0" />
+      </div>
+
+      <div class="field">
+        <label class="field-label">Topical Steroids</label>
+        <div class="radio-group" id="vc-rtopical-group-${vid}">
+          <div class="radio-btn" data-val="Y" onclick="pickRadioV('vc-rtopical-group-${vid}','vc-rtopical-${vid}',this);toggleTopicalDetail('r',${vid})">Yes</div>
+          <div class="radio-btn" data-val="N" onclick="pickRadioV('vc-rtopical-group-${vid}','vc-rtopical-${vid}',this);toggleTopicalDetail('r',${vid})">No</div>
+        </div>
+        <input type="hidden" id="vc-rtopical-${vid}" />
+        <div id="vc-rtopical-detail-${vid}" style="display:none;margin-top:6px;">
+          <select class="field-select" id="vc-rtopical-name-${vid}" style="font-size:12px;padding:6px 8px;">
+            <option value="">— select cream/ointment —</option>
+            ${topicalOptions}
+          </select>
+        </div>
+      </div>
+
+      <div style="grid-column:1/-1">
+        <div id="vc-ragents-${vid}" class="card-list" style="margin-bottom:8px;"></div>
+        <button class="btn-add-card" id="vc-add-ragent-btn-${vid}"
+                onclick="addVisitAgent(${vid},'r')">+ Add Recommended Agent</button>
       </div>
 
     </div>
@@ -2397,13 +2427,14 @@ function pickVisitStatus(vid, el, val) {
   badge.textContent = labels[val];
 }
 
-function toggleTopicalDetail(vid) {
-  const val = document.getElementById(`vc-topical-${vid}`).value;
-  const detail = document.getElementById(`vc-topical-detail-${vid}`);
+function toggleTopicalDetail(prefix, vid) {
+  // prefix is 'c' (current) or 'r' (recommended)
+  const val = document.getElementById(`vc-${prefix}topical-${vid}`).value;
+  const detail = document.getElementById(`vc-${prefix}topical-detail-${vid}`);
   if (!detail) return;
   detail.style.display = val === 'Y' ? 'block' : 'none';
   if (val !== 'Y') {
-    const input = document.getElementById(`vc-topical-name-${vid}`);
+    const input = document.getElementById(`vc-${prefix}topical-name-${vid}`);
     if (input) input.value = '';
   }
 }
@@ -2431,18 +2462,21 @@ function pickRadioV(groupId, hiddenId, el) {
   }
 }
 
-// Per-visit agent cards
+// Per-visit agent cards — prefix is 'c' (current) or 'r' (recommended)
 const visitAgentCounts = {};
-function addVisitAgent(vid) {
-  visitAgentCounts[vid] = (visitAgentCounts[vid] || 0) + 1;
-  const aid = visitAgentCounts[vid];
+function addVisitAgent(vid, prefix) {
+  prefix = prefix || 'r';
+  const key = `${prefix}-${vid}`;
+  visitAgentCounts[key] = (visitAgentCounts[key] || 0) + 1;
+  const aid = visitAgentCounts[key];
   if (aid > MAX_AGENTS) { toast(`Max ${MAX_AGENTS} agents`, 'warn'); return; }
   const agentOptions = DRUG_LIST.slice(3).map(d => `<option>${d}</option>`).join('');
+  const label = prefix === 'c' ? 'Current' : 'Recommended';
   const html = `
-  <div class="dyn-card" id="vc-agent-${vid}-${aid}" style="padding:10px 12px;">
+  <div class="dyn-card" id="vc-${prefix}agent-${vid}-${aid}" style="padding:10px 12px;">
     <div class="dyn-card-header" style="margin-bottom:8px;">
-      <span class="dyn-card-title">Agent #${aid}</span>
-      ${aid > 1 ? `<button class="btn-remove-card" onclick="removeVisitAgent(${vid},${aid})">Remove</button>` : ''}
+      <span class="dyn-card-title">${label} Agent #${aid}</span>
+      ${aid > 1 ? `<button class="btn-remove-card" onclick="removeVisitAgent(${vid},${aid},'${prefix}')">Remove</button>` : ''}
     </div>
     <div class="form-grid cols-2" style="gap:8px;">
       <div class="field">
@@ -2457,14 +2491,16 @@ function addVisitAgent(vid) {
       </div>
     </div>
   </div>`;
-  document.getElementById(`vc-agents-${vid}`).insertAdjacentHTML('beforeend', html);
-  if (aid >= MAX_AGENTS) document.getElementById(`vc-add-agent-btn-${vid}`).style.display = 'none';
+  document.getElementById(`vc-${prefix}agents-${vid}`).insertAdjacentHTML('beforeend', html);
+  if (aid >= MAX_AGENTS) document.getElementById(`vc-add-${prefix}agent-btn-${vid}`).style.display = 'none';
 }
 
-function removeVisitAgent(vid, aid) {
-  document.getElementById(`vc-agent-${vid}-${aid}`)?.remove();
-  visitAgentCounts[vid] = Math.max(0, (visitAgentCounts[vid] || 1) - 1);
-  document.getElementById(`vc-add-agent-btn-${vid}`).style.display = '';
+function removeVisitAgent(vid, aid, prefix) {
+  prefix = prefix || 'r';
+  document.getElementById(`vc-${prefix}agent-${vid}-${aid}`)?.remove();
+  const key = `${prefix}-${vid}`;
+  visitAgentCounts[key] = Math.max(0, (visitAgentCounts[key] || 1) - 1);
+  document.getElementById(`vc-add-${prefix}agent-btn-${vid}`).style.display = '';
 }
 
 // Collect all visit cards into rows
@@ -2481,13 +2517,23 @@ function collectAllVisitRows(collector, ts) {
     const lesions   = Array.from(card.querySelectorAll(`#vc-lesion-${vid} input:checked`)).map(c=>c.value);
     const extent    = [...bodyExt, ...mucosaExt].join(', ');
 
-    const agentCards = card.querySelectorAll(`#vc-agents-${vid} .dyn-card`);
-    const agents = [], doses = [];
-    agentCards.forEach(ac => {
-      agents.push((ac.querySelector('select[data-field="agent"]')||{}).value||'');
-      doses.push((ac.querySelector('input[data-field="agent-dose"]')||{}).value||'');
+    // Current treatment agents
+    const cAgentCards = card.querySelectorAll(`#vc-cagents-${vid} .dyn-card`);
+    const cAgents = [], cDoses = [];
+    cAgentCards.forEach(ac => {
+      cAgents.push((ac.querySelector('select[data-field="agent"]')||{}).value||'');
+      cDoses.push((ac.querySelector('input[data-field="agent-dose"]')||{}).value||'');
     });
-    while (agents.length < 3) { agents.push(''); doses.push(''); }
+    while (cAgents.length < 3) { cAgents.push(''); cDoses.push(''); }
+
+    // Recommended treatment agents
+    const rAgentCards = card.querySelectorAll(`#vc-ragents-${vid} .dyn-card`);
+    const rAgents = [], rDoses = [];
+    rAgentCards.forEach(ac => {
+      rAgents.push((ac.querySelector('select[data-field="agent"]')||{}).value||'');
+      rDoses.push((ac.querySelector('input[data-field="agent-dose"]')||{}).value||'');
+    });
+    while (rAgents.length < 3) { rAgents.push(''); rDoses.push(''); }
 
     const status = g(`vc-status-${vid}`);
     rows.push([
@@ -2496,10 +2542,14 @@ function collectAllVisitRows(collector, ts) {
       extent, lesions.join(', '),
       g(`vc-pruritus-${vid}`),
       g(`vc-eos-${vid}`), g(`vc-ige-${vid}`),
-      g(`vc-pred-${vid}`),
-      g(`vc-topical-${vid}`),
-      g(`vc-topical-name-${vid}`),
-      agents[0], doses[0], agents[1], doses[1], agents[2], doses[2],
+      g(`vc-cpred-${vid}`),
+      g(`vc-ctopical-${vid}`),
+      g(`vc-ctopical-name-${vid}`),
+      cAgents[0], cDoses[0], cAgents[1], cDoses[1], cAgents[2], cDoses[2],
+      g(`vc-rpred-${vid}`),
+      g(`vc-rtopical-${vid}`),
+      g(`vc-rtopical-name-${vid}`),
+      rAgents[0], rDoses[0], rAgents[1], rDoses[1], rAgents[2], rDoses[2],
       g(`vc-hosp-${vid}`),
       status === 'Flare'             ? 'Y' : 'N',
       status === 'Partial_Remission' ? 'Y' : 'N',
