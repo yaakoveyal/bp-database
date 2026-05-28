@@ -1524,6 +1524,7 @@ let currentPID   = '';
 let pidState     = 'empty';   // 'empty' | 'new' | 'exists'
 let confirmed    = false;
 let activeTab    = 0;
+let saveInProgress = false;
 let lookupCache  = {};
 let agentCount   = 0;
 let dtCardCount  = 0;
@@ -1828,10 +1829,12 @@ function switchTab(idx) {
 
 async function saveTabSilent(idx) {
   if (!currentPID || !confirmed) return;
+  if (saveInProgress) return;
   const collector = document.getElementById('collector-name').value.trim();
   if (!collector) { setAutosave('error'); return; }
   if (!hasSectionData(idx)) return;
   setAutosave('saving');
+  saveInProgress = true;
   const ts = new Date().toISOString();
 
   try {
@@ -1881,6 +1884,8 @@ async function saveTabSilent(idx) {
     if (!hasError) setDot(idx, 'green');
   } catch(e) {
     setAutosave('error');
+  } finally {
+    saveInProgress = false;
   }
 }
 
@@ -2031,6 +2036,7 @@ async function saveAllSections() {
   if (!currentPID || !confirmed) { toast('No confirmed patient selected', 'warn'); return; }
   const collector = document.getElementById('collector-name').value.trim();
   if (!collector) { toast('Please enter your collector name', 'warn'); return; }
+  if (saveInProgress) { toast('Save already in progress…', 'warn'); return; }
 
   // Validate required baseline fields
   const sex    = document.getElementById('b-sex').value;
@@ -2048,6 +2054,7 @@ async function saveAllSections() {
 
   setAutosave('saving');
   invalidateCache();
+  saveInProgress = true;
 
   const ts = new Date().toISOString();
   const items = [];
@@ -2098,6 +2105,7 @@ async function saveAllSections() {
 
   if (items.length === 0) {
     setAutosave('');
+    saveInProgress = false;
     return;
   }
 
@@ -2119,6 +2127,8 @@ async function saveAllSections() {
     setAutosave('error');
     toast('Save failed: ' + e.message, 'error');
     console.error('Batch save failed:', e);
+  } finally {
+    saveInProgress = false;
   }
 }
 
@@ -2514,6 +2524,30 @@ function collectAllVisitRows(collector, ts) {
     const dateVal = g(`vc-date-${vid}`);
     if (!dateVal) return; // skip cards without a date
 
+    // Skip cards that have a date but no real clinical data (prevents ghost rows)
+    const status    = g(`vc-status-${vid}`);
+    const pruritus  = g(`vc-pruritus-${vid}`);
+    const eos       = g(`vc-eos-${vid}`);
+    const ige       = g(`vc-ige-${vid}`);
+    const cPred     = g(`vc-cpred-${vid}`);
+    const rPred     = g(`vc-rpred-${vid}`);
+    const hosp      = g(`vc-hosp-${vid}`);
+    const cTopical  = g(`vc-ctopical-${vid}`);
+    const rTopical  = g(`vc-rtopical-${vid}`);
+    const hasBody   = card.querySelectorAll(`#vc-body-${vid} input:checked`).length > 0;
+    const hasMucosa = card.querySelectorAll(`#vc-mucosa-${vid} input:checked`).length > 0;
+    const hasLesion = card.querySelectorAll(`#vc-lesion-${vid} input:checked`).length > 0;
+    const hasCAgent = Array.from(card.querySelectorAll(`#vc-cagents-${vid} .dyn-card select`))
+                          .some(s => s.value);
+    const hasRAgent = Array.from(card.querySelectorAll(`#vc-ragents-${vid} .dyn-card select`))
+                          .some(s => s.value);
+
+    if (!status && !pruritus && !eos && !ige && !cPred && !rPred && !hosp &&
+        !cTopical && !rTopical && !hasBody && !hasMucosa && !hasLesion &&
+        !hasCAgent && !hasRAgent) {
+      return; // date-only card with no clinical content — skip to prevent ghost rows
+    }
+
     const bodyExt   = Array.from(card.querySelectorAll(`#vc-body-${vid} input:checked`)).map(c=>c.value);
     const mucosaExt = Array.from(card.querySelectorAll(`#vc-mucosa-${vid} input:checked`)).map(c=>c.value);
     const lesions   = Array.from(card.querySelectorAll(`#vc-lesion-${vid} input:checked`)).map(c=>c.value);
@@ -2537,7 +2571,6 @@ function collectAllVisitRows(collector, ts) {
     });
     while (rAgents.length < 3) { rAgents.push(''); rDoses.push(''); }
 
-    const status = g(`vc-status-${vid}`);
     rows.push([
       currentPID,
       fmtDate(dateVal),
@@ -2769,6 +2802,7 @@ function prefillSafety(s) {
 // ══════════════════════════════════════════════════════════════════
 function resetAll() {
   currentPID = ''; pidState = 'empty'; confirmed = false;
+  saveInProgress = false;
   document.getElementById('pid-input').value = '';
   setBadge('');
   // Clear badge via class only — don't set inline style (would override CSS classes)
@@ -2838,11 +2872,20 @@ function hasSectionData(idx) {
     case 2: // Drug Triggers — require at least one card with a trigger value
       return Array.from(document.querySelectorAll('#drug-trigger-list .dyn-card'))
         .some(card => (card.querySelector('input[data-field="trig"]') || {}).value);
-    case 3: // Visit Log — require at least one card with a date
+    case 3: // Visit Log — require at least one card with a date AND clinical data
       return Array.from(document.querySelectorAll('#visit-card-list .visit-card'))
         .some(card => {
           const vid = card.id.replace('vc-','');
-          return !!(document.getElementById(`vc-date-${vid}`) || {}).value;
+          const gv = id => (document.getElementById(id) || {}).value || '';
+          if (!gv(`vc-date-${vid}`)) return false;
+          // Must also have at least one clinical field filled
+          return !!(gv(`vc-status-${vid}`) || gv(`vc-pruritus-${vid}`) ||
+                    gv(`vc-eos-${vid}`) || gv(`vc-ige-${vid}`) ||
+                    gv(`vc-cpred-${vid}`) || gv(`vc-rpred-${vid}`) ||
+                    gv(`vc-hosp-${vid}`) || gv(`vc-ctopical-${vid}`) || gv(`vc-rtopical-${vid}`) ||
+                    card.querySelectorAll(`#vc-body-${vid} input:checked`).length > 0 ||
+                    card.querySelectorAll(`#vc-mucosa-${vid} input:checked`).length > 0 ||
+                    card.querySelectorAll(`#vc-lesion-${vid} input:checked`).length > 0);
         });
     case 4: // Safety — require AE to be set
       return !!g('s-ae');
