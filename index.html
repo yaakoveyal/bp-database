@@ -2256,8 +2256,15 @@ function addVisitCard() {
     <div class="visit-form-grid">
 
       <div class="field">
-        <label class="field-label">Visit Date <span class="req">*</span></label>
+        <label class="field-label">Visit Date</label>
         <input class="field-input" type="date" id="vc-date-${vid}"
+               onchange="updateVisitHeader(${vid}); calcDaysFromDx(${vid})" />
+      </div>
+
+      <div class="field">
+        <label class="field-label">Days from Diagnosis <span class="req">*</span></label>
+        <input class="field-input" type="number" id="vc-days-${vid}"
+               placeholder="e.g. 0" min="0" step="1"
                onchange="updateVisitHeader(${vid})" />
       </div>
 
@@ -2415,8 +2422,29 @@ function removeVisitCard(e, vid) {
 
 function updateVisitHeader(vid) {
   const dateVal = document.getElementById(`vc-date-${vid}`).value;
+  const daysVal = document.getElementById(`vc-days-${vid}`)?.value;
   const label   = document.getElementById(`vc-date-label-${vid}`);
-  label.textContent = dateVal ? fmtDate(dateVal) : 'New Assessment';
+  if (daysVal !== '' && daysVal !== undefined && daysVal !== null) {
+    label.textContent = `Day ${daysVal}${dateVal ? ' · ' + fmtDate(dateVal) : ''}`;
+  } else if (dateVal) {
+    label.textContent = fmtDate(dateVal);
+  } else {
+    label.textContent = 'New Assessment';
+  }
+}
+
+function calcDaysFromDx(vid) {
+  const visitDateVal = document.getElementById(`vc-date-${vid}`)?.value;
+  const dxDateVal    = document.getElementById('b-dx-date')?.value;
+  if (!visitDateVal || !dxDateVal) return;
+  const visitD = new Date(visitDateVal);
+  const dxD    = new Date(dxDateVal);
+  if (isNaN(visitD) || isNaN(dxD)) return;
+  const days = Math.round((visitD - dxD) / 86400000);
+  if (days >= 0) {
+    document.getElementById(`vc-days-${vid}`).value = days;
+    updateVisitHeader(vid);
+  }
 }
 
 function pickVisitStatus(vid, el, val) {
@@ -2520,8 +2548,9 @@ function collectAllVisitRows(collector, ts) {
   document.querySelectorAll('#visit-card-list .visit-card').forEach(card => {
     const vid = card.id.replace('vc-','');
     const g = id => (document.getElementById(id)||{}).value||'';
-    const dateVal = g(`vc-date-${vid}`);
-    if (!dateVal) return; // skip cards without a date
+    const dateVal    = g(`vc-date-${vid}`);
+    const daysFromDx = g(`vc-days-${vid}`);
+    if (!daysFromDx && !dateVal) return; // skip cards with neither date nor days
 
     // Skip cards that have a date but no real clinical data (prevents ghost rows)
     const status    = g(`vc-status-${vid}`);
@@ -2573,6 +2602,7 @@ function collectAllVisitRows(collector, ts) {
     rows.push([
       currentPID,
       fmtDate(dateVal),
+      daysFromDx,
       extent, lesions.join(', '),
       g(`vc-pruritus-${vid}`),
       g(`vc-eos-${vid}`), g(`vc-ige-${vid}`),
@@ -2876,7 +2906,7 @@ function hasSectionData(idx) {
         .some(card => {
           const vid = card.id.replace('vc-','');
           const gv = id => (document.getElementById(id) || {}).value || '';
-          if (!gv(`vc-date-${vid}`)) return false;
+          if (!gv(`vc-days-${vid}`) && !gv(`vc-date-${vid}`)) return false;
           // Must also have at least one clinical field filled
           return !!(gv(`vc-status-${vid}`) || gv(`vc-pruritus-${vid}`) ||
                     gv(`vc-eos-${vid}`) || gv(`vc-ige-${vid}`) ||
