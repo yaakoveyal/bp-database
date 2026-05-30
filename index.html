@@ -876,6 +876,7 @@ body {
   #header #theme-toggle { order: 6; }
   /* Force collector + buttons to second row */
   #header .header-field { order: 10; flex: 1; min-width: 120px; width: auto; }
+  #header #btn-import { order: 10; }
   #header #btn-new { order: 11; }
   #header #btn-save { order: 12; }
 
@@ -961,6 +962,162 @@ body {
   .field.span-2 { grid-column: 1 / -1; }
 }
 
+
+/* ═══════════════════════════════════════════
+   AI IMPORT MODAL
+═══════════════════════════════════════════ */
+#ai-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.72);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+#ai-modal-overlay.show { display: flex; }
+
+#ai-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#ai-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+#ai-modal-title {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+#ai-modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius);
+  line-height: 1;
+}
+#ai-modal-close:hover { color: var(--text); }
+#ai-modal-body {
+  padding: 18px 20px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.ai-warning-banner {
+  background: var(--red-dim);
+  border: 1px solid var(--red);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--red);
+  line-height: 1.5;
+}
+.ai-warning-banner strong { display: block; margin-bottom: 3px; font-size: 13px; }
+.ai-info-banner {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--accent);
+  line-height: 1.5;
+}
+#ai-notes-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-muted);
+}
+#ai-notes-input {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 13px;
+  padding: 10px 12px;
+  outline: none;
+  resize: vertical;
+  min-height: 220px;
+  width: 100%;
+  line-height: 1.6;
+  -webkit-text-fill-color: var(--text);
+}
+#ai-notes-input:focus { border-color: var(--accent); }
+#ai-modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+#ai-word-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+#ai-spinner {
+  display: none;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: ai-spin .7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes ai-spin { to { transform: rotate(360deg); } }
+
+/* AI-filled field highlights */
+.ai-filled { border-color: var(--yellow) !important; background: var(--yellow-dim) !important; }
+.ai-filled-chip { border-color: var(--yellow) !important; background: var(--yellow-dim) !important; color: var(--yellow) !important; }
+.ai-filled-radio { border-color: var(--yellow) !important; background: var(--yellow-dim) !important; color: var(--yellow) !important; }
+
+#ai-highlight-legend {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--yellow);
+  padding: 7px 20px;
+  background: var(--yellow-dim);
+  border-bottom: 1px solid var(--yellow);
+  flex-shrink: 0;
+}
+#ai-highlight-legend.show { display: flex; }
+#ai-clear-highlights {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--yellow);
+  color: var(--yellow);
+  font-size: 11px;
+  padding: 2px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--mono);
+}
+#ai-clear-highlights:hover { background: var(--yellow); color: var(--bg); }
 
 /* Dark mode — force colors so iOS Safari doesn't override */
 body:not(.light-mode) .field-input,
@@ -1076,9 +1233,49 @@ body:not(.light-mode) .computed-val {
   <div id="autosave-dot" title="Autosave status"></div>
   <div class="spacer"></div>
   <button id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">☀</button>
+  <button class="btn btn-ghost" id="btn-import" onclick="openImportModal()" disabled title="Confirm a patient first">⚡ Import</button>
   <button class="btn btn-ghost" id="btn-new" onclick="resetAll()">↺ New</button>
   <button class="btn btn-primary" id="btn-save" onclick="saveAllSections()" disabled>↑ Save All</button>
 </header>
+
+<!-- ═══════════════════════════════════════════
+     AI IMPORT MODAL
+════════════════════════════════════════════ -->
+<div id="ai-modal-overlay" onclick="closeImportModal(event)">
+  <div id="ai-modal">
+    <div id="ai-modal-header">
+      <span id="ai-modal-title">⚡ AI Import — Paste De-identified Notes</span>
+      <button id="ai-modal-close" onclick="closeImportModal()">✕</button>
+    </div>
+    <div id="ai-modal-body">
+      <div class="ai-warning-banner" id="ai-existing-warning" style="display:none">
+        <strong>⚠ Existing patient data detected</strong>
+        This patient already has saved data. Importing will pre-fill form fields.
+        Existing sheet data is NOT affected until you press Save All.
+      </div>
+      <div class="ai-info-banner">
+        Paste the <strong>de-identified</strong> clinical notes below (dates replaced with Day 0, Day 45, etc).
+        Fields highlighted in <strong style="color:var(--yellow)">yellow</strong> are AI-generated — review carefully.
+      </div>
+      <label id="ai-notes-label" for="ai-notes-input">Patient Notes (Hebrew / English, de-identified)</label>
+      <textarea id="ai-notes-input" placeholder="Day 0:&#10;בן 78, ברקע סכרת...&#10;&#10;Day 45:&#10;חזר עם הטבה חלקית..."
+                oninput="updateWordCount()"></textarea>
+    </div>
+    <div id="ai-modal-footer">
+      <span id="ai-word-count">0 words</span>
+      <button class="btn btn-primary" id="ai-extract-btn" onclick="runExtraction()">
+        <span id="ai-spinner"></span>
+        <span id="ai-extract-label">Extract & Fill Form</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- AI highlight legend bar -->
+<div id="ai-highlight-legend">
+  <span>⚡ Yellow fields were filled by AI — review before saving</span>
+  <button id="ai-clear-highlights" onclick="clearAiHighlights()">Clear Highlights</button>
+</div>
 
 <!-- ═══════════════════════════════════════════
      VERIFY CARD
@@ -1745,6 +1942,7 @@ function setAutosave(state) {
 function updateSaveLocks() {
   const canSave = pidState !== 'empty' && confirmed;
   document.getElementById('btn-save').disabled = !canSave;
+  document.getElementById('btn-import').disabled = !canSave;
 }
 
 function unlockForm(instant) {
@@ -2834,9 +3032,9 @@ function resetAll() {
   saveInProgress = false;
   document.getElementById('pid-input').value = '';
   setBadge('');
-  // Clear badge via class only — don't set inline style (would override CSS classes)
   hideVerifyCard();
   resetAllFields();
+  clearAiHighlights();
   updateSaveLocks();
   lockForm();
   // Reset to tab 0 directly — avoids triggering saveTabSilent on the old tab
@@ -3022,6 +3220,399 @@ function setRadio(groupId, val) {
     b.classList.toggle('selected', b.dataset.val === val);
   });
 }
+// ══════════════════════════════════════════════════════════════════
+//  AI IMPORT
+// ══════════════════════════════════════════════════════════════════
+
+function openImportModal() {
+  if (!confirmed) { toast('Confirm the patient first', 'warn'); return; }
+  document.getElementById('ai-existing-warning').style.display =
+    (pidState === 'exists') ? 'block' : 'none';
+  document.getElementById('ai-notes-input').value = '';
+  document.getElementById('ai-word-count').textContent = '0 words';
+  document.getElementById('ai-modal-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('ai-notes-input').focus(), 50);
+}
+
+function closeImportModal(e) {
+  if (e && e.target !== document.getElementById('ai-modal-overlay')) return;
+  document.getElementById('ai-modal-overlay').classList.remove('show');
+}
+
+function updateWordCount() {
+  const text = document.getElementById('ai-notes-input').value.trim();
+  const count = text ? text.split(/\s+/).length : 0;
+  document.getElementById('ai-word-count').textContent = count.toLocaleString() + ' words';
+}
+
+async function runExtraction() {
+  const notes = document.getElementById('ai-notes-input').value.trim();
+  if (notes.length < 20) { toast('Please paste some clinical notes first', 'warn'); return; }
+
+  if (pidState === 'exists') {
+    const ok = confirm(
+      '⚠ Existing patient: ' + currentPID + '\n\n' +
+      'Importing will pre-fill all form tabs with AI-extracted data.\n' +
+      'Your existing sheet data is NOT changed until you press Save All.\n\n' +
+      'Proceed with extraction?'
+    );
+    if (!ok) return;
+  }
+
+  // Base64 encode the notes for safe URL transport (Hebrew + special chars)
+  const notesB64 = btoa(unescape(encodeURIComponent(notes)));
+
+  // Check URL size — warn if very large
+  if (notesB64.length > 40000) {
+    toast('Notes are very large (' + Math.round(notesB64.length/1024) + 'KB). Consider splitting.', 'warn');
+  }
+
+  const btn   = document.getElementById('ai-extract-btn');
+  const spin  = document.getElementById('ai-spinner');
+  const label = document.getElementById('ai-extract-label');
+  btn.disabled  = true;
+  spin.style.display  = 'inline-block';
+  label.textContent   = 'Extracting…';
+
+  try {
+    const params = new URLSearchParams({
+      token: TOKEN,
+      action: 'extract',
+      notes: notesB64
+    });
+    const res = await fetch(`${APPS_SCRIPT_URL}?${params}`);
+    const json = await res.json();
+
+    if (json.status !== 'ok') {
+      toast('Extraction failed: ' + (json.message || 'Unknown error'), 'error');
+      console.error('Extraction error:', json);
+      return;
+    }
+
+    const data = json.data;
+    const visitCount = (data.Visit_Log || []).length;
+
+    if (visitCount > 0) {
+      const ok = confirm(
+        'AI found ' + visitCount + ' visit' + (visitCount !== 1 ? 's' : '') + ' in the notes.\n\n' +
+        'Does that look correct?\n\nClick OK to fill the form, Cancel to go back and check.'
+      );
+      if (!ok) return;
+    }
+
+    document.getElementById('ai-modal-overlay').classList.remove('show');
+    applyAiData(data);
+
+    const warnings = collectVerifyFields();
+    if (warnings > 0) {
+      toast('Extraction complete — ' + visitCount + ' visit(s). ' + warnings + ' field(s) need review ([VERIFY])', 'warn');
+    } else {
+      toast('Extraction complete — ' + visitCount + ' visit(s). Review yellow fields before saving.', 'success');
+    }
+    document.getElementById('ai-highlight-legend').classList.add('show');
+
+  } catch (err) {
+    toast('Network error during extraction', 'error');
+    console.error('Extraction fetch error:', err);
+  } finally {
+    btn.disabled = false;
+    spin.style.display = 'none';
+    label.textContent  = 'Extract & Fill Form';
+  }
+}
+
+function collectVerifyFields() {
+  let count = 0;
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    if (el.value && el.value.includes('[VERIFY]')) count++;
+  });
+  return count;
+}
+
+function applyAiData(data) {
+  // ── Helpers ──────────────────────────────────────────────────
+  function markEl(el) { if (el) el.classList.add('ai-filled'); }
+  function markRadio(groupId) {
+    const sel = document.querySelector('#' + groupId + ' .radio-btn.selected');
+    if (sel) sel.classList.add('ai-filled-radio');
+  }
+  function setAndMark(id, val) {
+    if (!val && val !== 0) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = String(val);
+    markEl(el);
+  }
+  function setDateAndMark(id, val) {
+    if (!val || val === '[VERIFY]') return;
+    const m = val.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (m) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.value = m[3] + '-' + m[2] + '-' + m[1];
+      markEl(el);
+    }
+  }
+  function setRadioAndMark(groupId, hiddenId, val) {
+    if (!val) return;
+    document.querySelectorAll('#' + groupId + ' .radio-btn').forEach(b => {
+      const match = b.dataset.val === val;
+      b.classList.toggle('selected', match);
+      if (match) b.classList.add('ai-filled-radio');
+    });
+    const hid = document.getElementById(hiddenId);
+    if (hid) hid.value = val;
+  }
+  function setChipsAndMark(containerId, csv) {
+    if (!csv) return;
+    const vals = csv.split(',').map(v => v.trim().toLowerCase()).filter(Boolean);
+    if (!vals.length) return;
+    document.querySelectorAll('#' + containerId + ' input[type=checkbox]').forEach(cb => {
+      if (vals.includes(cb.value.toLowerCase())) {
+        cb.checked = true;
+        const chip = cb.closest('.check-chip');
+        if (chip) chip.classList.add('checked', 'ai-filled-chip');
+      }
+    });
+  }
+
+  // ── Baseline ─────────────────────────────────────────────────
+  const b = data.Patient_Baseline;
+  if (b) {
+    setRadioAndMark('b-sex-group', 'b-sex', b.Sex);
+    setAndMark('b-age', b.Age_at_Diagnosis);
+    setAndMark('b-ethnicity', b.Ethnicity);
+    setAndMark('b-frailty', b.Frailty_Score);
+    setAndMark('b-height', b.Height_cm);
+    setAndMark('b-weight', b.Weight_kg);
+    setDateAndMark('b-dx-date', b.Date_of_Diagnosis);
+    setDateAndMark('b-symp-date', b.Date_of_First_Symptoms);
+    setDateAndMark('b-death-date', b.Date_of_Death);
+    setAndMark('b-death-cause', b.Cause_of_Death);
+    if (b.Days_Symptoms_to_Diagnosis && b.Days_Symptoms_to_Diagnosis !== '[VERIFY]') {
+      // No field to fill — computed value. But store for reference.
+    }
+    calcBMI(); calcDiagFields(); toggleDeathCause();
+  }
+
+  // ── Comorbidities ────────────────────────────────────────────
+  const c = data.Comorbidities;
+  if (c) {
+    setRadioAndMark('b-anti-group', 'b-anti', c.Antipsychotic_Treatment);
+    setAndMark('b-neuro-year', c.Year_Neurologic_Diagnosis);
+    markEl(document.getElementById('b-neuro-year'));
+    setChipsAndMark('b-neuro-chips', c.Neurological_Diagnoses);
+    const comorbKeys = ['Diabetes','Hypertension','Dyslipidemia','IHD','Active_Malignancy',
+                        'Autoimmune_Disease','CKD','Smoker','CHF','COPD','PVD','Liver_Disease'];
+    const activeComorbids = comorbKeys
+      .filter(k => c[k] === 'Yes')
+      .map(k => k.replace(/_/g,' '));
+    setChipsAndMark('b-comorbid-chips', activeComorbids.join(', '));
+  }
+
+  // ── Diagnostics Labs ─────────────────────────────────────────
+  const labs = data.Diagnostics_Labs;
+  if (labs) {
+    setRadioAndMark('d-dif-igg-group', 'd-dif-igg', labs.DIF_IgG);
+    setRadioAndMark('d-dif-c3-group', 'd-dif-c3', labs.DIF_C3);
+    setRadioAndMark('d-iif-group', 'd-iif', labs.IIF_Result);
+    setAndMark('d-iif-titer', labs.IIF_Titer); markEl(document.getElementById('d-iif-titer'));
+    setAndMark('d-bp180', labs.Anti_BP180_IgG);
+    setAndMark('d-bp230', labs.Anti_BP230_IgG);
+    setAndMark('d-ige', labs.Total_IgE);
+    setAndMark('d-eos', labs.Absolute_Eosinophils);
+    setAndMark('d-albumin', labs.Albumin);
+    setRadioAndMark('d-sub-blister-group', 'd-sub-blister', labs.Subepidermal_Blister);
+    setRadioAndMark('d-bx-eos-group', 'd-bx-eos', labs.Biopsy_Eosinophils);
+    setRadioAndMark('d-sug-biopsy-group', 'd-sug-biopsy', labs.Suggestive_Biopsy);
+  }
+
+  // ── Drug Triggers ────────────────────────────────────────────
+  const triggers = data.Drug_Triggers;
+  if (triggers && triggers.length > 0) {
+    document.getElementById('drug-trigger-list').innerHTML = '';
+    dtCardCount = 0;
+    triggers.forEach(dt => {
+      addDrugTriggerCard();
+      const id = dtCardCount;
+      if (dt.Suspected_Drug_Trigger) {
+        setRadioAndMark('dt-trig-group-' + id, 'dt-trig-' + id, dt.Suspected_Drug_Trigger);
+      }
+      if (dt.Trigger_Drug_Class) {
+        const sel = document.getElementById('dt-class-' + id);
+        const hid = document.getElementById('dt-class-h-' + id);
+        if (sel) { sel.value = dt.Trigger_Drug_Class; markEl(sel); }
+        if (hid) hid.value = dt.Trigger_Drug_Class;
+      }
+      const card = document.getElementById('dt-card-' + id);
+      if (card && dt.Specific_Drug) {
+        const inp = card.querySelector('input[data-field="specific-drug"]');
+        if (inp) { inp.value = dt.Specific_Drug; markEl(inp); }
+      }
+      if (dt.Drug_Discontinued) {
+        setRadioAndMark('dt-dc-group-' + id, 'dt-dc-' + id, dt.Drug_Discontinued);
+      }
+      if (dt.Improvement_After_Withdrawal) {
+        setRadioAndMark('dt-improv-group-' + id, 'dt-improv-' + id, dt.Improvement_After_Withdrawal);
+      }
+    });
+  }
+
+  // ── Visit Log ────────────────────────────────────────────────
+  const visits = data.Visit_Log;
+  if (visits && visits.length > 0) {
+    document.getElementById('visit-card-list').innerHTML = '';
+    visitCount = 0;
+    Object.keys(visitAgentCounts).forEach(k => delete visitAgentCounts[k]);
+
+    visits.forEach(v => {
+      addVisitCard();
+      const vid = visitCount;
+
+      // Days from Diagnosis (primary identifier for AI visits)
+      if (v.Days_From_Diagnosis !== undefined && v.Days_From_Diagnosis !== '' && v.Days_From_Diagnosis !== null) {
+        setAndMark('vc-days-' + vid, v.Days_From_Diagnosis);
+      }
+      // Visit Date (usually empty for AI imports, but handle if present)
+      if (v.Visit_Date) {
+        setDateAndMark('vc-date-' + vid, v.Visit_Date);
+      }
+      updateVisitHeader(vid);
+
+      // Pruritus
+      if (v.Pruritus) setRadioAndMark('vc-pruritus-group-' + vid, 'vc-pruritus-' + vid, v.Pruritus);
+
+      // Hospitalization
+      if (v.Hospitalization) {
+        setRadioAndMark('vc-hosp-group-' + vid, 'vc-hosp-' + vid, v.Hospitalization);
+        if (v.Hospitalization === 'Y') {
+          const badge = document.createElement('span');
+          badge.id = 'vc-hosp-badge-' + vid;
+          badge.className = 'visit-hosp-badge';
+          badge.textContent = 'HOSP';
+          const statusBadge = document.getElementById('vc-status-badge-' + vid);
+          if (statusBadge) statusBadge.after(badge);
+        }
+      }
+
+      // Disease status
+      if (v.Flare === 'Y') pickVisitStatus(vid, document.querySelector('#vc-status-sel-' + vid + ' [data-val="Flare"]'), 'Flare');
+      else if (v.Partial_Remission === 'Y') pickVisitStatus(vid, document.querySelector('#vc-status-sel-' + vid + ' [data-val="Partial_Remission"]'), 'Partial_Remission');
+      else if (v.Complete_Remission === 'Y') pickVisitStatus(vid, document.querySelector('#vc-status-sel-' + vid + ' [data-val="Complete_Remission"]'), 'Complete_Remission');
+      else if (v.No_Response === 'Y') pickVisitStatus(vid, document.querySelector('#vc-status-sel-' + vid + ' [data-val="No_Response"]'), 'No_Response');
+
+      // Disease extent chips
+      if (v.Disease_Extent) {
+        const extentVals = v.Disease_Extent.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        const bodySiteVals  = extentVals.filter(s => BODY_SITES.some(b => b.toLowerCase() === s));
+        const mucosaVals    = extentVals.filter(s => MUCOSA_SITES.some(m => m.toLowerCase() === s));
+        document.querySelectorAll('#vc-body-' + vid + ' input[type=checkbox]').forEach(cb => {
+          if (bodySiteVals.includes(cb.value.toLowerCase())) {
+            cb.checked = true;
+            const chip = cb.closest('.check-chip');
+            if (chip) chip.classList.add('checked','ai-filled-chip');
+          }
+        });
+        document.querySelectorAll('#vc-mucosa-' + vid + ' input[type=checkbox]').forEach(cb => {
+          if (mucosaVals.includes(cb.value.toLowerCase())) {
+            cb.checked = true;
+            const chip = cb.closest('.check-chip');
+            if (chip) chip.classList.add('checked','ai-filled-chip');
+          }
+        });
+      }
+
+      // Lesion chips
+      if (v.Lesion_Description) {
+        const lesionVals = v.Lesion_Description.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        document.querySelectorAll('#vc-lesion-' + vid + ' input[type=checkbox]').forEach(cb => {
+          if (lesionVals.includes(cb.value.toLowerCase())) {
+            cb.checked = true;
+            const chip = cb.closest('.check-chip');
+            if (chip) chip.classList.add('checked','ai-filled-chip');
+          }
+        });
+      }
+
+      // Lab values at visit
+      setAndMark('vc-eos-' + vid, v.Abs_Eosinophils);
+      setAndMark('vc-ige-' + vid, v.IgE);
+
+      // Current treatment
+      setAndMark('vc-cpred-' + vid, v.Curr_Prednisone_Dose_mg);
+      if (v.Curr_Topical_Steroids) {
+        setRadioAndMark('vc-ctopical-group-' + vid, 'vc-ctopical-' + vid, v.Curr_Topical_Steroids);
+        toggleTopicalDetail('c', vid);
+        if (v.Curr_Topical_Steroids === 'Y' && v.Curr_Topical_Steroid_Name) {
+          setAndMark('vc-ctopical-name-' + vid, v.Curr_Topical_Steroid_Name);
+        }
+      }
+      const cAgents = [
+        { name: v.Curr_Agent1, dose: v.Curr_Agent1_Dose },
+        { name: v.Curr_Agent2, dose: v.Curr_Agent2_Dose },
+        { name: v.Curr_Agent3, dose: v.Curr_Agent3_Dose }
+      ].filter(a => a.name);
+      cAgents.forEach((ag, i) => {
+        if (i > 0) addVisitAgent(vid, 'c');
+        const cards = document.querySelectorAll('#vc-cagents-' + vid + ' .dyn-card');
+        const agCard = cards[i];
+        if (!agCard) return;
+        const sel = agCard.querySelector('select[data-field="agent"]');
+        const doseIn = agCard.querySelector('input[data-field="agent-dose"]');
+        if (sel) { sel.value = ag.name; markEl(sel); }
+        if (doseIn && ag.dose) { doseIn.value = ag.dose; markEl(doseIn); }
+      });
+
+      // Recommended treatment
+      setAndMark('vc-rpred-' + vid, v.Rec_Prednisone_Dose_mg);
+      if (v.Rec_Topical_Steroids) {
+        setRadioAndMark('vc-rtopical-group-' + vid, 'vc-rtopical-' + vid, v.Rec_Topical_Steroids);
+        toggleTopicalDetail('r', vid);
+        if (v.Rec_Topical_Steroids === 'Y' && v.Rec_Topical_Steroid_Name) {
+          setAndMark('vc-rtopical-name-' + vid, v.Rec_Topical_Steroid_Name);
+        }
+      }
+      const rAgents = [
+        { name: v.Rec_Agent1, dose: v.Rec_Agent1_Dose },
+        { name: v.Rec_Agent2, dose: v.Rec_Agent2_Dose },
+        { name: v.Rec_Agent3, dose: v.Rec_Agent3_Dose }
+      ].filter(a => a.name);
+      rAgents.forEach((ag, i) => {
+        if (i > 0) addVisitAgent(vid, 'r');
+        const cards = document.querySelectorAll('#vc-ragents-' + vid + ' .dyn-card');
+        const agCard = cards[i];
+        if (!agCard) return;
+        const sel = agCard.querySelector('select[data-field="agent"]');
+        const doseIn = agCard.querySelector('input[data-field="agent-dose"]');
+        if (sel) { sel.value = ag.name; markEl(sel); }
+        if (doseIn && ag.dose) { doseIn.value = ag.dose; markEl(doseIn); }
+      });
+
+      // Collapse card after filling
+      const cardEl = document.getElementById('vc-' + vid);
+      if (cardEl) cardEl.classList.remove('expanded');
+    });
+  }
+
+  // ── Safety ───────────────────────────────────────────────────
+  if (data.Safety) {
+    prefillSafety(data.Safety);
+    const aeEl = document.getElementById('s-ae');
+    if (aeEl && aeEl.value) markEl(aeEl);
+  }
+
+  // Switch to Visit Log if visits were filled, otherwise Baseline
+  if (visits && visits.length > 0) switchTab(3);
+  else switchTab(0);
+}
+
+function clearAiHighlights() {
+  document.querySelectorAll('.ai-filled').forEach(el => el.classList.remove('ai-filled'));
+  document.querySelectorAll('.ai-filled-radio').forEach(el => el.classList.remove('ai-filled-radio'));
+  document.querySelectorAll('.ai-filled-chip').forEach(el => el.classList.remove('ai-filled-chip'));
+  document.getElementById('ai-highlight-legend').classList.remove('show');
+}
+
 </script>
 </body>
 </html>
