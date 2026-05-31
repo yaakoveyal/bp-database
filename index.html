@@ -1797,7 +1797,10 @@ Hospitalization: "Y" inpatient only. "N" for outpatient + day-hospital infusions
 
 Disease Status: EXACTLY ONE is "Y", others "N": Flare (exacerbation/new/first visit; החמרה,התלקחות), Partial_Remission (improvement but active; הטבה,שיפור), Complete_Remission (no pruritus AND no active lesions; רמיסיה מלאה), No_Response (no improvement; ללא שיפור).
 
+SYMPTOM EXCLUSIVITY RULE: If a visit is classified as Complete_Remission, then Disease_Extent MUST be "", Lesion_Description MUST be "", and Pruritus MUST be "N". If the note describes a rash, itch, or erythema from a NON-BP cause (e.g., Candidiasis, Intertrigo, Xerosis, contact dermatitis, UTI-related), that finding is NOT BP activity and MUST be excluded from Disease_Extent, Lesion_Description, and Pruritus entirely. Only BP-attributable findings go into these fields.
+
 Treatment: Curr_* = what patient takes on arrival. Day 0: all Curr empty. Later: carry forward previous Rec. Time-limited topicals: do NOT carry forward.
+SHORT-COURSE RESET RULE: If a topical steroid was prescribed with a strict time limit (e.g., "for 5 days", "until resolved", "short course"), check the NEXT visit. If the lesion resolved and treatment stopped, Curr_Topical_Steroids for that next visit MUST be "N". Do not carry localized point-treatments forward as continuous baseline therapies.
 Rec_* = what doctor prescribes. Final P section overrides.
 Prednisone: total daily mg. 0=intentional stop, ""=undocumented, taper=first step dose.
 Topical steroids "Y"/"N". Name from: "Dermovate (Clobetasol propionate)","Neriderm (Diflucortolone valerate)","Betacorten / Betacorten G (Betamethasone valerate)","Elocom (Mometasone furoate)","Other".
@@ -1807,12 +1810,14 @@ Agent slots (up to 3): from "Doxycycline","Azathioprine","Mycophenolate mofetil"
 1. BP-only rule for Disease_Extent, Lesion_Description, Pruritus
 2. Exactly ONE status "Y" per visit
 3. Complete_Remission requires BOTH no lesions AND no BP pruritus
-4. Curr carry-forward applied; time-limited topicals reset
-5. Rec = final P section; prednisone taper = first step dose
-6. Methotrexate: per-administration dose; Rituximab/IVIG: "" after final infusion
-7. ALL visits included. All values match allowed lists (case-sensitive)
-8. Days_From_Diagnosis is a NUMBER, NEVER a date string
-9. Uncertain → "[VERIFY]"; missing → ""
+4. SYMPTOM EXCLUSIVITY: CR visits must have empty Disease_Extent, empty Lesion_Description, Pruritus "N". Non-BP findings (intertrigo, candida, xerosis) excluded entirely.
+5. Curr carry-forward applied; time-limited topicals reset
+6. SHORT-COURSE RESET: time-limited topical prescriptions ("5 days", "until resolved") → Curr_Topical_Steroids = "N" at next visit if resolved
+7. Rec = final P section; prednisone taper = first step dose
+8. Methotrexate: per-administration dose; Rituximab/IVIG: "" after final infusion
+9. ALL visits included. All values match allowed lists (case-sensitive)
+10. Days_From_Diagnosis is a NUMBER, NEVER a date string
+11. Uncertain → "[VERIFY]"; missing → ""
 
 Now extract the structured data from the de-identified clinical note provided.`;
 
