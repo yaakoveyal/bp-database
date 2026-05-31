@@ -1260,6 +1260,23 @@ body:not(.light-mode) .computed-val {
       <label id="ai-notes-label" for="ai-notes-input">Patient Notes (Hebrew / English, de-identified)</label>
       <textarea id="ai-notes-input" placeholder="Day 0:&#10;בן 78, ברקע סכרת...&#10;&#10;Day 45:&#10;חזר עם הטבה חלקית..."
                 oninput="updateWordCount()"></textarea>
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+          <label style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);display:block;margin-bottom:4px;">Anthropic API Key</label>
+          <input id="ai-api-key" type="password" placeholder="sk-ant-..."
+                 style="width:100%;font-family:var(--mono);font-size:12px;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);outline:none;"
+                 onblur="" />
+        </div>
+        <div style="min-width:140px;">
+          <label style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);display:block;margin-bottom:4px;">Model</label>
+          <select id="ai-model-select"
+                  style="width:100%;font-family:var(--mono);font-size:12px;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);outline:none;-webkit-appearance:auto;appearance:auto;"
+                  onchange="localStorage.setItem('bp_ai_model',this.value)">
+            <option value="claude-haiku-4-5-20251001">Haiku 4.5 (fast)</option>
+            <option value="claude-sonnet-4-20250514">Sonnet 4 (precise)</option>
+          </select>
+        </div>
+      </div>
     </div>
     <div id="ai-modal-footer">
       <span id="ai-word-count">0 words</span>
@@ -1735,6 +1752,69 @@ const MUCOSA_SITES = ['Oral','Ocular','Genitalia','Nose','Larynx'];
 const LESION_TYPES = ['Erythema','Eczematous plaques','Bullae','Erosions','Vegetative','Vesicular','Dishidrotic','Nodular','Urticaria','Targetoid lesions','Post-inflammatory'];
 const DRUG_LIST    = ['Prednisone (oral)','Methylprednisolone (IV)','Clobetasol propionate (topical)','Doxycycline','Azathioprine','Mycophenolate mofetil','Methotrexate','Dapsone','Minocycline','Cyclosporine','IVIG','Dupilumab','Rituximab','Omalizumab','Other'];
 const TRIGGER_CLASSES = ['DPP-4 inhibitor (gliptin)','PD-1 / PD-L1 inhibitor','Furosemide','Antipsychotic','ACE inhibitor','Beta-blocker','Penicillin / Antibiotic','NSAID','Other'];
+
+// ── AI Extraction system prompt ──────────────────────────────────
+const EXTRACTION_PROMPT = `You are a clinical data extraction assistant for a Bullous Pemphigoid (BP) patient registry. You will receive DE-IDENTIFIED clinical notes in Hebrew (often mixed with English medical terms). Dates have been replaced with "Day X" notation (days from diagnosis). Day 0 = diagnosis date.
+
+Your job: extract structured data and output a single JSON object matching the registry schema exactly.
+
+## OUTPUT FORMAT
+Return ONLY a valid JSON object with these top-level keys (include only tabs where data was found):
+{ "Patient_Baseline": { ... }, "Comorbidities": { ... }, "Diagnostics_Labs": { ... }, "Drug_Triggers": [ ... ], "Visit_Log": [ ... ] }
+- Use "[VERIFY]" for uncertain values. Use "" for missing data. Do NOT invent data.
+- Do NOT include Collector, Timestamp, Last_Modified, or _Code columns.
+
+## CRITICAL: DE-IDENTIFIED INPUT
+- Real dates replaced with "Day 0", "Day 45", etc. Day 0 = diagnosis/first encounter.
+- Output Days_From_Diagnosis as a NUMBER, NEVER actual dates.
+- All Date_ fields → "".
+
+## TAB 1: Patient_Baseline
+Extract from Day 0. Sex ("M" if בן, "F" if בת), Age_at_Diagnosis (number from "בן 74"→74), Year_of_Diagnosis (""), Date_of_Diagnosis (""), Ethnicity ("Jewish Israeli"/"Arab Israeli"/"Ashkenazi Jewish"/"Sephardi Jewish"/"Other"/"Unknown"), Frailty_Score, Height_cm, Weight_kg, BMI, Date_of_First_Symptoms (""), Days_Symptoms_to_Diagnosis (if "מזה X חודשים" calculate; if vague "[VERIFY]"), Date_of_Death (""), Cause_of_Death ("Disease-related (BP)"/"Treatment complication"/"Infection / Sepsis"/"Cardiovascular"/"Malignancy"/"Other"/"Unknown").
+
+## TAB 1b: Comorbidities
+From background (ברקע...). "Yes"/"No"/"". Listed→"Yes", background exists but not mentioned→"No", no background→"".
+Fields: Antipsychotic_Treatment, Year_Neurologic_Diagnosis, Neurological_Diagnoses (comma-sep: "Dementia","Parkinson's","Stroke","Epilepsy","MS","Depression"), Diabetes, Hypertension, Dyslipidemia, IHD, Active_Malignancy, Autoimmune_Disease, CKD, Smoker, CHF, COPD, PVD, Liver_Disease.
+Hebrew: סכרת→Diabetes, יל"ד→Hypertension, דיסליפידמיה→Dyslipidemia, IHD/מחלת לב אסכמית→IHD, CHF/אי ספיקת לב→CHF, COPD→COPD, CKD/אי ספיקת כליות→CKD, PVD→PVD, ממאירות/סרטן→Active_Malignancy, מחלה אוטואימונית→Autoimmune_Disease, מעשן→Smoker, מחלת כבד→Liver_Disease, דמנציה→Dementia, פרקינסון→Parkinson's, CVA/אירוע מוחי→Stroke, דיכאון→Depression, אנטיפסיכוטיקה→Antipsychotic_Treatment:"Yes".
+
+## TAB 2: Diagnostics_Labs
+DIF_IgG/DIF_C3/IIF_Result ("Positive"/"Negative"/"ND"), IIF_Titer ("1:10" to ">1:640"), Anti_BP180_IgG/Anti_BP230_IgG/Total_IgE/Absolute_Eosinophils/Albumin (numbers), Subepidermal_Blister/Biopsy_Eosinophils/Suggestive_Biopsy ("Yes"/"No"/"ND").
+"אבחנתיים ל-BP" → DIF_IgG="Positive", DIF_C3="Positive", Subepidermal_Blister="Yes", Suggestive_Biopsy="Yes".
+
+## TAB 3: Drug_Triggers
+Only if explicit causal link. Suspected_Drug_Trigger ("Yes"/"No"/"Possible"), Trigger_Drug_Class (from: "DPP-4 inhibitor (gliptin)","PD-1 / PD-L1 inhibitor","Furosemide","Antipsychotic","ACE inhibitor","Beta-blocker","Penicillin / Antibiotic","NSAID","Other"), Drug_Discontinued ("Yes"/"No"/"NA"), Improvement_After_Withdrawal ("Yes"/"No"/"Partial"/"NA"/"[VERIFY]"), Date_Drug_Started ("").
+
+## TAB 4: Visit_Log
+Each visit starts with "Day X". Days_From_Diagnosis = NUMBER. Chronological order. Lab-only → Diagnostics_Labs.
+
+Disease_Extent: comma-separated from ONLY: "Head/Neck","Trunk","Back","Upper Limb","Lower Limb","Hands","Feet","Axilla","Groin","Oral","Ocular","Genitalia","Nose","Larynx".
+Hebrew: קרקפת/פנים/צוואר/ראש→Head/Neck, גו/גזע/חזה/בטן→Trunk, גב→Back, גפיים עליונות/זרועות→Upper Limb, גפיים תחתונות/שוקיים/ירכיים→Lower Limb, כפות ידיים/גב ידיים→Hands, כפות רגליים→Feet, בתי שחי→Axilla, מפשעות→Groin, פה/רירית הפה→Oral, עיניים/לחמיות→Ocular, איברי מין→Genitalia, אף→Nose, גרון→Larynx.
+
+Lesion_Description: comma-separated from ONLY: "Erythema","Eczematous plaques","Bullae","Erosions","Vegetative","Vesicular","Dishidrotic","Nodular","Urticaria","Targetoid lesions","Post-inflammatory".
+
+Pruritus: "Y" (BP-attributed), "N" (none or non-BP), "NA" (not mentioned).
+Hospitalization: "Y" inpatient only. "N" for outpatient + day-hospital infusions.
+
+Disease Status: EXACTLY ONE is "Y", others "N": Flare (exacerbation/new/first visit; החמרה,התלקחות), Partial_Remission (improvement but active; הטבה,שיפור), Complete_Remission (no pruritus AND no active lesions; רמיסיה מלאה), No_Response (no improvement; ללא שיפור).
+
+Treatment: Curr_* = what patient takes on arrival. Day 0: all Curr empty. Later: carry forward previous Rec. Time-limited topicals: do NOT carry forward.
+Rec_* = what doctor prescribes. Final P section overrides.
+Prednisone: total daily mg. 0=intentional stop, ""=undocumented, taper=first step dose.
+Topical steroids "Y"/"N". Name from: "Dermovate (Clobetasol propionate)","Neriderm (Diflucortolone valerate)","Betacorten / Betacorten G (Betamethasone valerate)","Elocom (Mometasone furoate)","Other".
+Agent slots (up to 3): from "Doxycycline","Azathioprine","Mycophenolate mofetil","Methotrexate","Dapsone","Minocycline","Cyclosporine","IVIG","Dupilumab","Rituximab","Omalizumab","Other". Methotrexate: per-administration dose. Rituximab/IVIG: "" from visit after final infusion.
+
+## FINAL CHECKLIST
+1. BP-only rule for Disease_Extent, Lesion_Description, Pruritus
+2. Exactly ONE status "Y" per visit
+3. Complete_Remission requires BOTH no lesions AND no BP pruritus
+4. Curr carry-forward applied; time-limited topicals reset
+5. Rec = final P section; prednisone taper = first step dose
+6. Methotrexate: per-administration dose; Rituximab/IVIG: "" after final infusion
+7. ALL visits included. All values match allowed lists (case-sensitive)
+8. Days_From_Diagnosis is a NUMBER, NEVER a date string
+9. Uncertain → "[VERIFY]"; missing → ""
+
+Now extract the structured data from the de-identified clinical note provided.`;
 
 // ══════════════════════════════════════════════════════════════════
 //  INIT
@@ -3230,6 +3310,9 @@ function openImportModal() {
     (pidState === 'exists') ? 'block' : 'none';
   document.getElementById('ai-notes-input').value = '';
   document.getElementById('ai-word-count').textContent = '0 words';
+  // Restore saved model preference
+  const savedModel = localStorage.getItem('bp_ai_model');
+  if (savedModel) document.getElementById('ai-model-select').value = savedModel;
   document.getElementById('ai-modal-overlay').classList.add('show');
   setTimeout(() => document.getElementById('ai-notes-input').focus(), 50);
 }
@@ -3249,6 +3332,16 @@ async function runExtraction() {
   const notes = document.getElementById('ai-notes-input').value.trim();
   if (notes.length < 20) { toast('Please paste some clinical notes first', 'warn'); return; }
 
+  const apiKey = document.getElementById('ai-api-key').value.trim();
+  if (!apiKey || !apiKey.startsWith('sk-')) {
+    toast('Enter your Anthropic API key (starts with sk-)', 'warn');
+    document.getElementById('ai-api-key').focus();
+    return;
+  }
+
+  const model = document.getElementById('ai-model-select').value;
+  localStorage.setItem('bp_ai_model', model);
+
   if (pidState === 'exists') {
     const ok = confirm(
       '⚠ Existing patient: ' + currentPID + '\n\n' +
@@ -3259,14 +3352,6 @@ async function runExtraction() {
     if (!ok) return;
   }
 
-  // Base64 encode the notes for safe URL transport (Hebrew + special chars)
-  const notesB64 = btoa(unescape(encodeURIComponent(notes)));
-
-  // Check URL size — warn if very large
-  if (notesB64.length > 40000) {
-    toast('Notes are very large (' + Math.round(notesB64.length/1024) + 'KB). Consider splitting.', 'warn');
-  }
-
   const btn   = document.getElementById('ai-extract-btn');
   const spin  = document.getElementById('ai-spinner');
   const label = document.getElementById('ai-extract-label');
@@ -3275,21 +3360,42 @@ async function runExtraction() {
   label.textContent   = 'Extracting…';
 
   try {
-    const params = new URLSearchParams({
-      token: TOKEN,
-      action: 'extract',
-      notes: notesB64
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: model,
+        max_tokens: 8000,
+        system: EXTRACTION_PROMPT,
+        messages: [{ role: 'user', content: notes }]
+      })
     });
-    const res = await fetch(`${APPS_SCRIPT_URL}?${params}`);
-    const json = await res.json();
 
-    if (json.status !== 'ok') {
-      toast('Extraction failed: ' + (json.message || 'Unknown error'), 'error');
-      console.error('Extraction error:', json);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      const msg = (err.error && err.error.message) ? err.error.message : 'HTTP ' + res.status;
+      toast('API error: ' + msg, 'error');
+      console.error('Anthropic API error:', err);
       return;
     }
 
-    const data = json.data;
+    const resp = await res.json();
+    const rawText = resp.content[0].text;
+    const clean = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+
+    let data;
+    try { data = JSON.parse(clean); }
+    catch(parseErr) {
+      toast('AI returned invalid JSON — check console', 'error');
+      console.error('JSON parse error:', parseErr, '\nRaw:', clean.substring(0, 500));
+      return;
+    }
+
     const visitCount = (data.Visit_Log || []).length;
 
     if (visitCount > 0) {
@@ -3312,7 +3418,7 @@ async function runExtraction() {
     document.getElementById('ai-highlight-legend').classList.add('show');
 
   } catch (err) {
-    toast('Network error during extraction', 'error');
+    toast('Network error: ' + err.message, 'error');
     console.error('Extraction fetch error:', err);
   } finally {
     btn.disabled = false;
