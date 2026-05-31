@@ -3396,6 +3396,7 @@ async function runExtraction() {
       return;
     }
 
+    console.log('AI extraction result:', JSON.stringify(data, null, 2));
     const visitCount = (data.Visit_Log || []).length;
 
     if (visitCount > 0) {
@@ -3480,6 +3481,16 @@ function applyAiData(data) {
         if (chip) chip.classList.add('checked', 'ai-filled-chip');
       }
     });
+  }
+
+  // Normalize "Yes"→"Y", "No"→"N" for radio fields that use Y/N
+  function toYN(val) {
+    if (!val) return val;
+    const v = String(val).trim().toLowerCase();
+    if (v === 'yes' || v === 'y') return 'Y';
+    if (v === 'no' || v === 'n') return 'N';
+    if (v === 'na' || v === 'n/a') return 'NA';
+    return val;
   }
 
   // ── Baseline ─────────────────────────────────────────────────
@@ -3586,12 +3597,13 @@ function applyAiData(data) {
       updateVisitHeader(vid);
 
       // Pruritus
-      if (v.Pruritus) setRadioAndMark('vc-pruritus-group-' + vid, 'vc-pruritus-' + vid, v.Pruritus);
+      if (v.Pruritus) setRadioAndMark('vc-pruritus-group-' + vid, 'vc-pruritus-' + vid, toYN(v.Pruritus));
 
       // Hospitalization
       if (v.Hospitalization) {
-        setRadioAndMark('vc-hosp-group-' + vid, 'vc-hosp-' + vid, v.Hospitalization);
-        if (v.Hospitalization === 'Y') {
+        const hospVal = toYN(v.Hospitalization);
+        setRadioAndMark('vc-hosp-group-' + vid, 'vc-hosp-' + vid, hospVal);
+        if (hospVal === 'Y') {
           const badge = document.createElement('span');
           badge.id = 'vc-hosp-badge-' + vid;
           badge.className = 'visit-hosp-badge';
@@ -3601,11 +3613,25 @@ function applyAiData(data) {
         }
       }
 
-      // Disease status
-      if (v.Flare === 'Y') pickVisitStatus(vid, document.querySelector('#vc-status-sel-' + vid + ' [data-val="Flare"]'), 'Flare');
-      else if (v.Partial_Remission === 'Y') pickVisitStatus(vid, document.querySelector('#vc-status-sel-' + vid + ' [data-val="Partial_Remission"]'), 'Partial_Remission');
-      else if (v.Complete_Remission === 'Y') pickVisitStatus(vid, document.querySelector('#vc-status-sel-' + vid + ' [data-val="Complete_Remission"]'), 'Complete_Remission');
-      else if (v.No_Response === 'Y') pickVisitStatus(vid, document.querySelector('#vc-status-sel-' + vid + ' [data-val="No_Response"]'), 'No_Response');
+      // Disease status — accept "Y", "Yes", or a combined Disease_Status field
+      let statusKey = null;
+      if (toYN(v.Flare) === 'Y')              statusKey = 'Flare';
+      else if (toYN(v.Partial_Remission) === 'Y')  statusKey = 'Partial_Remission';
+      else if (toYN(v.Complete_Remission) === 'Y') statusKey = 'Complete_Remission';
+      else if (toYN(v.No_Response) === 'Y')        statusKey = 'No_Response';
+      // Fallback: check for a combined Disease_Status field
+      if (!statusKey && v.Disease_Status) {
+        const ds = v.Disease_Status.toLowerCase().replace(/[\s_-]/g, '');
+        if (ds.includes('flare'))           statusKey = 'Flare';
+        else if (ds.includes('partial'))    statusKey = 'Partial_Remission';
+        else if (ds.includes('complete'))   statusKey = 'Complete_Remission';
+        else if (ds.includes('noresponse') || ds.includes('noresp')) statusKey = 'No_Response';
+      }
+      if (statusKey) {
+        const statusEl = document.querySelector('#vc-status-sel-' + vid + ' [data-val="' + statusKey + '"]');
+        if (statusEl) pickVisitStatus(vid, statusEl, statusKey);
+        else console.warn('Status element not found for', statusKey, 'vid=', vid);
+      }
 
       // Disease extent chips
       if (v.Disease_Extent) {
@@ -3647,9 +3673,9 @@ function applyAiData(data) {
       // Current treatment
       setAndMark('vc-cpred-' + vid, v.Curr_Prednisone_Dose_mg);
       if (v.Curr_Topical_Steroids) {
-        setRadioAndMark('vc-ctopical-group-' + vid, 'vc-ctopical-' + vid, v.Curr_Topical_Steroids);
+        setRadioAndMark('vc-ctopical-group-' + vid, 'vc-ctopical-' + vid, toYN(v.Curr_Topical_Steroids));
         toggleTopicalDetail('c', vid);
-        if (v.Curr_Topical_Steroids === 'Y' && v.Curr_Topical_Steroid_Name) {
+        if (toYN(v.Curr_Topical_Steroids) === 'Y' && v.Curr_Topical_Steroid_Name) {
           setAndMark('vc-ctopical-name-' + vid, v.Curr_Topical_Steroid_Name);
         }
       }
@@ -3672,9 +3698,9 @@ function applyAiData(data) {
       // Recommended treatment
       setAndMark('vc-rpred-' + vid, v.Rec_Prednisone_Dose_mg);
       if (v.Rec_Topical_Steroids) {
-        setRadioAndMark('vc-rtopical-group-' + vid, 'vc-rtopical-' + vid, v.Rec_Topical_Steroids);
+        setRadioAndMark('vc-rtopical-group-' + vid, 'vc-rtopical-' + vid, toYN(v.Rec_Topical_Steroids));
         toggleTopicalDetail('r', vid);
-        if (v.Rec_Topical_Steroids === 'Y' && v.Rec_Topical_Steroid_Name) {
+        if (toYN(v.Rec_Topical_Steroids) === 'Y' && v.Rec_Topical_Steroid_Name) {
           setAndMark('vc-rtopical-name-' + vid, v.Rec_Topical_Steroid_Name);
         }
       }
