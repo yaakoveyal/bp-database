@@ -1794,7 +1794,7 @@ Hebrew: קרקפת/פנים/צוואר/ראש→Head/Neck, גו/גזע/חזה/ב
 Lesion_Description: comma-separated from ONLY: "Erythema","Eczematous plaques","Bullae","Erosions","Vegetative","Vesicular","Dishidrotic","Nodular","Urticaria","Targetoid lesions","Post-inflammatory".
 
 Pruritus: "Y" (BP-attributed), "N" (none or non-BP), "NA" (not mentioned).
-Hospitalization: "Y" inpatient only. "N" for outpatient + day-hospital infusions.
+Hospitalization: "Y" ONLY if this visit describes an active inpatient hospitalization or emergency admission. "N" for outpatient clinic visits (even immediately post-discharge follow-ups), day-hospital infusions, and routine clinic appointments.
 
 Disease Status: EXACTLY ONE is "Y", others "N": Flare (exacerbation/new/first visit; החמרה,התלקחות), Partial_Remission (improvement but active; הטבה,שיפור), Complete_Remission (no pruritus AND no active lesions; רמיסיה מלאה), No_Response (no improvement; ללא שיפור).
 
@@ -1821,7 +1821,8 @@ Agent slots (up to 3): from "Doxycycline","Azathioprine","Mycophenolate mofetil"
 10. Days_From_Diagnosis is a NUMBER, NEVER a date string
 11. CONTINUATION: "continued without change" → same drug+dose in BOTH Curr_ and Rec_
 12. ACTIVE ONLY: Disease_Extent includes only regions with active acute BP lesions, not post-inflammatory/healed findings
-13. Uncertain → "[VERIFY]"; missing → ""
+13. HOSPITALIZATION: "Y" only for active inpatient/ER admissions at THIS visit, not post-discharge follow-ups
+14. Uncertain → "[VERIFY]"; missing → ""
 
 Now extract the structured data from the de-identified clinical note provided.`;
 
