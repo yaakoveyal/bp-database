@@ -1763,6 +1763,8 @@ Return ONLY a valid JSON object. No preamble, no explanation, no markdown fences
 { "Patient_Baseline": { ... }, "Comorbidities": { ... }, "Diagnostics_Labs": { ... }, "Drug_Triggers": [ ... ], "Visit_Log": [ ... ] }
 - Use "[VERIFY]" for uncertain values. Use "" for missing data. Do NOT invent data.
 - Do NOT include Collector, Timestamp, Last_Modified, or _Code columns.
+- NO PLACEHOLDERS in boolean/categorical fields: If a value can be determined (e.g., drug discontinued and improved → "Yes"), use the actual value, not "[VERIFY]". Reserve "[VERIFY]" only for truly ambiguous free-text or numeric fields.
+- CASE-SENSITIVE KEYS: JSON keys must match exactly as shown in the schema (e.g., "Rec_Agent1_Dose" with capital D, "Curr_Topical_Steroid_Name" with full word "Steroid"). Do not truncate or alter key names.
 
 ## CRITICAL: DE-IDENTIFIED INPUT
 - Real dates replaced with "Day 0", "Day 45", etc. Day 0 = diagnosis/first encounter.
@@ -1804,6 +1806,7 @@ Treatment: Curr_* = what patient takes on arrival. Day 0: all Curr empty. Later:
 SHORT-COURSE RESET RULE: If a topical steroid was prescribed with a strict time limit (e.g., "for 5 days", "until resolved", "short course"), check the NEXT visit. If the lesion resolved and treatment stopped, Curr_Topical_Steroids for that next visit MUST be "N". Do not carry localized point-treatments forward as continuous baseline therapies.
 Rec_* = what doctor prescribes. Final P section overrides.
 CONTINUATION RULE: When notes say a medication is "continued without change" (ממשיך/נמשך ללא שינוי/אותו מינון), you MUST populate BOTH Curr_ AND Rec_ fields with that medication and dose. "Continued" means it appears in both columns.
+TOPICAL CURRENT STATUS: Curr_Topical_Steroids reflects what the patient was USING when they walked in, even if the doctor discontinues it at this visit. A discontinuation order affects Rec_Topical_Steroids (set to "N"), but does NOT erase Curr_Topical_Steroids (keep "Y" if patient was using it).
 Prednisone: total daily mg. 0=intentional stop, ""=undocumented, taper=first step dose.
 Topical steroids "Y"/"N". Name from: "Dermovate (Clobetasol propionate)","Neriderm (Diflucortolone valerate)","Betacorten / Betacorten G (Betamethasone valerate)","Elocom (Mometasone furoate)","Other".
 Agent slots (up to 3): from "Doxycycline","Azathioprine","Mycophenolate mofetil","Methotrexate","Dapsone","Minocycline","Cyclosporine","IVIG","Dupilumab","Rituximab","Omalizumab","Other". Methotrexate: per-administration dose. Rituximab/IVIG: "" from visit after final infusion.
@@ -1822,7 +1825,10 @@ Agent slots (up to 3): from "Doxycycline","Azathioprine","Mycophenolate mofetil"
 11. CONTINUATION: "continued without change" → same drug+dose in BOTH Curr_ and Rec_
 12. ACTIVE ONLY: Disease_Extent includes only regions with active acute BP lesions, not post-inflammatory/healed findings
 13. HOSPITALIZATION: "Y" only for active inpatient/ER admissions at THIS visit, not post-discharge follow-ups
-14. Uncertain → "[VERIFY]"; missing → ""
+14. TOPICAL CURRENT: Curr_Topical_Steroids = "Y" if patient arrived using it, even if discontinued at this visit
+15. NO PLACEHOLDERS in boolean fields — use "Yes"/"No"/"Y"/"N", not "[VERIFY]"
+16. EXACT KEY NAMES: Rec_Agent1_Dose (capital D), Curr_Topical_Steroid_Name (full word Steroid)
+17. Uncertain → "[VERIFY]" for free-text/numeric only; missing → ""
 
 Now extract the structured data from the de-identified clinical note provided.`;
 
