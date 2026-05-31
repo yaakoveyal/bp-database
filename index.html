@@ -3437,6 +3437,33 @@ function collectVerifyFields() {
 }
 
 function applyAiData(data) {
+  // ── Normalize AI field names to match code expectations ──────
+  function normalizeVisit(v) {
+    const map = {
+      'Disease_Status_Flare': 'Flare', 'Disease_Status_Partial_Remission': 'Partial_Remission',
+      'Disease_Status_Complete_Remission': 'Complete_Remission', 'Disease_Status_No_Response': 'No_Response',
+      'Curr_Prednisone_mg': 'Curr_Prednisone_Dose_mg', 'Rec_Prednisone_mg': 'Rec_Prednisone_Dose_mg',
+      'Curr_Agent_1': 'Curr_Agent1', 'Curr_Agent_1_Dose': 'Curr_Agent1_Dose',
+      'Curr_Agent_2': 'Curr_Agent2', 'Curr_Agent_2_Dose': 'Curr_Agent2_Dose',
+      'Curr_Agent_3': 'Curr_Agent3', 'Curr_Agent_3_Dose': 'Curr_Agent3_Dose',
+      'Rec_Agent_1': 'Rec_Agent1', 'Rec_Agent_1_Dose': 'Rec_Agent1_Dose',
+      'Rec_Agent_2': 'Rec_Agent2', 'Rec_Agent_2_Dose': 'Rec_Agent2_Dose',
+      'Rec_Agent_3': 'Rec_Agent3', 'Rec_Agent_3_Dose': 'Rec_Agent3_Dose',
+      'Topical_Steroid_Name': 'Rec_Topical_Steroid_Name',
+      'Curr_Topical_Steroid': 'Curr_Topical_Steroids', 'Rec_Topical_Steroid': 'Rec_Topical_Steroids',
+    };
+    const out = {};
+    for (const [k, val] of Object.entries(v)) {
+      out[map[k] || k] = val;
+    }
+    // If Rec_Topical_Steroid_Name is set but Curr_Topical_Steroid_Name isn't, copy for curr too
+    if (out.Rec_Topical_Steroid_Name && !out.Curr_Topical_Steroid_Name && toYN(out.Curr_Topical_Steroids) === 'Y') {
+      out.Curr_Topical_Steroid_Name = out.Rec_Topical_Steroid_Name;
+    }
+    return out;
+  }
+  // Normalize all visits
+  if (data.Visit_Log) data.Visit_Log = data.Visit_Log.map(normalizeVisit);
   // ── Helpers ──────────────────────────────────────────────────
   function markEl(el) { if (el) el.classList.add('ai-filled'); }
   function markRadio(groupId) {
