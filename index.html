@@ -1797,7 +1797,14 @@ DIF_IgG/DIF_C3/IIF_Result ("Positive"/"Negative"/"ND"), IIF_Titer ("1:10" to ">1
 "אבחנתיים ל-BP" → DIF_IgG="Positive", DIF_C3="Positive", Subepidermal_Blister="Yes", Suggestive_Biopsy="Yes".
 
 ## TAB 3: Drug_Triggers
-Only if explicit causal link. Suspected_Drug_Trigger ("Yes"/"No"/"Possible"), Trigger_Drug_Class (from: "DPP-4 inhibitor (gliptin)","PD-1 / PD-L1 inhibitor","Furosemide","Antipsychotic","ACE inhibitor","Beta-blocker","Penicillin / Antibiotic","NSAID","Other"), Drug_Discontinued ("Yes"/"No"/"NA"), Improvement_After_Withdrawal ("Yes"/"No"/"Partial"/"NA"/"[VERIFY]"), Date_Drug_Started ("").
+PROACTIVE SCANNING RULE: You MUST scan the patient's medication list from Day 0 and cross-reference against the trigger drug classes below. Apply two tiers:
+- If the doctor explicitly discussed the medication as a potential BP trigger → Suspected_Drug_Trigger: "Yes"
+- If the medication belongs to a known trigger class but the doctor did NOT discuss a causal link → Suspected_Drug_Trigger: "Possible"
+Create one Drug_Triggers entry per flagged medication.
+
+Known trigger drug classes to scan for: "DPP-4 inhibitor (gliptin)" (e.g., Januvia/Sitagliptin, Trajenta/Linagliptin, Galvus/Vildagliptin), "PD-1 / PD-L1 inhibitor" (e.g., Pembrolizumab, Nivolumab), "Furosemide" (Lasix/פוסיד), "Antipsychotic" (e.g., Quetiapine, Olanzapine, Haloperidol), "ACE inhibitor" (e.g., Enalapril, Ramipril, Lisinopril), "Beta-blocker" (e.g., Atenolol, Metoprolol, Bisoprolol), "Penicillin / Antibiotic" (e.g., Amoxicillin, Augmentin, Cephalosporins), "NSAID" (e.g., Ibuprofen, Naproxen, Diclofenac), "Other".
+
+Fields: Drug_Entry_Number, Suspected_Drug_Trigger ("Yes"/"Possible"/"No"), Trigger_Drug_Class (from list above), Specific_Drug (the actual drug name from the medication list), Drug_Discontinued ("Yes"/"No"/"NA"), Improvement_After_Withdrawal ("Yes"/"No"/"Partial"/"NA"), Date_Drug_Started ("").
 
 ## TAB 4: Visit_Log
 Each visit starts with "Day X". Days_From_Diagnosis = NUMBER. Chronological order. Lab-only → Diagnostics_Labs.
