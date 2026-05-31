@@ -1759,7 +1759,7 @@ const EXTRACTION_PROMPT = `You are a clinical data extraction assistant for a Bu
 Your job: extract structured data and output a single JSON object matching the registry schema exactly.
 
 ## OUTPUT FORMAT
-Return ONLY a valid JSON object with these top-level keys (include only tabs where data was found):
+Return ONLY a valid JSON object. No preamble, no explanation, no markdown fences, no commentary — start your response with { and end with }. Top-level keys (include only tabs where data was found):
 { "Patient_Baseline": { ... }, "Comorbidities": { ... }, "Diagnostics_Labs": { ... }, "Drug_Triggers": [ ... ], "Visit_Log": [ ... ] }
 - Use "[VERIFY]" for uncertain values. Use "" for missing data. Do NOT invent data.
 - Do NOT include Collector, Timestamp, Last_Modified, or _Code columns.
@@ -3395,7 +3395,19 @@ async function runExtraction() {
 
     const resp = await res.json();
     const rawText = resp.content[0].text;
-    const clean = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+    // Extract JSON from response — handle preamble text, markdown fences, etc.
+    let clean = rawText;
+    // Strip markdown code fences
+    clean = clean.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
+    // Find the first { and last } — the actual JSON object
+    const firstBrace = clean.indexOf('{');
+    const lastBrace  = clean.lastIndexOf('}');
+    if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+      toast('AI response contains no JSON object — check console', 'error');
+      console.error('No JSON found in response:', rawText.substring(0, 500));
+      return;
+    }
+    clean = clean.substring(firstBrace, lastBrace + 1);
 
     let data;
     try { data = JSON.parse(clean); }
