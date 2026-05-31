@@ -1774,6 +1774,19 @@ Return ONLY a valid JSON object. No preamble, no explanation, no markdown fences
 ## TAB 1: Patient_Baseline
 Extract from Day 0. Sex ("M" if בן, "F" if בת), Age_at_Diagnosis (number from "בן 74"→74), Year_of_Diagnosis (""), Date_of_Diagnosis (""), Ethnicity ("Jewish Israeli"/"Arab Israeli"/"Ashkenazi Jewish"/"Sephardi Jewish"/"Other"/"Unknown"), Frailty_Score, Height_cm, Weight_kg, BMI, Date_of_First_Symptoms (""), Days_Symptoms_to_Diagnosis (if "מזה X חודשים" calculate; if vague "[VERIFY]"), Date_of_Death (""), Cause_of_Death ("Disease-related (BP)"/"Treatment complication"/"Infection / Sepsis"/"Cardiovascular"/"Malignancy"/"Other"/"Unknown").
 
+FRAILTY SCORE (Clinical Frailty Scale 1-9): You MUST estimate this from clinical context clues in the notes. Do NOT default to "[VERIFY]". Use this algorithm:
+- CFS 9: Terminally ill, life expectancy <6 months regardless of frailty
+- CFS 8: Completely dependent, cannot recover (vegetative, bedbound)
+- CFS 7: Completely dependent for personal care (all ADLs), not terminally ill
+- CFS 6: Needs help with bathing, stairs, some daily tasks (IADLs + some ADLs). Keywords: עזרה ברחצה, סיעודי, מוסד סיעודי, needs assistance
+- CFS 5: Needs help with complex tasks only (shopping, finances, medications). Keywords: עזרה בפעילויות מורכבות, partially dependent
+- CFS 4: Independent but slowed/tired, not dependent. Keywords: עצמאי אך מואט, מתלונן על עייפות, vulnerable
+- CFS 3: Well, active with comorbidities well-controlled. Regular exercise/walking.
+- CFS 2: Well, less active than CFS 1 but exercises occasionally
+- CFS 1: Very fit, exercises regularly, most robust for age
+
+Context clues: institutional care/nursing home (מוסד/בית אבות)→CFS 6-7; uses wheelchair/walker (כסא גלגלים/הליכון)→CFS 5-6; dementia→CFS 6-7; lives independently (עצמאי/עצמאית)→CFS 3-4; Parkinson's→adjust based on severity; bedridden (מרותק/ת למיטה)→CFS 7-8.
+
 ## TAB 1b: Comorbidities
 From background (ברקע...). "Yes"/"No"/"". Listed→"Yes", background exists but not mentioned→"No", no background→"".
 Fields: Antipsychotic_Treatment, Year_Neurologic_Diagnosis, Neurological_Diagnoses (comma-sep: "Dementia","Parkinson's","Stroke","Epilepsy","MS","Depression"), Diabetes, Hypertension, Dyslipidemia, IHD, Active_Malignancy, Autoimmune_Disease, CKD, Smoker, CHF, COPD, PVD, Liver_Disease.
