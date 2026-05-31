@@ -2123,10 +2123,12 @@ function onVerifyChange() {
 // ══════════════════════════════════════════════════════════════════
 //  TAB NAVIGATION
 // ══════════════════════════════════════════════════════════════════
-function switchTab(idx) {
-  if (idx === activeTab) return;
-  // auto-save current tab silently
-  saveTabSilent(activeTab);
+async function switchTab(idx) {
+  if (idx === activeTab || saveInProgress) return;
+  // auto-save current tab silently — await to prevent race conditions
+  if (hasSectionData(activeTab)) {
+    await saveTabSilent(activeTab);
+  }
 
   document.querySelectorAll('.section').forEach((s,i) => s.classList.toggle('active', i === idx));
   document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i === idx));
