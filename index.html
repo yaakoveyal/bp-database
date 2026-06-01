@@ -1772,6 +1772,7 @@ The input may use EITHER real dates OR de-identified "Day X" notation (or a mix)
 - If the input uses "Day X" notation: Day 0 = diagnosis/first encounter. Output Days_From_Diagnosis as a NUMBER. Date fields that cannot be determined from Day X → "".
 - If the input contains REAL DATES (e.g., "1/2/2013", "03/03/2012", "ינואר 2013"): extract them into the appropriate Date_ fields in DD-MM-YYYY format. Also compute Year_of_Diagnosis from the diagnosis date, and Days_Symptoms_to_Diagnosis if both symptom onset and diagnosis dates are available. For Visit_Log, compute Days_From_Diagnosis as the number of days between the visit date and the diagnosis date.
 - ALWAYS populate Days_From_Diagnosis in Visit_Log entries (as a NUMBER), whether calculated from real dates or given as Day X.
+- If a real diagnosis date is known AND visit dates can be determined (either from explicit dates in the notes or by adding Days_From_Diagnosis to the diagnosis date), populate Visit_Date in DD-MM-YYYY format.
 
 ## TAB 1: Patient_Baseline
 Extract from Day 0. Sex ("M" if בן, "F" if בת), Age_at_Diagnosis (number from "בן 74"→74), Year_of_Diagnosis (extract from diagnosis date if available), Date_of_Diagnosis (DD-MM-YYYY if real date given, "" if Day X only), Ethnicity ("Jewish Israeli"/"Arab Israeli"/"Ashkenazi Jewish"/"Sephardi Jewish"/"Other"/"Unknown"), Frailty_Score, Height_cm, Weight_kg, BMI, Date_of_First_Symptoms (DD-MM-YYYY if available, "" otherwise), Days_Symptoms_to_Diagnosis (calculate — see SYMPTOM ONSET below), Date_of_Death (DD-MM-YYYY if available, "" otherwise), Cause_of_Death ("Disease-related (BP)"/"Treatment complication"/"Infection / Sepsis"/"Cardiovascular"/"Malignancy"/"Other"/"Unknown").
@@ -3555,6 +3556,8 @@ function applyAiData(data) {
       'Rec_Topical_Name': 'Rec_Topical_Steroid_Name',
       'Curr_Topical_Steroid': 'Curr_Topical_Steroids', 'Rec_Topical_Steroid': 'Rec_Topical_Steroids',
       'Curr_Prednisone': 'Curr_Prednisone_Dose_mg', 'Rec_Prednisone': 'Rec_Prednisone_Dose_mg',
+      'Curr_Prednisone_Dose': 'Curr_Prednisone_Dose_mg', 'Rec_Prednisone_Dose': 'Rec_Prednisone_Dose_mg',
+      'Visit_date': 'Visit_Date', 'visit_date': 'Visit_Date',
     };
     const out = {};
     for (const [k, val] of Object.entries(v)) {
