@@ -1197,6 +1197,103 @@ body:not(.light-mode) .computed-val {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+/* ═══════════════════════════════════════════════
+   ADE FLAG CARDS
+═══════════════════════════════════════════════ */
+#ade-flags-section { display: none; }
+#ade-flags-section.show { display: block; }
+
+.ade-flags-banner {
+  background: var(--red-dim);
+  border: 1px solid var(--red);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--red);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+.ade-flags-banner strong { font-size: 13px; }
+
+.ade-flag-card {
+  background: var(--surface2);
+  border: 1px solid var(--yellow);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  position: relative;
+}
+.ade-flag-card.confirmed { border-color: var(--green); opacity: .6; }
+.ade-flag-card.dismissed { border-color: var(--border); opacity: .4; }
+
+.ade-flag-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.ade-flag-drug {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--yellow);
+}
+.ade-flag-type {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--yellow-dim);
+  color: var(--yellow);
+}
+.ade-flag-day {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.ade-flag-excerpt {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 6px;
+  line-height: 1.5;
+  direction: rtl;
+  text-align: right;
+}
+.ade-flag-desc {
+  font-size: 12px;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.ade-flag-actions {
+  display: flex;
+  gap: 8px;
+}
+.ade-flag-actions button {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  transition: all .12s;
+}
+.btn-ade-confirm {
+  color: var(--green);
+  border-color: var(--green) !important;
+}
+.btn-ade-confirm:hover { background: var(--green-dim); }
+.btn-ade-dismiss {
+  color: var(--text-muted);
+}
+.btn-ade-dismiss:hover { color: var(--text); border-color: var(--text-muted) !important; }
+
+body.light-mode .ade-flag-card { background: #f5f3ee; border-color: #9a6700; }
+body.light-mode .ade-flag-drug { color: #9a6700; }
+body.light-mode .ade-flag-type { background: #fff8c5; color: #9a6700; }
 </style>
 </head>
 <body>
@@ -1642,6 +1739,15 @@ body:not(.light-mode) .computed-val {
     <span class="section-subtitle">Adverse drug events — one record per patient</span>
   </div>
 
+  <!-- ADE Flags from AI extraction -->
+  <div id="ade-flags-section">
+    <div class="ade-flags-banner">
+      <strong>⚠ AI flagged potential adverse events — review below</strong>
+      Confirm to add to the Safety form, or dismiss if not a true ADE.
+    </div>
+    <div id="ade-flags-list"></div>
+  </div>
+
   <div class="form-grid">
     <input type="hidden" id="s-pid" />
 
@@ -1853,6 +1959,37 @@ Prednisone total daily mg. Curr_Prednisone_Dose_mg and Rec_Prednisone_Dose_mg re
 Topical steroids "Y"/"N". Name from: "Dermovate (Clobetasol propionate)","Neriderm (Diflucortolone valerate)","Betacorten / Betacorten G (Betamethasone valerate)","Elocom (Mometasone furoate)","Other".
 Agent slots (up to 3): from "Doxycycline","Azathioprine","Mycophenolate mofetil","Methotrexate","Dapsone","Minocycline","Cyclosporine","IVIG","Dupilumab","Rituximab","Omalizumab","Other". Methotrexate: per-administration dose. Rituximab/IVIG: "" from visit after final infusion.
 DOSE FORMAT RULE: All dose fields (Curr_Agent*_Dose, Rec_Agent*_Dose) must be a NUMERIC value representing TOTAL DAILY mg. Never include units, frequency, or text. Convert multi-dose regimens to daily total: "50 mg twice daily" → "100", "25 mg three times daily" → "75", "100 mg once daily" → "100". The form field is numeric-only — text values will be silently rejected.
+
+## ADE_FLAGS — Adverse Drug Event Scanning
+Scan ALL visits for potential adverse drug events. Output an "ADE_Flags" array in the JSON. Each flag represents a POTENTIAL ADE that requires human review — you are flagging, not diagnosing.
+
+"ADE_Flags": [
+  {
+    "drug": "Drug name",
+    "visit_day": 90,
+    "flag_type": "Category",
+    "excerpt": "Original Hebrew/English text from the note",
+    "suggested_description": "Brief English description of the potential ADE"
+  }
+]
+
+SCAN FOR THESE PATTERNS:
+1. Drug stopped due to side effect: "הופסק עקב..." / "stopped due to..." / "הפסקת טיפול בשל..." / "discontinued because of..."
+2. Lab abnormality attributed to drug: "עלייה באנזימי כבד תחת..." / "leukopenia on..." / "ירידה בספירה תחת..." / elevated creatinine after starting...
+3. New symptom temporally linked to treatment: "לאחר תחילת טיפול ב... פיתח/ה..." / "since starting X developed Y"
+4. Infection during immunosuppression: "זיהום תחת טיפול..." / "sepsis" / "pneumonia while on..." / herpes zoster flare
+5. Hospitalization due to treatment complication
+6. Steroid side effects: diabetes onset, weight gain, osteoporotic fracture, hypertension worsening attributed to steroids
+7. Explicit ADE documentation: "תופעת לוואי" / "adverse event" / "adverse reaction"
+8. GFR/renal function decline preventing drug use: "עקב אי ספיקת כליות לא נחדש..." / "GFR too low for..."
+9. Drug interaction or contraindication noted
+
+RULES:
+- Include the flag_type from: "Drug stopped — side effect", "Lab abnormality", "New symptom", "Infection on immunosuppression", "Hospitalization — treatment complication", "Steroid side effect", "Explicit ADE", "Organ dysfunction preventing drug", "Drug interaction"
+- excerpt: quote the relevant Hebrew/English text (1-2 sentences max) so the reviewer can find it in the original note
+- suggested_description: brief English clinical summary (e.g., "Hepatotoxicity — elevated liver enzymes", "Herpes zoster reactivation on azathioprine")
+- If NO potential ADEs are found, output "ADE_Flags": []
+- When in doubt, FLAG IT — false positives are acceptable, false negatives are not. The human reviewer will confirm or dismiss.
 
 ## FINAL CHECKLIST
 1. BP-only rule for Disease_Extent, Lesion_Description, Pruritus
@@ -3200,6 +3337,7 @@ function resetAll() {
   hideVerifyCard();
   resetAllFields();
   clearAiHighlights();
+  clearAdeFlags();
   updateSaveLocks();
   lockForm();
   // Reset to tab 0 directly — avoids triggering saveTabSilent on the old tab
@@ -3900,6 +4038,11 @@ function normalizeVisit(v) {
     if (aeEl && aeEl.value) markEl(aeEl);
   }
 
+  // ── ADE Flags ────────────────────────────────────────────────
+  if (data.ADE_Flags && data.ADE_Flags.length > 0) {
+    renderAdeFlags(data.ADE_Flags);
+  }
+
   // Mark form as AI-imported — skip autosave until user edits
   aiImportClean = true;
   // Clear flag on first user interaction (one-shot listeners)
@@ -3919,6 +4062,128 @@ function clearAiHighlights() {
   document.querySelectorAll('.ai-filled-radio').forEach(el => el.classList.remove('ai-filled-radio'));
   document.querySelectorAll('.ai-filled-chip').forEach(el => el.classList.remove('ai-filled-chip'));
   document.getElementById('ai-highlight-legend').classList.remove('show');
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  ADE FLAGS — AI-flagged potential adverse drug events
+// ══════════════════════════════════════════════════════════════════
+let adeFlagData = [];
+
+function renderAdeFlags(flags) {
+  adeFlagData = flags;
+  const container = document.getElementById('ade-flags-list');
+  const section   = document.getElementById('ade-flags-section');
+  container.innerHTML = '';
+
+  flags.forEach((flag, idx) => {
+    const card = document.createElement('div');
+    card.className = 'ade-flag-card';
+    card.id = 'ade-flag-' + idx;
+    card.innerHTML = `
+      <div class="ade-flag-header">
+        <span class="ade-flag-drug">${escHtml(flag.drug || 'Unknown drug')}</span>
+        <span class="ade-flag-type">${escHtml(flag.flag_type || '')}</span>
+        <span class="ade-flag-day">Day ${flag.visit_day !== undefined ? flag.visit_day : '?'}</span>
+      </div>
+      ${flag.excerpt ? `<div class="ade-flag-excerpt">${escHtml(flag.excerpt)}</div>` : ''}
+      <div class="ade-flag-desc">${escHtml(flag.suggested_description || '')}</div>
+      <div class="ade-flag-actions">
+        <button class="btn-ade-confirm" onclick="confirmAdeFlag(${idx})">✓ Confirm — Add to Safety</button>
+        <button class="btn-ade-dismiss" onclick="dismissAdeFlag(${idx})">✕ Dismiss</button>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  section.classList.add('show');
+
+  // Update Safety tab dot to indicate attention needed
+  setDot(4, 'red');
+
+  // Update section subtitle
+  const subtitle = document.querySelector('#sec-4 .section-subtitle');
+  if (subtitle) subtitle.textContent = `${flags.length} potential ADE(s) flagged by AI — review below`;
+}
+
+function confirmAdeFlag(idx) {
+  const flag = adeFlagData[idx];
+  if (!flag) return;
+
+  // Set AE = Yes
+  const aeHidden = document.getElementById('s-ae');
+  if (aeHidden.value !== 'Y') {
+    aeHidden.value = 'Y';
+    document.querySelectorAll('#s-ae-group .radio-btn').forEach(b => {
+      b.classList.toggle('selected', b.dataset.val === 'Y');
+    });
+    document.getElementById('s-ae-section').classList.remove('hidden');
+  }
+
+  // Find the drug in the allowed DRUG_LIST — try matching
+  let drugMatch = '';
+  if (flag.drug) {
+    const drugLower = flag.drug.toLowerCase();
+    drugMatch = DRUG_LIST.find(d => drugLower.includes(d.toLowerCase().split(' ')[0])) || 'Other';
+  }
+
+  // Add a safety drug card and fill it
+  addSafetyDrugCard();
+  const card = document.getElementById('s-drug-card-' + safetyDrugCount);
+  if (card) {
+    const drugSel = card.querySelector('select[data-field="s-drug"]');
+    const descTa  = card.querySelector('textarea[data-field="s-desc"]');
+    if (drugSel && drugMatch) drugSel.value = drugMatch;
+    if (descTa) {
+      let desc = flag.suggested_description || '';
+      if (flag.excerpt) desc += '\n[Source: ' + flag.excerpt + ']';
+      if (flag.visit_day !== undefined) desc += '\n[Visit Day ' + flag.visit_day + ']';
+      descTa.value = desc;
+    }
+  }
+
+  // Mark card as confirmed
+  const flagCard = document.getElementById('ade-flag-' + idx);
+  if (flagCard) {
+    flagCard.classList.add('confirmed');
+    flagCard.querySelector('.ade-flag-actions').innerHTML =
+      '<span style="color:var(--green);font-family:var(--mono);font-size:11px;">✓ Added to Safety form</span>';
+  }
+
+  toast('ADE added to Safety tab', 'success');
+  checkAdeFlagsDone();
+}
+
+function dismissAdeFlag(idx) {
+  const flagCard = document.getElementById('ade-flag-' + idx);
+  if (flagCard) {
+    flagCard.classList.add('dismissed');
+    flagCard.querySelector('.ade-flag-actions').innerHTML =
+      '<span style="color:var(--text-muted);font-family:var(--mono);font-size:11px;">Dismissed</span>';
+  }
+  checkAdeFlagsDone();
+}
+
+function checkAdeFlagsDone() {
+  // If all flags are confirmed or dismissed, update the dot
+  const remaining = document.querySelectorAll('.ade-flag-card:not(.confirmed):not(.dismissed)');
+  if (remaining.length === 0) {
+    const hasConfirmed = document.querySelectorAll('.ade-flag-card.confirmed').length > 0;
+    setDot(4, hasConfirmed ? 'green' : '');
+    const subtitle = document.querySelector('#sec-4 .section-subtitle');
+    if (subtitle) subtitle.textContent = 'Adverse drug events — one record per patient';
+  }
+}
+
+function escHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function clearAdeFlags() {
+  document.getElementById('ade-flags-list').innerHTML = '';
+  document.getElementById('ade-flags-section').classList.remove('show');
+  adeFlagData = [];
 }
 
 </script>
