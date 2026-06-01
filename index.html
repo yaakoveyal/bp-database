@@ -1739,6 +1739,7 @@ let pidState     = 'empty';   // 'empty' | 'new' | 'exists'
 let confirmed    = false;
 let activeTab    = 0;
 let saveInProgress = false;
+let aiImportClean  = false;   // true after AI import, cleared on first user edit — skips autosave on tab switch
 let lookupCache  = {};
 let agentCount   = 0;
 let dtCardCount  = 0;
@@ -2133,7 +2134,7 @@ function onVerifyChange() {
 async function switchTab(idx) {
   if (idx === activeTab || saveInProgress) return;
   // auto-save current tab silently — await to prevent race conditions
-  if (hasSectionData(activeTab)) {
+  if (hasSectionData(activeTab) && !aiImportClean) {
     await saveTabSilent(activeTab);
   }
 
@@ -3148,6 +3149,7 @@ function prefillSafety(s) {
 function resetAll() {
   currentPID = ''; pidState = 'empty'; confirmed = false;
   saveInProgress = false;
+  aiImportClean = false;
   document.getElementById('pid-input').value = '';
   setBadge('');
   hideVerifyCard();
@@ -3835,6 +3837,15 @@ function applyAiData(data) {
     const aeEl = document.getElementById('s-ae');
     if (aeEl && aeEl.value) markEl(aeEl);
   }
+
+  // Mark form as AI-imported — skip autosave until user edits
+  aiImportClean = true;
+  // Clear flag on first user interaction (one-shot listeners)
+  function clearAiClean() { aiImportClean = false; }
+  document.getElementById('main').addEventListener('input', clearAiClean, { once: true });
+  document.getElementById('main').addEventListener('click', function(e) {
+    if (e.target.closest('.radio-btn, .check-chip, .status-option')) clearAiClean();
+  }, { once: true });
 
   // Switch to Visit Log if visits were filled, otherwise Baseline
   if (visits && visits.length > 0) switchTab(3);
