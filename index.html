@@ -1828,6 +1828,7 @@ SHORT-COURSE RESET RULE: If a topical steroid was prescribed with a strict time 
 Rec_* = what doctor prescribes. Final P section overrides.
 CONTINUATION RULE: When notes say a medication is "continued without change" (ממשיך/נמשך ללא שינוי/אותו מינון), you MUST populate BOTH Curr_ AND Rec_ fields with that medication and dose. "Continued" means it appears in both columns.
 TOPICAL CURRENT STATUS: Curr_Topical_Steroids reflects what the patient was USING when they walked in, even if the doctor discontinues it at this visit. A discontinuation order affects Rec_Topical_Steroids (set to "N"), but does NOT erase Curr_Topical_Steroids (keep "Y" if patient was using it).
+NON-ADHERENCE RULE: If the note explicitly states the patient was NOT taking a previously prescribed medication (e.g., "אינה נוטלת", "לא לקחה", "הפסיקה", "לא מורחת", "not compliant", "stopped on own"), set the corresponding Curr_* field to "" (empty) — do NOT carry forward a medication the patient was not actually using. Curr fields reflect actual usage at presentation, not prescribed intent.
 Prednisone: total daily mg. 0=intentional stop, ""=undocumented, taper=first step dose.
 Topical steroids "Y"/"N". Name from: "Dermovate (Clobetasol propionate)","Neriderm (Diflucortolone valerate)","Betacorten / Betacorten G (Betamethasone valerate)","Elocom (Mometasone furoate)","Other".
 Agent slots (up to 3): from "Doxycycline","Azathioprine","Mycophenolate mofetil","Methotrexate","Dapsone","Minocycline","Cyclosporine","IVIG","Dupilumab","Rituximab","Omalizumab","Other". Methotrexate: per-administration dose. Rituximab/IVIG: "" from visit after final infusion.
@@ -1850,6 +1851,7 @@ Agent slots (up to 3): from "Doxycycline","Azathioprine","Mycophenolate mofetil"
 15. NO PLACEHOLDERS in boolean fields — use "Yes"/"No"/"Y"/"N", not "[VERIFY]"
 16. EXACT KEY NAMES: Rec_Agent1_Dose (capital D), Curr_Topical_Steroid_Name (full word Steroid)
 17. Uncertain → "[VERIFY]" for free-text/numeric only; missing → ""
+18. NON-ADHERENCE: If note says patient stopped/skipped a prescribed medication, Curr_* = "" (do not carry forward)
 
 Now extract the structured data from the de-identified clinical note provided.`;
 
@@ -3790,7 +3792,7 @@ function applyAiData(data) {
         { name: v.Curr_Agent3, dose: v.Curr_Agent3_Dose }
       ].filter(a => a.name);
       cAgents.forEach((ag, i) => {
-        if (i > 0) addVisitAgent(vid, 'c');
+        addVisitAgent(vid, 'c');
         const cards = document.querySelectorAll('#vc-cagents-' + vid + ' .dyn-card');
         const agCard = cards[i];
         if (!agCard) return;
@@ -3815,7 +3817,7 @@ function applyAiData(data) {
         { name: v.Rec_Agent3, dose: v.Rec_Agent3_Dose }
       ].filter(a => a.name);
       rAgents.forEach((ag, i) => {
-        if (i > 0) addVisitAgent(vid, 'r');
+        addVisitAgent(vid, 'r');
         const cards = document.querySelectorAll('#vc-ragents-' + vid + ' .dyn-card');
         const agCard = cards[i];
         if (!agCard) return;
