@@ -1909,7 +1909,8 @@ Hebrew: סכרת→Diabetes, יל"ד→Hypertension, דיסליפידמיה→Dy
 
 ## TAB 2: Diagnostics_Labs
 DIF_IgG/DIF_C3/IIF_Result ("Positive"/"Negative"/"ND"), IIF_Titer ("1:10" to ">1:640"), Anti_BP180_IgG/Anti_BP230_IgG/Total_IgE/Absolute_Eosinophils/Albumin (numbers), Subepidermal_Blister/Biopsy_Eosinophils/Suggestive_Biopsy ("Yes"/"No"/"ND").
-"אבחנתיים ל-BP" → DIF_IgG="Positive", DIF_C3="Positive", Subepidermal_Blister="Yes", Suggestive_Biopsy="Yes".
+SUBEPIDERMAL BLISTER RULE: Only mark Subepidermal_Blister as "Yes" if the biopsy report EXPLICITLY describes a subepidermal blister/split (שלפוחית סובאפידרמלית, subepidermal cleft/split/blister). Do NOT infer "Yes" from a general BP-supportive biopsy — that is what Suggestive_Biopsy is for. If the biopsy is described as "suggestive of BP" or "consistent with BP" without specifically mentioning a subepidermal blister, set Subepidermal_Blister="ND" and Suggestive_Biopsy="Yes".
+"אבחנתיים ל-BP" / "consistent with BP" / "suggestive of BP" → DIF_IgG="Positive", DIF_C3="Positive", Subepidermal_Blister="ND", Suggestive_Biopsy="Yes".
 
 ## TAB 3: Drug_Triggers
 PROACTIVE SCANNING RULE: You MUST scan the patient's medication list from Day 0 and cross-reference against the trigger drug classes below. Apply two tiers:
