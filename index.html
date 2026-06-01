@@ -1837,7 +1837,7 @@ Rec_* = what doctor prescribes. Final P section overrides.
 CONTINUATION RULE: When notes say a medication is "continued without change" (ממשיך/נמשך ללא שינוי/אותו מינון), you MUST populate BOTH Curr_ AND Rec_ fields with that medication and dose. "Continued" means it appears in both columns.
 TOPICAL CURRENT STATUS: Curr_Topical_Steroids reflects what the patient was USING when they walked in, even if the doctor discontinues it at this visit. A discontinuation order affects Rec_Topical_Steroids (set to "N"), but does NOT erase Curr_Topical_Steroids (keep "Y" if patient was using it).
 NON-ADHERENCE RULE: If the note explicitly states the patient was NOT taking a previously prescribed medication (e.g., "אינה נוטלת", "לא לקחה", "הפסיקה", "לא מורחת", "not compliant", "stopped on own"), set the corresponding Curr_* field to "" (empty) — do NOT carry forward a medication the patient was not actually using. Curr fields reflect actual usage at presentation, not prescribed intent.
-Prednisone: total daily mg. 0=intentional stop, ""=undocumented, taper=first step dose.
+Prednisone total daily mg. Curr_Prednisone_dose_mg and Rec_Prednisone_dose_mg reflect the daily totals. 0=intentional stop, ""=undocumented, taper=first step dose.
 Topical steroids "Y"/"N". Name from: "Dermovate (Clobetasol propionate)","Neriderm (Diflucortolone valerate)","Betacorten / Betacorten G (Betamethasone valerate)","Elocom (Mometasone furoate)","Other".
 Agent slots (up to 3): from "Doxycycline","Azathioprine","Mycophenolate mofetil","Methotrexate","Dapsone","Minocycline","Cyclosporine","IVIG","Dupilumab","Rituximab","Omalizumab","Other". Methotrexate: per-administration dose. Rituximab/IVIG: "" from visit after final infusion.
 DOSE FORMAT RULE: All dose fields (Curr_Agent*_Dose, Rec_Agent*_Dose) must be a NUMERIC value representing TOTAL DAILY mg. Never include units, frequency, or text. Convert multi-dose regimens to daily total: "50 mg twice daily" → "100", "25 mg three times daily" → "75", "100 mg once daily" → "100". The form field is numeric-only — text values will be silently rejected.
@@ -3540,11 +3540,23 @@ function collectVerifyFields() {
 
 function applyAiData(data) {
   // ── Normalize AI field names to match code expectations ──────
-  function normalizeVisit(v) {
+function normalizeVisit(v) {
     const map = {
-      'Disease_Status_Flare': 'Flare', 'Disease_Status_Partial_Remission': 'Partial_Remission',
-      'Disease_Status_Complete_Remission': 'Complete_Remission', 'Disease_Status_No_Response': 'No_Response',
-      'Curr_Prednisone_mg': 'Curr_Prednisone_Dose_mg', 'Rec_Prednisone_mg': 'Rec_Prednisone_Dose_mg',
+      'Disease_Status_Flare': 'Flare', 
+      'Disease_Status_Partial_Remission': 'Partial_Remission',
+      'Disease_Status_Complete_Remission': 'Complete_Remission', 
+      'Disease_Status_No_Response': 'No_Response',
+      
+      // Explicitly catch the variations coming from the extraction results
+      'Curr_Prednisone_dose': 'Curr_Prednisone_Dose_mg',
+      'Rec_Prednisone_dose': 'Rec_Prednisone_Dose_mg',
+      'Curr_Prednisone_mg': 'Curr_Prednisone_Dose_mg', 
+      'Rec_Prednisone_mg': 'Rec_Prednisone_Dose_mg',
+      'Curr_Prednisone': 'Curr_Prednisone_Dose_mg', 
+      'Rec_Prednisone': 'Rec_Prednisone_Dose_mg',
+      'Curr_Prednisone_Dose': 'Curr_Prednisone_Dose_mg', 
+      'Rec_Prednisone_Dose': 'Rec_Prednisone_Dose_mg',
+
       'Curr_Agent_1': 'Curr_Agent1', 'Curr_Agent_1_Dose': 'Curr_Agent1_Dose',
       'Curr_Agent_2': 'Curr_Agent2', 'Curr_Agent_2_Dose': 'Curr_Agent2_Dose',
       'Curr_Agent_3': 'Curr_Agent3', 'Curr_Agent_3_Dose': 'Curr_Agent3_Dose',
@@ -3555,8 +3567,6 @@ function applyAiData(data) {
       'Curr_Topical_Name': 'Curr_Topical_Steroid_Name',
       'Rec_Topical_Name': 'Rec_Topical_Steroid_Name',
       'Curr_Topical_Steroid': 'Curr_Topical_Steroids', 'Rec_Topical_Steroid': 'Rec_Topical_Steroids',
-      'Curr_Prednisone': 'Curr_Prednisone_Dose_mg', 'Rec_Prednisone': 'Rec_Prednisone_Dose_mg',
-      'Curr_Prednisone_Dose': 'Curr_Prednisone_Dose_mg', 'Rec_Prednisone_Dose': 'Rec_Prednisone_Dose_mg',
       'Visit_date': 'Visit_Date', 'visit_date': 'Visit_Date',
     };
     const out = {};
