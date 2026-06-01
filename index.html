@@ -1827,41 +1827,59 @@ Lesion_Description: comma-separated from ONLY: "Erythema","Eczematous plaques","
 Pruritus: "Y" (BP-attributed), "N" (none or non-BP), "NA" (not mentioned).
 Hospitalization: "Y" ONLY if this visit describes an active inpatient hospitalization or emergency admission. "N" for outpatient clinic visits (even immediately post-discharge follow-ups), day-hospital infusions, and routine clinic appointments.
 
-Disease Status: EXACTLY ONE is "Y", others "N": Flare (exacerbation/new/first visit; החמרה,התלקחות), Partial_Remission (improvement but active; הטבה,שיפור), Complete_Remission (no pruritus AND no active lesions; רמיסיה מלאה), No_Response (no improvement; ללא שיפור).
+Disease Status: EXACTLY ONE is "Y", others "N". Assess based on the CLINICAL FINDINGS at this visit, not visit order:
+- Flare: active disease with new or worsening lesions (החמרה, התלקחות, נגעים חדשים, פריחה חדשה). Do NOT default to Flare just because it is the first visit — if the patient presents with resolved disease, classify accordingly.
+- Partial_Remission: improvement compared to previous state but still has active lesions (הטבה, שיפור, ארוזיות בהחלמה).
+- Complete_Remission: no BP pruritus AND no active BP lesions (רמיסיה מלאה, ללא פריחה פעילה, ללא נגיעות). Post-inflammatory changes alone = CR.
+- No_Response: no improvement despite treatment (ללא שיפור, ללא תגובה).
 
 SYMPTOM EXCLUSIVITY RULE: If a visit is classified as Complete_Remission, then Disease_Extent MUST be "", Lesion_Description MUST be "", and Pruritus MUST be "N". If the note describes a rash, itch, or erythema from a NON-BP cause (e.g., Candidiasis, Intertrigo, Xerosis, contact dermatitis, UTI-related), that finding is NOT BP activity and MUST be excluded from Disease_Extent, Lesion_Description, and Pruritus entirely. Only BP-attributable findings go into these fields.
 
-Treatment: Curr_* = what patient takes on arrival. Day 0: all Curr empty. Later: carry forward previous Rec. Time-limited topicals: do NOT carry forward.
+Treatment: Curr_* = what patient is ACTUALLY taking/using on arrival at this visit. Rec_* = what the doctor actively prescribes at this visit.
+
+PRE-DAY 0 HISTORY RULE: Often the patient was diagnosed or started on treatment BEFORE Day 0 (e.g., at an ER visit, hospitalization, or by another physician). If the Day 0 notes describe prior treatment that the patient is currently on ("הוחל טיפול ב...", "מטופל ב...", referral letter mentions ongoing treatment), populate Day 0 Curr_* fields with that treatment. Day 0 Curr_* is only empty if the patient truly had NO prior BP treatment.
+
+CONDITIONAL PRESCRIPTION RULE: If the doctor writes a contingency plan rather than an active prescription (e.g., "באם תופיע שוב הפריחה חידוש הטיפול ב..." / "if topicals fail, start prednisone" / "במידה ולא ניתן לשלוט במחלה...ניתן להתחיל"), do NOT put this in Rec_* fields. Rec_* reflects only what is ACTIVELY prescribed for the patient to start now, not what to do if things get worse. Conditional/contingency instructions are not prescriptions.
+
+TREATMENT DISCONTINUATION: If the doctor explicitly stops a treatment ("הפסקת הטיפול ב...", "לא להמשיך"), the corresponding Rec_* field should be "" (empty) or "N" for topicals. Do not confuse a restart instruction ("if rash returns, restart X") with a current prescription.
+
+Later visits: carry forward previous Rec into Curr (what the patient should be taking). Time-limited topicals: do NOT carry forward.
 SHORT-COURSE RESET RULE: If a topical steroid was prescribed with a strict time limit (e.g., "for 5 days", "until resolved", "short course"), check the NEXT visit. If the lesion resolved and treatment stopped, Curr_Topical_Steroids for that next visit MUST be "N". Do not carry localized point-treatments forward as continuous baseline therapies.
 Rec_* = what doctor prescribes. Final P section overrides.
 CONTINUATION RULE: When notes say a medication is "continued without change" (ממשיך/נמשך ללא שינוי/אותו מינון), you MUST populate BOTH Curr_ AND Rec_ fields with that medication and dose. "Continued" means it appears in both columns.
 TOPICAL CURRENT STATUS: Curr_Topical_Steroids reflects what the patient was USING when they walked in, even if the doctor discontinues it at this visit. A discontinuation order affects Rec_Topical_Steroids (set to "N"), but does NOT erase Curr_Topical_Steroids (keep "Y" if patient was using it).
 NON-ADHERENCE RULE: If the note explicitly states the patient was NOT taking a previously prescribed medication (e.g., "אינה נוטלת", "לא לקחה", "הפסיקה", "לא מורחת", "not compliant", "stopped on own"), set the corresponding Curr_* field to "" (empty) — do NOT carry forward a medication the patient was not actually using. Curr fields reflect actual usage at presentation, not prescribed intent.
-Prednisone total daily mg. Curr_Prednisone_dose_mg and Rec_Prednisone_dose_mg reflect the daily totals. 0=intentional stop, ""=undocumented, taper=first step dose.
+Prednisone total daily mg. Curr_Prednisone_Dose_mg and Rec_Prednisone_Dose_mg reflect the daily totals. 0=intentional stop, ""=undocumented, taper=first step dose.
 Topical steroids "Y"/"N". Name from: "Dermovate (Clobetasol propionate)","Neriderm (Diflucortolone valerate)","Betacorten / Betacorten G (Betamethasone valerate)","Elocom (Mometasone furoate)","Other".
 Agent slots (up to 3): from "Doxycycline","Azathioprine","Mycophenolate mofetil","Methotrexate","Dapsone","Minocycline","Cyclosporine","IVIG","Dupilumab","Rituximab","Omalizumab","Other". Methotrexate: per-administration dose. Rituximab/IVIG: "" from visit after final infusion.
 DOSE FORMAT RULE: All dose fields (Curr_Agent*_Dose, Rec_Agent*_Dose) must be a NUMERIC value representing TOTAL DAILY mg. Never include units, frequency, or text. Convert multi-dose regimens to daily total: "50 mg twice daily" → "100", "25 mg three times daily" → "75", "100 mg once daily" → "100". The form field is numeric-only — text values will be silently rejected.
 
 ## FINAL CHECKLIST
 1. BP-only rule for Disease_Extent, Lesion_Description, Pruritus
-2. Exactly ONE status "Y" per visit
-3. Complete_Remission requires BOTH no lesions AND no BP pruritus
+2. Exactly ONE status "Y" per visit — based on CLINICAL FINDINGS, not visit order
+3. Complete_Remission requires BOTH no lesions AND no BP pruritus. Post-inflammatory alone = CR.
 4. SYMPTOM EXCLUSIVITY: CR visits must have empty Disease_Extent, empty Lesion_Description, Pruritus "N". Non-BP findings (intertrigo, candida, xerosis) excluded entirely.
 5. Curr carry-forward applied; time-limited topicals reset
 6. SHORT-COURSE RESET: time-limited topical prescriptions ("5 days", "until resolved") → Curr_Topical_Steroids = "N" at next visit if resolved
-7. Rec = final P section; prednisone taper = first step dose
-8. Methotrexate: per-administration dose; Rituximab/IVIG: "" after final infusion
-9. ALL visits included. All values match allowed lists (case-sensitive)
-10. Days_From_Diagnosis is a NUMBER, NEVER a date string
-11. CONTINUATION: "continued without change" → same drug+dose in BOTH Curr_ and Rec_
-12. ACTIVE ONLY: Disease_Extent includes only regions with active acute BP lesions, not post-inflammatory/healed findings
-13. HOSPITALIZATION: "Y" only for active inpatient/ER admissions at THIS visit, not post-discharge follow-ups
-14. TOPICAL CURRENT: Curr_Topical_Steroids = "Y" if patient arrived using it, even if discontinued at this visit
-15. NO PLACEHOLDERS in boolean fields — use "Yes"/"No"/"Y"/"N", not "[VERIFY]"
-16. EXACT KEY NAMES REQUIRED: You must use 'Curr_Prednisone_Dose_mg' and 'Rec_Prednisone_Dose_mg' with a capital 'D'. Similarly use 'Rec_Agent1_Dose' (capital D) and 'Curr_Topical_Steroid_Name' (full word Steroid). Case mismatch breaks ingestion.
-17. Uncertain → "[VERIFY]" for free-text/numeric only; missing → ""
-18. NON-ADHERENCE: If note says patient stopped/skipped a prescribed medication, Curr_* = "" (do not carry forward)
-19. DOSE FORMAT: All dose fields must be NUMERIC total daily mg only — "50mg x2/day" → "100", never text
+7. Rec = ACTIVE prescriptions only. Conditional/contingency plans ("if rash returns...", "if topicals fail...") are NOT prescriptions — do NOT put in Rec_*
+8. PRE-DAY 0: If patient was started on treatment before Day 0 (ER, other physician), populate Day 0 Curr_* with that treatment
+9. TREATMENT STOP: "הפסקת הטיפול" → Rec_* = "" for that medication. Restart-if-needed instructions ≠ active prescription
+10. Methotrexate: per-administration dose; Rituximab/IVIG: "" after final infusion
+11. ALL visits included. All values match allowed lists (case-sensitive)
+12. Days_From_Diagnosis is a NUMBER, NEVER a date string
+13. CONTINUATION: "continued without change" → same drug+dose in BOTH Curr_ and Rec_
+14. ACTIVE ONLY: Disease_Extent includes only regions with active acute BP lesions, not post-inflammatory/healed findings
+15. HOSPITALIZATION: "Y" only for active inpatient/ER admissions at THIS visit, not post-discharge follow-ups
+16. TOPICAL CURRENT: Curr_Topical_Steroids = "Y" if patient arrived using it, even if discontinued at this visit
+17. NO PLACEHOLDERS in boolean fields — use "Yes"/"No"/"Y"/"N", not "[VERIFY]"
+18. EXACT KEY NAMES REQUIRED: You must use 'Curr_Prednisone_Dose_mg' and 'Rec_Prednisone_Dose_mg' with a capital 'D'. Similarly use 'Rec_Agent1_Dose' (capital D) and 'Curr_Topical_Steroid_Name' (full word Steroid). Case mismatch breaks ingestion.
+19. Uncertain → "[VERIFY]" for free-text/numeric only; missing → ""
+20. NON-ADHERENCE: If note says patient stopped/skipped a prescribed medication, Curr_* = "" (do not carry forward)
+21. DOSE FORMAT: All dose fields must be NUMERIC total daily mg only — "50mg x2/day" → "100", never text
+22. Do NOT default Day 0 to Flare — assess the clinical state at the actual visit
+23. PRE-DAY 0: If patient was started on treatment before Day 0 (ER, other physician), populate Day 0 Curr_* with that treatment
+24. CONDITIONAL PRESCRIPTIONS ("if rash returns...", "if topicals fail...") are NOT active prescriptions — do NOT put in Rec_*
+25. TREATMENT STOP: "הפסקת הטיפול" → Rec_* = "" for that medication
 
 Now extract the structured data from the de-identified clinical note provided.`;
 
@@ -3572,16 +3590,18 @@ function normalizeVisit(v) {
       'Rec_Topical_Name': 'Rec_Topical_Steroid_Name',
       'Curr_Topical_Steroid': 'Curr_Topical_Steroids', 'Rec_Topical_Steroid': 'Rec_Topical_Steroids',
       'Visit_date': 'Visit_Date', 'visit_date': 'Visit_Date',
+      'Absolute_Eosinophils': 'Abs_Eosinophils',
     };
     const out = {};
     for (const [k, val] of Object.entries(v)) {
       out[map[k] || k] = val;
     }
+    // If Rec_Topical_Steroid_Name is set but Curr_Topical_Steroid_Name isn't, copy for curr too
     if (out.Rec_Topical_Steroid_Name && !out.Curr_Topical_Steroid_Name && toYN(out.Curr_Topical_Steroids) === 'Y') {
       out.Curr_Topical_Steroid_Name = out.Rec_Topical_Steroid_Name;
     }
     return out;
-}
+  }
   // Normalize all visits
   if (data.Visit_Log) data.Visit_Log = data.Visit_Log.map(normalizeVisit);
   // ── Helpers ──────────────────────────────────────────────────
