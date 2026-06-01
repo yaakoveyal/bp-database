@@ -1858,7 +1858,7 @@ DOSE FORMAT RULE: All dose fields (Curr_Agent*_Dose, Rec_Agent*_Dose) must be a 
 13. HOSPITALIZATION: "Y" only for active inpatient/ER admissions at THIS visit, not post-discharge follow-ups
 14. TOPICAL CURRENT: Curr_Topical_Steroids = "Y" if patient arrived using it, even if discontinued at this visit
 15. NO PLACEHOLDERS in boolean fields — use "Yes"/"No"/"Y"/"N", not "[VERIFY]"
-16. EXACT KEY NAMES: Rec_Agent1_Dose (capital D), Curr_Topical_Steroid_Name (full word Steroid)
+16. EXACT KEY NAMES REQUIRED: You must use 'Curr_Prednisone_Dose_mg' and 'Rec_Prednisone_Dose_mg' with a capital 'D'. Similarly use 'Rec_Agent1_Dose' (capital D) and 'Curr_Topical_Steroid_Name' (full word Steroid). Case mismatch breaks ingestion.
 17. Uncertain → "[VERIFY]" for free-text/numeric only; missing → ""
 18. NON-ADHERENCE: If note says patient stopped/skipped a prescribed medication, Curr_* = "" (do not carry forward)
 19. DOSE FORMAT: All dose fields must be NUMERIC total daily mg only — "50mg x2/day" → "100", never text
@@ -3547,7 +3547,11 @@ function normalizeVisit(v) {
       'Disease_Status_Complete_Remission': 'Complete_Remission', 
       'Disease_Status_No_Response': 'No_Response',
       
-      // Explicitly catch the variations coming from the extraction results
+      // Explicitly map lowercase 'dose_mg' to match your database schema casing
+      'Curr_Prednisone_dose_mg': 'Curr_Prednisone_Dose_mg',
+      'Rec_Prednisone_dose_mg': 'Rec_Prednisone_Dose_mg',
+      
+      // Additional catch-alls for alternative model outputs
       'Curr_Prednisone_dose': 'Curr_Prednisone_Dose_mg',
       'Rec_Prednisone_dose': 'Rec_Prednisone_Dose_mg',
       'Curr_Prednisone_mg': 'Curr_Prednisone_Dose_mg', 
@@ -3573,12 +3577,11 @@ function normalizeVisit(v) {
     for (const [k, val] of Object.entries(v)) {
       out[map[k] || k] = val;
     }
-    // If Rec_Topical_Steroid_Name is set but Curr_Topical_Steroid_Name isn't, copy for curr too
     if (out.Rec_Topical_Steroid_Name && !out.Curr_Topical_Steroid_Name && toYN(out.Curr_Topical_Steroids) === 'Y') {
       out.Curr_Topical_Steroid_Name = out.Rec_Topical_Steroid_Name;
     }
     return out;
-  }
+}
   // Normalize all visits
   if (data.Visit_Log) data.Visit_Log = data.Visit_Log.map(normalizeVisit);
   // ── Helpers ──────────────────────────────────────────────────
