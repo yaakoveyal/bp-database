@@ -1767,13 +1767,20 @@ Return ONLY a valid JSON object. No preamble, no explanation, no markdown fences
 - NO PLACEHOLDERS in boolean/categorical fields: If a value can be determined (e.g., drug discontinued and improved → "Yes"), use the actual value, not "[VERIFY]". Reserve "[VERIFY]" only for truly ambiguous free-text or numeric fields.
 - CASE-SENSITIVE KEYS: JSON keys must match exactly as shown in the schema (e.g., "Rec_Agent1_Dose" with capital D, "Curr_Topical_Steroid_Name" with full word "Steroid"). Do not truncate or alter key names.
 
-## CRITICAL: DE-IDENTIFIED INPUT
-- Real dates replaced with "Day 0", "Day 45", etc. Day 0 = diagnosis/first encounter.
-- Output Days_From_Diagnosis as a NUMBER, NEVER actual dates.
-- All Date_ fields → "".
+## DATE HANDLING
+The input may use EITHER real dates OR de-identified "Day X" notation (or a mix).
+- If the input uses "Day X" notation: Day 0 = diagnosis/first encounter. Output Days_From_Diagnosis as a NUMBER. Date fields that cannot be determined from Day X → "".
+- If the input contains REAL DATES (e.g., "1/2/2013", "03/03/2012", "ינואר 2013"): extract them into the appropriate Date_ fields in DD-MM-YYYY format. Also compute Year_of_Diagnosis from the diagnosis date, and Days_Symptoms_to_Diagnosis if both symptom onset and diagnosis dates are available. For Visit_Log, compute Days_From_Diagnosis as the number of days between the visit date and the diagnosis date.
+- ALWAYS populate Days_From_Diagnosis in Visit_Log entries (as a NUMBER), whether calculated from real dates or given as Day X.
 
 ## TAB 1: Patient_Baseline
-Extract from Day 0. Sex ("M" if בן, "F" if בת), Age_at_Diagnosis (number from "בן 74"→74), Year_of_Diagnosis (""), Date_of_Diagnosis (""), Ethnicity ("Jewish Israeli"/"Arab Israeli"/"Ashkenazi Jewish"/"Sephardi Jewish"/"Other"/"Unknown"), Frailty_Score, Height_cm, Weight_kg, BMI, Date_of_First_Symptoms (""), Days_Symptoms_to_Diagnosis (if "מזה X חודשים" calculate; if vague "[VERIFY]"), Date_of_Death (""), Cause_of_Death ("Disease-related (BP)"/"Treatment complication"/"Infection / Sepsis"/"Cardiovascular"/"Malignancy"/"Other"/"Unknown").
+Extract from Day 0. Sex ("M" if בן, "F" if בת), Age_at_Diagnosis (number from "בן 74"→74), Year_of_Diagnosis (extract from diagnosis date if available), Date_of_Diagnosis (DD-MM-YYYY if real date given, "" if Day X only), Ethnicity ("Jewish Israeli"/"Arab Israeli"/"Ashkenazi Jewish"/"Sephardi Jewish"/"Other"/"Unknown"), Frailty_Score, Height_cm, Weight_kg, BMI, Date_of_First_Symptoms (DD-MM-YYYY if available, "" otherwise), Days_Symptoms_to_Diagnosis (calculate — see SYMPTOM ONSET below), Date_of_Death (DD-MM-YYYY if available, "" otherwise), Cause_of_Death ("Disease-related (BP)"/"Treatment complication"/"Infection / Sepsis"/"Cardiovascular"/"Malignancy"/"Other"/"Unknown").
+
+SYMPTOM ONSET RULE: Look for any phrase indicating when symptoms first appeared relative to diagnosis/admission. Common patterns:
+- "לפני חודש הופיעה פריחה" → 30 days before. "לפני שבועיים" → 14 days. "לפני X ימים" → X days. "מזה X חודשים" → X×30 days. "לפני מספר שבועות" → estimate 21-28 days (use "[VERIFY]" suffix on Days_Symptoms_to_Diagnosis).
+- If a diagnosis date is known (real date), BACK-CALCULATE Date_of_First_Symptoms by subtracting the duration. Example: diagnosis 01-02-2013, "לפני חודש" → Date_of_First_Symptoms = "01-01-2013", Days_Symptoms_to_Diagnosis = 31.
+- If using Day X notation, Date_of_First_Symptoms = "" but still calculate Days_Symptoms_to_Diagnosis as the number of days.
+- If vague ("מזה זמן מה", "תקופה ארוכה") → Days_Symptoms_to_Diagnosis = "[VERIFY]".
 
 FRAILTY SCORE (Clinical Frailty Scale 1-9): You MUST estimate this from clinical context clues in the notes. Do NOT default to "[VERIFY]". Use this algorithm:
 - CFS 9: Terminally ill, life expectancy <6 months regardless of frailty
@@ -1832,6 +1839,7 @@ NON-ADHERENCE RULE: If the note explicitly states the patient was NOT taking a p
 Prednisone: total daily mg. 0=intentional stop, ""=undocumented, taper=first step dose.
 Topical steroids "Y"/"N". Name from: "Dermovate (Clobetasol propionate)","Neriderm (Diflucortolone valerate)","Betacorten / Betacorten G (Betamethasone valerate)","Elocom (Mometasone furoate)","Other".
 Agent slots (up to 3): from "Doxycycline","Azathioprine","Mycophenolate mofetil","Methotrexate","Dapsone","Minocycline","Cyclosporine","IVIG","Dupilumab","Rituximab","Omalizumab","Other". Methotrexate: per-administration dose. Rituximab/IVIG: "" from visit after final infusion.
+DOSE FORMAT RULE: All dose fields (Curr_Agent*_Dose, Rec_Agent*_Dose) must be a NUMERIC value representing TOTAL DAILY mg. Never include units, frequency, or text. Convert multi-dose regimens to daily total: "50 mg twice daily" → "100", "25 mg three times daily" → "75", "100 mg once daily" → "100". The form field is numeric-only — text values will be silently rejected.
 
 ## FINAL CHECKLIST
 1. BP-only rule for Disease_Extent, Lesion_Description, Pruritus
@@ -1852,6 +1860,7 @@ Agent slots (up to 3): from "Doxycycline","Azathioprine","Mycophenolate mofetil"
 16. EXACT KEY NAMES: Rec_Agent1_Dose (capital D), Curr_Topical_Steroid_Name (full word Steroid)
 17. Uncertain → "[VERIFY]" for free-text/numeric only; missing → ""
 18. NON-ADHERENCE: If note says patient stopped/skipped a prescribed medication, Curr_* = "" (do not carry forward)
+19. DOSE FORMAT: All dose fields must be NUMERIC total daily mg only — "50mg x2/day" → "100", never text
 
 Now extract the structured data from the de-identified clinical note provided.`;
 
