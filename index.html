@@ -2309,9 +2309,9 @@ function onVerifyChange() {
 // ══════════════════════════════════════════════════════════════════
 async function switchTab(idx) {
   if (idx === activeTab || saveInProgress) return;
-  // auto-save current tab silently — await to prevent race conditions
+  // auto-save current tab in background — do NOT await (keeps tab switch instant)
   if (hasSectionData(activeTab) && !aiImportClean) {
-    await saveTabSilent(activeTab);
+    saveTabSilent(activeTab); // fire-and-forget
   }
 
   document.querySelectorAll('.section').forEach((s,i) => s.classList.toggle('active', i === idx));
