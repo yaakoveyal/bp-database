@@ -1949,6 +1949,14 @@ function toggleTheme() {
   pidInput.addEventListener('input', onPIDInput);
   pidInput.addEventListener('keydown', e => { if (e.key === 'Enter') onPIDBlur(); });
   pidInput.addEventListener('blur', onPIDBlur);
+
+  // Clear AI highlight when user edits any field
+  document.getElementById('main').addEventListener('input', function(e) {
+    if (e.target.classList.contains('ai-filled')) e.target.classList.remove('ai-filled');
+  });
+  document.getElementById('main').addEventListener('change', function(e) {
+    if (e.target.classList.contains('ai-filled')) e.target.classList.remove('ai-filled');
+  });
 })();
 
 function buildChips(containerId, items) {
@@ -1965,6 +1973,7 @@ function toggleChip(el) {
   const cb = el.querySelector('input');
   cb.checked = !cb.checked;
   el.classList.toggle('checked', cb.checked);
+  el.classList.remove('ai-filled-chip');
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -2778,7 +2787,7 @@ function calcDaysFromDx(vid) {
 function pickVisitStatus(vid, el, val) {
   // clear all
   document.querySelectorAll(`#vc-status-sel-${vid} .status-option`)
-    .forEach(o => o.classList.remove('sel-flare','sel-partial','sel-complete'));
+    .forEach(o => o.classList.remove('sel-flare','sel-partial','sel-complete','sel-no-response','ai-filled-radio'));
   if (val === 'Flare')             el.classList.add('sel-flare');
   if (val === 'Partial_Remission') el.classList.add('sel-partial');
   if (val === 'Complete_Remission')el.classList.add('sel-complete');
@@ -2807,7 +2816,10 @@ function toggleTopicalDetail(prefix, vid) {
 }
 
 function pickRadioV(groupId, hiddenId, el) {
-  document.querySelectorAll(`#${groupId} .radio-btn`).forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll(`#${groupId} .radio-btn`).forEach(b => {
+    b.classList.remove('selected');
+    b.classList.remove('ai-filled-radio');
+  });
   el.classList.add('selected');
   document.getElementById(hiddenId).value = el.dataset.val;
 
@@ -2995,7 +3007,10 @@ function removeSafetyCard(id) {
 //  RADIO / STATUS HELPERS
 // ══════════════════════════════════════════════════════════════════
 function pickRadio(groupId, el) {
-  document.querySelectorAll(`#${groupId} .radio-btn`).forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll(`#${groupId} .radio-btn`).forEach(b => {
+    b.classList.remove('selected');
+    b.classList.remove('ai-filled-radio');
+  });
   el.classList.add('selected');
   // sync hidden if exists
   const hidden = document.querySelector(`#${groupId}`).parentElement.querySelector('input[type=hidden]');
