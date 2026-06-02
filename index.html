@@ -1541,6 +1541,73 @@ body.light-mode .ade-flag-type { background: #fff8c5; color: #9a6700; }
     </div>
 
     <hr class="form-divider" />
+    <div class="field span-full form-section-label">Family Atopic History</div>
+
+    <div class="field">
+      <label class="field-label">Asthma</label>
+      <div class="radio-group" id="b-fam-asthma-group">
+        <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-fam-asthma-group',this)">Yes</div>
+        <div class="radio-btn" data-val="No"  onclick="pickRadio('b-fam-asthma-group',this)">No</div>
+      </div>
+      <input type="hidden" id="b-fam-asthma" />
+    </div>
+
+    <div class="field">
+      <label class="field-label">Atopic Dermatitis</label>
+      <div class="radio-group" id="b-fam-ad-group">
+        <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-fam-ad-group',this)">Yes</div>
+        <div class="radio-btn" data-val="No"  onclick="pickRadio('b-fam-ad-group',this)">No</div>
+      </div>
+      <input type="hidden" id="b-fam-ad" />
+    </div>
+
+    <div class="field">
+      <label class="field-label">Allergic Rhinitis</label>
+      <div class="radio-group" id="b-fam-rhinitis-group">
+        <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-fam-rhinitis-group',this)">Yes</div>
+        <div class="radio-btn" data-val="No"  onclick="pickRadio('b-fam-rhinitis-group',this)">No</div>
+      </div>
+      <input type="hidden" id="b-fam-rhinitis" />
+    </div>
+
+    <hr class="form-divider" />
+    <div class="field span-full form-section-label">Pre-diagnosis Pruritus</div>
+
+    <div class="field">
+      <label class="field-label">Pruritus Reported Before BP?</label>
+      <div class="radio-group" id="b-pru-before-group">
+        <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-pru-before-group',this);togglePruOnset()">Yes</div>
+        <div class="radio-btn" data-val="No"  onclick="pickRadio('b-pru-before-group',this);togglePruOnset()">No</div>
+        <div class="radio-btn" data-val="NA"  onclick="pickRadio('b-pru-before-group',this);togglePruOnset()">N/A</div>
+      </div>
+      <input type="hidden" id="b-pru-before" />
+    </div>
+
+    <div class="field" id="b-pru-onset-wrap" style="display:none">
+      <label class="field-label">Pruritus Onset Date</label>
+      <input class="field-input" type="date" id="b-pru-onset-date" onchange="calcPruDays()" />
+    </div>
+
+    <div class="field" id="b-pru-days-wrap" style="display:none">
+      <label class="field-label">Days Pruritus → Diagnosis</label>
+      <div class="computed-val" id="b-pru-days">—</div>
+    </div>
+
+    <hr class="form-divider" />
+    <div class="field span-full form-section-label">Disease Classification</div>
+
+    <div class="field">
+      <label class="field-label">Disease Subtype</label>
+      <select class="field-select" id="b-subtype">
+        <option value="">— select —</option>
+        <option>BP</option>
+        <option>Pemphigoid Gestationis</option>
+        <option>MMP</option>
+        <option>Linear IgA</option>
+      </select>
+    </div>
+
+    <hr class="form-divider" />
     <div class="field span-full form-section-label">Comorbidities</div>
 
     <div class="field span-full">
@@ -1585,6 +1652,61 @@ body.light-mode .ade-flag-type { background: #fff8c5; color: #9a6700; }
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="PVD" />PVD</label>
         <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Liver Disease" />Liver Disease</label>
       </div>
+    </div>
+
+    <div class="field span-full form-section-label" style="margin-top:12px">Personal Atopic History</div>
+
+    <div class="field span-full">
+      <div class="check-grid" id="b-atopic-chips">
+        <label class="check-chip" onclick="toggleChip(this);toggleAdFields()"><input type="checkbox" value="Personal Asthma" />Asthma</label>
+        <label class="check-chip" onclick="toggleChip(this);toggleAdFields()"><input type="checkbox" value="Personal Atopic Dermatitis" />Atopic Dermatitis</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Personal Allergic Rhinitis" />Allergic Rhinitis</label>
+      </div>
+    </div>
+
+    <div class="field" id="b-ad-preceded-wrap" style="display:none">
+      <label class="field-label">AD Preceded BP Onset?</label>
+      <div class="radio-group" id="b-ad-preceded-group">
+        <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-ad-preceded-group',this)">Yes</div>
+        <div class="radio-btn" data-val="No"  onclick="pickRadio('b-ad-preceded-group',this)">No</div>
+      </div>
+      <input type="hidden" id="b-ad-preceded" />
+    </div>
+
+    <div class="field" id="b-ad-bio-wrap" style="display:none">
+      <label class="field-label">AD Biologic Treatment?</label>
+      <div class="radio-group" id="b-ad-bio-group">
+        <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-ad-bio-group',this);toggleAdBioDetail()">Yes</div>
+        <div class="radio-btn" data-val="No"  onclick="pickRadio('b-ad-bio-group',this);toggleAdBioDetail()">No</div>
+      </div>
+      <input type="hidden" id="b-ad-bio" />
+    </div>
+
+    <div class="field span-full" id="b-ad-bio-detail-wrap" style="display:none">
+      <label class="field-label">AD Biologic — Specify</label>
+      <input class="field-input" type="text" id="b-ad-bio-detail" placeholder="e.g. Dupilumab, Upadacitinib" />
+    </div>
+
+    <div class="field span-full form-section-label" style="margin-top:12px">Dermatological History</div>
+
+    <div class="field span-full">
+      <div class="check-grid" id="b-derm-chips">
+        <label class="check-chip" onclick="toggleChip(this);togglePsoFields()"><input type="checkbox" value="Psoriasis" />Psoriasis</label>
+      </div>
+    </div>
+
+    <div class="field" id="b-pso-bio-wrap" style="display:none">
+      <label class="field-label">Psoriasis Biologic Treatment?</label>
+      <div class="radio-group" id="b-pso-bio-group">
+        <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-pso-bio-group',this);togglePsoBioDetail()">Yes</div>
+        <div class="radio-btn" data-val="No"  onclick="pickRadio('b-pso-bio-group',this);togglePsoBioDetail()">No</div>
+      </div>
+      <input type="hidden" id="b-pso-bio" />
+    </div>
+
+    <div class="field span-full" id="b-pso-bio-detail-wrap" style="display:none">
+      <label class="field-label">Psoriasis Biologic — Specify</label>
+      <input class="field-input" type="text" id="b-pso-bio-detail" placeholder="e.g. Adalimumab, Secukinumab" />
     </div>
 
   </div>
@@ -1700,6 +1822,19 @@ body.light-mode .ade-flag-type { background: #fff8c5; color: #9a6700; }
     <div class="field">
       <label class="field-label">Albumin (g/dL)</label>
       <input class="field-input" type="number" id="d-albumin" placeholder="e.g. 3.8" step="0.1" />
+    </div>
+
+    <hr class="form-divider" />
+    <div class="field span-full form-section-label">First Documented Eosinophilia</div>
+
+    <div class="field">
+      <label class="field-label">Absolute Count (×10⁹/L)</label>
+      <input class="field-input" type="number" id="d-first-eos-abs" placeholder="e.g. 1.2" step="0.01" />
+    </div>
+
+    <div class="field">
+      <label class="field-label">Date</label>
+      <input class="field-input" type="date" id="d-first-eos-date" />
     </div>
 
   </div>
@@ -1857,8 +1992,23 @@ const MAX_SAFETY_DRUGS = 5;
 const BODY_SITES   = ['Head/Neck','Trunk','Back','Upper Limb','Lower Limb','Hands','Feet','Axilla','Groin'];
 const MUCOSA_SITES = ['Oral','Ocular','Genitalia','Nose','Larynx'];
 const LESION_TYPES = ['Erythema','Eczematous plaques','Bullae','Erosions','Vegetative','Vesicular','Dishidrotic','Nodular','Urticaria','Targetoid lesions','Post-inflammatory'];
-const DRUG_LIST    = ['Prednisone (oral)','Methylprednisolone (IV)','Clobetasol propionate (topical)','Doxycycline','Azathioprine','Mycophenolate mofetil','Methotrexate','Dapsone','Minocycline','Cyclosporine','IVIG','Dupilumab','Rituximab','Omalizumab','Other'];
-const TRIGGER_CLASSES = ['DPP-4 inhibitor (gliptin)','PD-1 / PD-L1 inhibitor','Furosemide','Antipsychotic','ACE inhibitor','Beta-blocker','Penicillin / Antibiotic','NSAID','Other'];
+const DRUG_LIST    = ['Prednisone (oral)','Methylprednisolone (IV)','Clobetasol propionate (topical)','Doxycycline','Minocycline','Azathioprine','Mycophenolate mofetil','Methotrexate','Cyclosporine','Dapsone','Dupilumab','Rituximab','Omalizumab','Eblasakimab','Tralokinumab','Secukinumab','Ustekinumab','Adalimumab','IVIG','Upadacitinib','Abrocitinib','Baricitinib','Tofacitinib','Other'];
+const TRIGGER_CLASSES = ['DPP-4 inhibitor (gliptin)','PD-1 / PD-L1 inhibitor','CTLA-4 inhibitor','SGLT2 inhibitor','GLP-1 receptor agonist','Furosemide','Antipsychotic','ACE inhibitor','Beta-blocker','Penicillin / Antibiotic','NSAID','IL-4/IL-13 inhibitor','JAK inhibitor','IL-13 inhibitor','Other'];
+
+// Agent dropdown with optgroup separators
+const AGENT_OPTGROUPS = [
+  { label: 'Tetracyclines', drugs: ['Doxycycline','Minocycline'] },
+  { label: 'Conventional Immunosuppressants', drugs: ['Azathioprine','Mycophenolate mofetil','Methotrexate','Cyclosporine','Dapsone'] },
+  { label: 'Biologics', drugs: ['Dupilumab','Rituximab','Omalizumab','Eblasakimab','Tralokinumab','Secukinumab','Ustekinumab','Adalimumab','IVIG'] },
+  { label: 'JAK Inhibitors', drugs: ['Upadacitinib','Abrocitinib','Baricitinib','Tofacitinib'] },
+  { label: 'Other', drugs: ['Other'] }
+];
+
+function buildAgentOptions() {
+  return AGENT_OPTGROUPS.map(g =>
+    `<optgroup label="${g.label}">${g.drugs.map(d => `<option>${d}</option>`).join('')}</optgroup>`
+  ).join('');
+}
 
 // ── AI Extraction system prompt ──────────────────────────────────
 const EXTRACTION_PROMPT = `You are a clinical data extraction assistant for a Bullous Pemphigoid (BP) patient registry. You will receive DE-IDENTIFIED clinical notes in Hebrew (often mixed with English medical terms). Dates have been replaced with "Day X" notation (days from diagnosis). Day 0 = diagnosis date.
@@ -2456,6 +2606,8 @@ function collectSection(idx) {
       const sympDays = (dxDate && sympDate) ? daysBetween(new Date(sympDate), new Date(dxDate)).toString() : '';
       const h = parseFloat(g('b-height')), w = parseFloat(g('b-weight'));
       const bmi = (h > 0 && w > 0) ? (w / ((h/100)**2)).toFixed(1) : '';
+      const pruOnset = g('b-pru-onset-date');
+      const pruDays  = (dxDate && pruOnset) ? daysBetween(new Date(pruOnset), new Date(dxDate)).toString() : '';
       return [
         pid,
         g('b-sex'), age, dxYear, fmtDate(dxDate),
@@ -2464,6 +2616,9 @@ function collectSection(idx) {
         fmtDate(sympDate), sympDays,
         fmtDate(g('b-death-date')),
         g('b-death-cause'),
+        g('b-fam-asthma'), g('b-fam-ad'), g('b-fam-rhinitis'),
+        g('b-pru-before'), fmtDate(pruOnset), pruDays,
+        g('b-subtype'),
         collector, ts
       ];
     }
@@ -2476,6 +2631,7 @@ function collectSection(idx) {
         g('d-bp180'), g('d-bp230'),
         g('d-ige'), g('d-eos'), g('d-albumin'),
         g('d-sub-blister'), g('d-bx-eos'), g('d-sug-biopsy'),
+        g('d-first-eos-abs'), fmtDate(g('d-first-eos-date')),
         collector, ts
       ];
     }
@@ -2721,7 +2877,7 @@ function addVisitCard() {
   visitCount++;
   const vid = visitCount;
 
-  const agentOptions = DRUG_LIST.slice(3).map(d => `<option>${d}</option>`).join('');
+  const agentOptions = buildAgentOptions();
   const bodySiteChips = BODY_SITES.map(s =>
     `<label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="${s}" />${s}</label>`
   ).join('');
@@ -3006,7 +3162,7 @@ function addVisitAgent(vid, prefix) {
   visitAgentCounts[key] = (visitAgentCounts[key] || 0) + 1;
   const aid = visitAgentCounts[key];
   if (aid > MAX_AGENTS) { toast(`Max ${MAX_AGENTS} agents`, 'warn'); return; }
-  const agentOptions = DRUG_LIST.slice(3).map(d => `<option>${d}</option>`).join('');
+  const agentOptions = buildAgentOptions();
   const label = prefix === 'c' ? 'Current' : 'Recommended';
   const html = `
   <div class="dyn-card" id="vc-${prefix}agent-${vid}-${aid}" style="padding:10px 12px;">
@@ -3208,6 +3364,67 @@ function toggleDeathCause() {
   document.getElementById('b-death-cause-wrap').classList.toggle('hidden', !hasDate);
 }
 
+function togglePruOnset() {
+  const val = (document.getElementById('b-pru-before') || {}).value;
+  const show = val === 'Yes';
+  document.getElementById('b-pru-onset-wrap').style.display = show ? '' : 'none';
+  document.getElementById('b-pru-days-wrap').style.display  = show ? '' : 'none';
+  if (!show) {
+    setVal('b-pru-onset-date', '');
+    document.getElementById('b-pru-days').textContent = '—';
+  }
+}
+
+function calcPruDays() {
+  const dxDate   = document.getElementById('b-dx-date').value;
+  const pruDate  = document.getElementById('b-pru-onset-date').value;
+  const el = document.getElementById('b-pru-days');
+  if (dxDate && pruDate) {
+    el.textContent = daysBetween(new Date(pruDate), new Date(dxDate));
+  } else {
+    el.textContent = '—';
+  }
+}
+
+function toggleAdFields() {
+  const atopicChecked = getChecked('b-atopic-chips');
+  const hasAD = atopicChecked.includes('Personal Atopic Dermatitis');
+  document.getElementById('b-ad-preceded-wrap').style.display = hasAD ? '' : 'none';
+  document.getElementById('b-ad-bio-wrap').style.display      = hasAD ? '' : 'none';
+  if (!hasAD) {
+    setVal('b-ad-preceded', '');
+    document.querySelectorAll('#b-ad-preceded-group .radio-btn').forEach(b=>b.classList.remove('selected'));
+    setVal('b-ad-bio', '');
+    document.querySelectorAll('#b-ad-bio-group .radio-btn').forEach(b=>b.classList.remove('selected'));
+    setVal('b-ad-bio-detail', '');
+    document.getElementById('b-ad-bio-detail-wrap').style.display = 'none';
+  }
+}
+
+function toggleAdBioDetail() {
+  const val = (document.getElementById('b-ad-bio') || {}).value;
+  document.getElementById('b-ad-bio-detail-wrap').style.display = val === 'Yes' ? '' : 'none';
+  if (val !== 'Yes') setVal('b-ad-bio-detail', '');
+}
+
+function togglePsoFields() {
+  const dermChecked = getChecked('b-derm-chips');
+  const hasPso = dermChecked.includes('Psoriasis');
+  document.getElementById('b-pso-bio-wrap').style.display = hasPso ? '' : 'none';
+  if (!hasPso) {
+    setVal('b-pso-bio', '');
+    document.querySelectorAll('#b-pso-bio-group .radio-btn').forEach(b=>b.classList.remove('selected'));
+    setVal('b-pso-bio-detail', '');
+    document.getElementById('b-pso-bio-detail-wrap').style.display = 'none';
+  }
+}
+
+function togglePsoBioDetail() {
+  const val = (document.getElementById('b-pso-bio') || {}).value;
+  document.getElementById('b-pso-bio-detail-wrap').style.display = val === 'Yes' ? '' : 'none';
+  if (val !== 'Yes') setVal('b-pso-bio-detail', '');
+}
+
 function toggleAESection() {
   const ae = document.getElementById('s-ae').value;
   document.getElementById('s-ae-section').classList.toggle('hidden', ae !== 'Y');
@@ -3227,7 +3444,17 @@ function prefillBaseline(b) {
   setDateInput('b-symp-date', b.Date_of_First_Symptoms);
   setDateInput('b-death-date', b.Date_of_Death);
   setVal('b-death-cause', b.Cause_of_Death);
-  calcBMI(); calcDiagFields(); toggleDeathCause();
+  // Family atopic history
+  setVal('b-fam-asthma', b.Family_Hx_Asthma); setRadio('b-fam-asthma-group', b.Family_Hx_Asthma);
+  setVal('b-fam-ad', b.Family_Hx_Atopic_Dermatitis); setRadio('b-fam-ad-group', b.Family_Hx_Atopic_Dermatitis);
+  setVal('b-fam-rhinitis', b.Family_Hx_Allergic_Rhinitis); setRadio('b-fam-rhinitis-group', b.Family_Hx_Allergic_Rhinitis);
+  // Pre-dx pruritus
+  setVal('b-pru-before', b.Pruritus_Before_BP); setRadio('b-pru-before-group', b.Pruritus_Before_BP);
+  setDateInput('b-pru-onset-date', b.Pruritus_Onset_Date);
+  togglePruOnset();
+  // Disease subtype
+  setVal('b-subtype', b.Disease_Subtype);
+  calcBMI(); calcDiagFields(); toggleDeathCause(); calcPruDays();
 }
 
 function prefillComorbidities(c) {
@@ -3240,6 +3467,25 @@ function prefillComorbidities(c) {
   const active = comorbList.filter(k => c[k] === 'Yes' || c[k] === '1')
                            .map(k => k.replace(/_/g,' '));
   setCheckedChips('b-comorbid-chips', active.join(', '));
+  // Atopic history
+  const atopicList = ['Personal_Asthma','Personal_Atopic_Dermatitis','Personal_Allergic_Rhinitis'];
+  const atopicActive = atopicList.filter(k => c[k] === 'Yes' || c[k] === '1')
+                                 .map(k => k.replace(/_/g,' '));
+  setCheckedChips('b-atopic-chips', atopicActive.join(', '));
+  // AD preceded
+  setVal('b-ad-preceded', c.AD_Preceded_BP); setRadio('b-ad-preceded-group', c.AD_Preceded_BP);
+  // AD biologic
+  setVal('b-ad-bio', c.AD_Biologic); setRadio('b-ad-bio-group', c.AD_Biologic);
+  setVal('b-ad-bio-detail', c.AD_Biologic_Detail);
+  // Psoriasis
+  const dermActive = [];
+  if (c.Psoriasis === 'Yes' || c.Psoriasis === '1') dermActive.push('Psoriasis');
+  setCheckedChips('b-derm-chips', dermActive.join(', '));
+  // Psoriasis biologic
+  setVal('b-pso-bio', c.Psoriasis_Biologic); setRadio('b-pso-bio-group', c.Psoriasis_Biologic);
+  setVal('b-pso-bio-detail', c.Psoriasis_Biologic_Detail);
+  // Toggle conditional fields
+  toggleAdFields(); togglePsoFields(); toggleAdBioDetail(); togglePsoBioDetail();
 }
 
 function prefillDiagnosis(labs) {
@@ -3256,6 +3502,8 @@ function prefillDiagnosis(labs) {
   setVal('d-sub-blister', labs.Subepidermal_Blister); setRadio('d-sub-blister-group', labs.Subepidermal_Blister);
   setVal('d-bx-eos', labs.Biopsy_Eosinophils);       setRadio('d-bx-eos-group',      labs.Biopsy_Eosinophils);
   setVal('d-sug-biopsy', labs.Suggestive_Biopsy);    setRadio('d-sug-biopsy-group',  labs.Suggestive_Biopsy);
+  setVal('d-first-eos-abs', labs.First_Eosinophilia_Abs);
+  setDateInput('d-first-eos-date', labs.First_Eosinophilia_Date);
 }
 
 function prefillDrugTriggers(dt) {
@@ -3269,14 +3517,17 @@ function collectComorbidities(pid, collector, ts) {
   const anti    = g('b-anti');
   const neuroYr = g('b-neuro-year');
   const neuroDx = getChecked('b-neuro-chips').join(', ');
-  const comorbMap = {
-    'Diabetes':'Diabetes','Hypertension':'Hypertension','IHD':'IHD',
-    'Active Malignancy':'Active_Malignancy','Autoimmune Disease':'Autoimmune_Disease',
-    'CKD':'CKD','Smoker':'Smoker',
-    'CHF':'CHF','COPD':'COPD','PVD':'PVD','Liver Disease':'Liver_Disease'
-  };
   const checked = getChecked('b-comorbid-chips');
   const yesNo = key => checked.includes(key) ? 'Yes' : 'No';
+
+  // Atopic chips
+  const atopicChecked = getChecked('b-atopic-chips');
+  const atopicYN = key => atopicChecked.includes(key) ? 'Yes' : 'No';
+
+  // Derm chips
+  const dermChecked = getChecked('b-derm-chips');
+  const dermYN = key => dermChecked.includes(key) ? 'Yes' : 'No';
+
   return [
     pid,
     anti, neuroYr, neuroDx,
@@ -3284,6 +3535,11 @@ function collectComorbidities(pid, collector, ts) {
     yesNo('Active Malignancy'), yesNo('Autoimmune Disease'),
     yesNo('CKD'), yesNo('Smoker'),
     yesNo('CHF'), yesNo('COPD'), yesNo('PVD'), yesNo('Liver Disease'),
+    atopicYN('Personal Asthma'), atopicYN('Personal Atopic Dermatitis'), atopicYN('Personal Allergic Rhinitis'),
+    g('b-ad-preceded'),
+    dermYN('Psoriasis'),
+    g('b-pso-bio'), g('b-pso-bio-detail'),
+    g('b-ad-bio'), g('b-ad-bio-detail'),
     collector, ts
   ];
 }
@@ -3353,18 +3609,29 @@ function resetAllFields() {
   // Baseline
   ['b-sex','b-age','b-ethnicity','b-frailty','b-height','b-weight',
    'b-dx-date','b-symp-date','b-death-date','b-death-cause',
-   'b-anti','b-neuro-year'].forEach(id => setVal(id,''));
-  document.querySelectorAll('#b-sex-group .radio-btn, #b-anti-group .radio-btn')
+   'b-anti','b-neuro-year',
+   'b-fam-asthma','b-fam-ad','b-fam-rhinitis',
+   'b-pru-before','b-pru-onset-date','b-subtype',
+   'b-ad-preceded','b-ad-bio','b-ad-bio-detail',
+   'b-pso-bio','b-pso-bio-detail'].forEach(id => setVal(id,''));
+  document.querySelectorAll('#b-sex-group .radio-btn, #b-anti-group .radio-btn, #b-fam-asthma-group .radio-btn, #b-fam-ad-group .radio-btn, #b-fam-rhinitis-group .radio-btn, #b-pru-before-group .radio-btn, #b-ad-preceded-group .radio-btn, #b-ad-bio-group .radio-btn, #b-pso-bio-group .radio-btn')
     .forEach(b=>b.classList.remove('selected'));
   document.getElementById('b-bmi').textContent = '—';
   document.getElementById('b-dx-year').textContent = '—';
   document.getElementById('b-symp-days').textContent = '—';
-  document.querySelectorAll('#b-neuro-chips input, #b-comorbid-chips input')
+  document.getElementById('b-pru-days').textContent = '—';
+  document.querySelectorAll('#b-neuro-chips input, #b-comorbid-chips input, #b-atopic-chips input, #b-derm-chips input')
     .forEach(cb => { cb.checked = false; cb.closest('.check-chip')?.classList.remove('checked'); });
+  // Hide conditional sections
+  ['b-pru-onset-wrap','b-pru-days-wrap','b-ad-preceded-wrap','b-ad-bio-wrap','b-ad-bio-detail-wrap','b-pso-bio-wrap','b-pso-bio-detail-wrap'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
 
   // Diagnosis
   ['d-dif-igg','d-dif-c3','d-iif','d-iif-titer','d-bp180','d-bp230',
-   'd-ige','d-eos','d-albumin','d-sub-blister','d-bx-eos','d-sug-biopsy'].forEach(id => setVal(id,''));
+   'd-ige','d-eos','d-albumin','d-sub-blister','d-bx-eos','d-sug-biopsy',
+   'd-first-eos-abs','d-first-eos-date'].forEach(id => setVal(id,''));
   ['d-dif-igg-group','d-dif-c3-group','d-iif-group','d-sub-blister-group','d-bx-eos-group','d-sug-biopsy-group']
     .forEach(g => document.querySelectorAll(`#${g} .radio-btn`).forEach(b=>b.classList.remove('selected')));
 
@@ -3395,11 +3662,14 @@ function hasSectionData(idx) {
   switch(idx) {
     case 0: // Baseline — require at least one core field
       return !!(g('b-sex') || g('b-age') || g('b-dx-date') || g('b-ethnicity') ||
-                g('b-height') || g('b-weight') || g('b-death-date') || g('b-anti'));
+                g('b-height') || g('b-weight') || g('b-death-date') || g('b-anti') ||
+                g('b-fam-asthma') || g('b-fam-ad') || g('b-fam-rhinitis') ||
+                g('b-pru-before') || g('b-subtype'));
     case 1: // Diagnosis — require at least one lab value
       return !!(g('d-dif-igg') || g('d-dif-c3') || g('d-iif') || g('d-bp180') ||
                 g('d-bp230') || g('d-ige') || g('d-eos') || g('d-albumin') ||
-                g('d-sub-blister') || g('d-bx-eos') || g('d-sug-biopsy'));
+                g('d-sub-blister') || g('d-bx-eos') || g('d-sug-biopsy') ||
+                g('d-first-eos-abs'));
     case 2: // Drug Triggers — require at least one card with a trigger value
       return Array.from(document.querySelectorAll('#drug-trigger-list .dyn-card'))
         .some(card => (card.querySelector('input[data-field="trig"]') || {}).value);
