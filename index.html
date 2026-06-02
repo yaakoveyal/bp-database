@@ -453,6 +453,12 @@ body {
 .field.span-3 { grid-column: span 3; }
 .field.span-full { grid-column: 1 / -1; }
 
+/* Dynamic layout rules for responsive screen sizing */
+@media (min-width: 800px) {
+  .form-grid {
+    grid-template-columns: repeat(4, 1fr) !important; /* Force true 4-column master matrix */
+  }
+}
 .field-label {
   font-size: 11px;
   font-weight: 500;
@@ -1448,14 +1454,15 @@ body.light-mode .ade-flag-type { background: #fff8c5; color: #9a6700; }
   </div>
 
   <div class="form-grid">
-    <!-- hidden pid mirror -->
     <input type="hidden" id="b-pid" />
 
+    <div class="field span-full form-section-label">Core Demographics</div>
+    
     <div class="field">
       <label class="field-label">Sex <span class="req">*</span></label>
       <div class="radio-group" id="b-sex-group">
-        <div class="radio-btn" data-val="M"     onclick="pickRadio('b-sex-group',this)">M</div>
-        <div class="radio-btn" data-val="F"     onclick="pickRadio('b-sex-group',this)">F</div>
+        <div class="radio-btn" data-val="M" onclick="pickRadio('b-sex-group',this)">M</div>
+        <div class="radio-btn" data-val="F" onclick="pickRadio('b-sex-group',this)">F</div>
         <div class="radio-btn" data-val="Other" onclick="pickRadio('b-sex-group',this)">Other</div>
       </div>
       <input type="hidden" id="b-sex" />
@@ -1464,16 +1471,6 @@ body.light-mode .ade-flag-type { background: #fff8c5; color: #9a6700; }
     <div class="field">
       <label class="field-label">Age at Diagnosis</label>
       <input class="field-input" type="number" id="b-age" placeholder="e.g. 72" min="0" max="120" />
-    </div>
-
-    <div class="field">
-      <label class="field-label">Date of Diagnosis</label>
-      <input class="field-input" type="date" id="b-dx-date" onchange="calcDiagFields()" />
-    </div>
-
-    <div class="field">
-      <label class="field-label">Year of Diagnosis</label>
-      <div class="computed-val" id="b-dx-year">—</div>
     </div>
 
     <div class="field">
@@ -1494,6 +1491,30 @@ body.light-mode .ade-flag-type { background: #fff8c5; color: #9a6700; }
       <input class="field-input" type="number" id="b-frailty" placeholder="0–9" min="0" max="9" />
     </div>
 
+    <div class="field span-full form-section-label">Diagnosis Timeline</div>
+
+    <div class="field">
+      <label class="field-label">Date of Diagnosis</label>
+      <input class="field-input" type="date" id="b-dx-date" onchange="calcDiagFields()" />
+    </div>
+
+    <div class="field">
+      <label class="field-label">Year of Diagnosis</label>
+      <div class="computed-val" id="b-dx-year">—</div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Date of First Symptoms</label>
+      <input class="field-input" type="date" id="b-symp-date" onchange="calcDiagFields()" />
+    </div>
+
+    <div class="field">
+      <label class="field-label">Days Symptoms → Dx</label>
+      <div class="computed-val" id="b-symp-days">—</div>
+    </div>
+
+    <div class="field span-full form-section-label">Biometrics &amp; Vital Status</div>
+
     <div class="field">
       <label class="field-label">Height (cm)</label>
       <input class="field-input" type="number" id="b-height" placeholder="e.g. 168" onchange="calcBMI()" />
@@ -1510,16 +1531,15 @@ body.light-mode .ade-flag-type { background: #fff8c5; color: #9a6700; }
     </div>
 
     <div class="field">
-      <label class="field-label">Date of First Symptoms</label>
-      <input class="field-input" type="date" id="b-symp-date" onchange="calcDiagFields()" />
+      <label class="field-label">Disease Subtype</label>
+      <select class="field-select" id="b-subtype">
+        <option value="">— select —</option>
+        <option>BP</option>
+        <option>Pemphigoid Gestationis</option>
+        <option>MMP</option>
+        <option>Linear IgA</option>
+      </select>
     </div>
-
-    <div class="field">
-      <label class="field-label">Days Symptoms → Diagnosis</label>
-      <div class="computed-val" id="b-symp-days">—</div>
-    </div>
-
-    <hr class="form-divider" />
 
     <div class="field">
       <label class="field-label">Date of Death</label>
@@ -1540,41 +1560,10 @@ body.light-mode .ade-flag-type { background: #fff8c5; color: #9a6700; }
       </select>
     </div>
 
-    <hr class="form-divider" />
-    <div class="field span-full form-section-label">Family Atopic History</div>
+    <div class="field span-full form-section-label">Pre-diagnosis Pruritus Prodrome</div>
 
     <div class="field">
-      <label class="field-label">Asthma</label>
-      <div class="radio-group" id="b-fam-asthma-group">
-        <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-fam-asthma-group',this)">Yes</div>
-        <div class="radio-btn" data-val="No"  onclick="pickRadio('b-fam-asthma-group',this)">No</div>
-      </div>
-      <input type="hidden" id="b-fam-asthma" />
-    </div>
-
-    <div class="field">
-      <label class="field-label">Atopic Dermatitis</label>
-      <div class="radio-group" id="b-fam-ad-group">
-        <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-fam-ad-group',this)">Yes</div>
-        <div class="radio-btn" data-val="No"  onclick="pickRadio('b-fam-ad-group',this)">No</div>
-      </div>
-      <input type="hidden" id="b-fam-ad" />
-    </div>
-
-    <div class="field">
-      <label class="field-label">Allergic Rhinitis</label>
-      <div class="radio-group" id="b-fam-rhinitis-group">
-        <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-fam-rhinitis-group',this)">Yes</div>
-        <div class="radio-btn" data-val="No"  onclick="pickRadio('b-fam-rhinitis-group',this)">No</div>
-      </div>
-      <input type="hidden" id="b-fam-rhinitis" />
-    </div>
-
-    <hr class="form-divider" />
-    <div class="field span-full form-section-label">Pre-diagnosis Pruritus</div>
-
-    <div class="field">
-      <label class="field-label">Pruritus Reported Before BP?</label>
+      <label class="field-label">Pruritus Before BP?</label>
       <div class="radio-group" id="b-pru-before-group">
         <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-pru-before-group',this);togglePruOnset()">Yes</div>
         <div class="radio-btn" data-val="No"  onclick="pickRadio('b-pru-before-group',this);togglePruOnset()">No</div>
@@ -1593,68 +1582,36 @@ body.light-mode .ade-flag-type { background: #fff8c5; color: #9a6700; }
       <div class="computed-val" id="b-pru-days">—</div>
     </div>
 
-    <hr class="form-divider" />
-    <div class="field span-full form-section-label">Disease Classification</div>
+    <div class="field span-full form-section-label">Family Atopic History</div>
 
     <div class="field">
-      <label class="field-label">Disease Subtype</label>
-      <select class="field-select" id="b-subtype">
-        <option value="">— select —</option>
-        <option>BP</option>
-        <option>Pemphigoid Gestationis</option>
-        <option>MMP</option>
-        <option>Linear IgA</option>
-      </select>
-    </div>
-
-    <hr class="form-divider" />
-    <div class="field span-full form-section-label">Comorbidities</div>
-
-    <div class="field span-full">
-      <label class="field-label">Antipsychotic Treatment</label>
-      <div class="radio-group" id="b-anti-group">
-        <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-anti-group',this)">Yes</div>
-        <div class="radio-btn" data-val="No"  onclick="pickRadio('b-anti-group',this)">No</div>
+      <label class="field-label">Family Asthma</label>
+      <div class="radio-group" id="b-fam-asthma-group">
+        <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-fam-asthma-group',this)">Yes</div>
+        <div class="radio-btn" data-val="No"  onclick="pickRadio('b-fam-asthma-group',this)">No</div>
       </div>
-      <input type="hidden" id="b-anti" />
-    </div>
-
-    <div class="field span-full">
-      <label class="field-label">Neurological Diagnoses</label>
-      <div class="check-grid" id="b-neuro-chips">
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Dementia" />Dementia</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Parkinson's" />Parkinson's</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Stroke" />Stroke</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Epilepsy" />Epilepsy</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="MS" />MS</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Depression" />Depression</label>
-      </div>
+      <input type="hidden" id="b-fam-asthma" />
     </div>
 
     <div class="field">
-      <label class="field-label">Year of Neurological Diagnosis</label>
-      <input class="field-input" type="number" id="b-neuro-year" placeholder="e.g. 2018" min="1900" max="2100" />
-    </div>
-
-    <div class="field span-full">
-      <label class="field-label">General Medical</label>
-      <div class="check-grid" id="b-comorbid-chips">
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Diabetes" />Diabetes</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Hypertension" />Hypertension</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Dyslipidemia" />Dyslipidemia</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="IHD" />IHD</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Active Malignancy" />Active Malignancy</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Autoimmune Disease" />Autoimmune Disease</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="CKD" />CKD</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Smoker" />Smoker</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="CHF" />CHF</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="COPD" />COPD</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="PVD" />PVD</label>
-        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Liver Disease" />Liver Disease</label>
+      <label class="field-label">Family Atopic Derm.</label>
+      <div class="radio-group" id="b-fam-ad-group">
+        <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-fam-ad-group',this)">Yes</div>
+        <div class="radio-btn" data-val="No"  onclick="pickRadio('b-fam-ad-group',this)">No</div>
       </div>
+      <input type="hidden" id="b-fam-ad" />
     </div>
 
-    <div class="field span-full form-section-label" style="margin-top:12px">Personal Atopic History</div>
+    <div class="field">
+      <label class="field-label">Family Allergic Rhinitis</label>
+      <div class="radio-group" id="b-fam-rhinitis-group">
+        <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-fam-rhinitis-group',this)">Yes</div>
+        <div class="radio-btn" data-val="No"  onclick="pickRadio('b-fam-rhinitis-group',this)">No</div>
+      </div>
+      <input type="hidden" id="b-fam-rhinitis" />
+    </div>
+
+    <div class="field span-full form-section-label" style="margin-top:8px">Personal Atopic History</div>
 
     <div class="field span-full">
       <div class="check-grid" id="b-atopic-chips">
@@ -1674,7 +1631,7 @@ body.light-mode .ade-flag-type { background: #fff8c5; color: #9a6700; }
     </div>
 
     <div class="field" id="b-ad-bio-wrap" style="display:none">
-      <label class="field-label">AD Biologic Treatment?</label>
+      <label class="field-label">AD Biologic Tx?</label>
       <div class="radio-group" id="b-ad-bio-group">
         <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-ad-bio-group',this);toggleAdBioDetail()">Yes</div>
         <div class="radio-btn" data-val="No"  onclick="pickRadio('b-ad-bio-group',this);toggleAdBioDetail()">No</div>
@@ -1682,21 +1639,67 @@ body.light-mode .ade-flag-type { background: #fff8c5; color: #9a6700; }
       <input type="hidden" id="b-ad-bio" />
     </div>
 
-    <div class="field span-full" id="b-ad-bio-detail-wrap" style="display:none">
+    <div class="field span-2" id="b-ad-bio-detail-wrap" style="display:none">
       <label class="field-label">AD Biologic — Specify</label>
       <input class="field-input" type="text" id="b-ad-bio-detail" placeholder="e.g. Dupilumab, Upadacitinib" />
     </div>
 
-    <div class="field span-full form-section-label" style="margin-top:12px">Dermatological History</div>
+    <div class="field span-full form-section-label">Neurological &amp; Medical Comorbidities</div>
+
+    <div class="field span-2">
+      <label class="field-label">Antipsychotic Treatment Base</label>
+      <div class="radio-group" id="b-anti-group">
+        <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-anti-group',this)">Yes</div>
+        <div class="radio-btn" data-val="No"  onclick="pickRadio('b-anti-group',this)">No</div>
+      </div>
+      <input type="hidden" id="b-anti" />
+    </div>
+
+    <div class="field">
+      <label class="field-label">Year of Neuro Dx</label>
+      <input class="field-input" type="number" id="b-neuro-year" placeholder="e.g. 2018" min="1900" max="2100" />
+    </div>
 
     <div class="field span-full">
+      <label class="field-label">Neurological Diagnoses</label>
+      <div class="check-grid" id="b-neuro-chips">
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Dementia" />Dementia</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Parkinson's" />Parkinson's</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Stroke" />Stroke</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Epilepsy" />Epilepsy</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="MS" />MS</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Depression" />Depression</label>
+      </div>
+    </div>
+
+    <div class="field span-full">
+      <label class="field-label">General Medical Conditions</label>
+      <div class="check-grid" id="b-comorbid-chips">
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Diabetes" />Diabetes</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Hypertension" />Hypertension</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Dyslipidemia" />Dyslipidemia</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="IHD" />IHD</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Active Malignancy" />Active Malignancy</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Autoimmune Disease" />Autoimmune Disease</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="CKD" />CKD</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Smoker" />Smoker</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="CHF" />CHF</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="COPD" />COPD</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="PVD" />PVD</label>
+        <label class="check-chip" onclick="toggleChip(this)"><input type="checkbox" value="Liver Disease" />Liver Disease</label>
+      </div>
+    </div>
+
+    <div class="field span-full form-section-label" style="margin-top:8px">Dermatological History</div>
+
+    <div class="field">
       <div class="check-grid" id="b-derm-chips">
         <label class="check-chip" onclick="toggleChip(this);togglePsoFields()"><input type="checkbox" value="Psoriasis" />Psoriasis</label>
       </div>
     </div>
 
     <div class="field" id="b-pso-bio-wrap" style="display:none">
-      <label class="field-label">Psoriasis Biologic Treatment?</label>
+      <label class="field-label">Psoriasis Biologic Tx?</label>
       <div class="radio-group" id="b-pso-bio-group">
         <div class="radio-btn" data-val="Yes" onclick="pickRadio('b-pso-bio-group',this);togglePsoBioDetail()">Yes</div>
         <div class="radio-btn" data-val="No"  onclick="pickRadio('b-pso-bio-group',this);togglePsoBioDetail()">No</div>
@@ -1704,14 +1707,13 @@ body.light-mode .ade-flag-type { background: #fff8c5; color: #9a6700; }
       <input type="hidden" id="b-pso-bio" />
     </div>
 
-    <div class="field span-full" id="b-pso-bio-detail-wrap" style="display:none">
+    <div class="field span-2" id="b-pso-bio-detail-wrap" style="display:none">
       <label class="field-label">Psoriasis Biologic — Specify</label>
       <input class="field-input" type="text" id="b-pso-bio-detail" placeholder="e.g. Adalimumab, Secukinumab" />
     </div>
 
   </div>
 </div>
-
 <!-- ──────────────────────────────────────────
      TAB 1 — DIAGNOSIS
 ──────────────────────────────────────────── -->
